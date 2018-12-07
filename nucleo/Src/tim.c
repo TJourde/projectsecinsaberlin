@@ -292,7 +292,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
     PB1     ------> TIM1_CH3N
     PA8     ------> TIM1_CH1
     PA9     ------> TIM1_CH2
-    PA10     ------> TIM1_CH3 
+    PA10    ------> TIM1_CH3 
     */
     GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;

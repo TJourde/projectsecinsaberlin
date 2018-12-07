@@ -45,6 +45,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "solenoid.h"
 
 
 
@@ -68,14 +69,18 @@ int SEND_CAN = 0;
 */
 uint32_t ADCBUF[5];
 
+int cmdEMS = 0; // Variable fantôme mais nécessaire
 int cmdLRM = 50, cmdRRM = 50, cmdSFM = 50; // 0 à 100 Moteur gauche, droit, avant
 
 uint32_t VMG_mes = 0, VMD_mes = 0, per_vitesseG = 0, per_vitesseD = 0;
-//int	volatile i=0;
+
 /* Enable Moteurs */
 GPIO_PinState en_MARG = GPIO_PIN_RESET;
 GPIO_PinState en_MARD = GPIO_PIN_RESET;
 GPIO_PinState en_MAV  = GPIO_PIN_RESET;
+/* Enable Solenoid */
+GPIO_PinState en_EMS  = GPIO_PIN_RESET; // en_EMS = 1 -> solenoid levé
+
 /*********************************Informations rotation volant********************************/
 /* mesure angulaire potentiometre amplitudes volant +/- 17 % environ autour du centre        */
 /* PWM = 0.5 (50) % arret, PWM = 0.4 tourne gauche, PWM = 0.6 tourne droite                  */
@@ -167,6 +172,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+	
 
   /* USER CODE END SysInit */
 
@@ -179,7 +185,10 @@ int main(void)
   MX_TIM4_Init();
   MX_ADC1_Init();
   MX_CAN_Init();
+	
   /* USER CODE BEGIN 2 */
+	
+	EM_GPIO_Init();
 
   /* Initialisations */
 	
@@ -226,6 +235,8 @@ int main(void)
 			
 			wheels_set_speed(en_MARD, en_MARG, cmdRRM, cmdLRM);
 			steering_set_speed(en_MAV, cmdSFM);
+			//steering_set_position(en_MAV, cmdSFM);
+			set_solenoid_position(en_EMS);
 		}
 		
 		/* CAN */
@@ -245,6 +256,7 @@ int main(void)
 			data[7] = VMD_mes & 0xFF;
 			
 			CAN_Send(data, CAN_ID_MS);
+			
 		}
 		
   }

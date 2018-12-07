@@ -44,8 +44,8 @@
 
 /* USER CODE BEGIN 0 */
 
-
-extern int cmdLRM, cmdRRM, cmdSFM ;
+extern int cmdEMS, en_EMS;
+extern int cmdLRM, cmdRRM, cmdSFM;
 extern int en_MARG, en_MARD, en_MAV;
 /* USER CODE END 0 */
 
@@ -215,6 +215,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 		cmdLRM  = read_cmd(hcan->pRxMsg->Data[0], &en_MARG);
 		cmdRRM  = read_cmd(hcan->pRxMsg->Data[1], &en_MARD);
 		cmdSFM = read_cmd(hcan->pRxMsg->Data[2], &en_MAV);
+		cmdEMS = read_cmd(hcan->pRxMsg->Data[3], &en_EMS);
 	}
 	
 	__HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP0);
