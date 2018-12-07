@@ -1,3 +1,4 @@
-stm32f3xx_ll_comp.c:617:13:LL_COMP_DeInit	0	static
-stm32f3xx_ll_comp.c:653:13:LL_COMP_Init	4	static
-stm32f3xx_ll_comp.c:727:6:LL_COMP_StructInit	0	static
+stm32f3xx_ll_comp.h:1373:26:LL_COMP_IsLocked	16	static
+stm32f3xx_ll_comp.c:617:13:LL_COMP_DeInit	24	static
+stm32f3xx_ll_comp.c:653:13:LL_COMP_Init	24	static
+stm32f3xx_ll_comp.c:727:6:LL_COMP_StructInit	16	static

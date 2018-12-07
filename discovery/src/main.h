@@ -54,6 +54,8 @@
 
 /* Private define ------------------------------------------------------------*/
 
+#define Hall_Pin GPIO_PIN_9 //quel port ?
+#define Hall_GPIO_Port GPIOA //
 #define DRDY_Pin GPIO_PIN_2
 #define DRDY_GPIO_Port GPIOE
 #define CS_I2C_SPI_Pin GPIO_PIN_3
