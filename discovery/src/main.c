@@ -70,6 +70,7 @@ UART_HandleTypeDef huart2;
 int US_G_Echo = 0, US_C_Echo = 0, US_D_Echo = 0;
 int US_AV_G_mes = 0, US_AV_C_mes = 0, US_AV_D_mes = 0;
 int US_AR_G_mes = 0, US_AR_C_mes = 0, US_AR_D_mes = 0;
+int Hall_mes = 0, Hall = 0;
 
 
 int UserPressButton=0;
@@ -78,6 +79,7 @@ CanRxMsgTypeDef RxMessage;
 
 volatile char US_Flag=0;
 volatile char AHRS_Flag=0;
+volatile char Hall_Flag=0;
 
 float eulerBuffer[3];
 
@@ -90,6 +92,7 @@ const uint32_t CAN_US1_id = 0x000;
 const uint32_t CAN_US2_id = 0x001;
 const uint32_t CAN_OM1_id = 0x101;
 const uint32_t CAN_OM2_id = 0x102;
+const uint32_t CAN_Hall_id = 0x103;
 
 //const char CAN_AHRS_id_X = 0x05;
 //const char CAN_AHRS_id_Y = 0x06;
@@ -139,6 +142,14 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
         __HAL_TIM_SET_COUNTER(&htim3,0);// mise a zero compteur apres capture
 
     }
+
+    //Hall
+    if (htim->Instance==TIM1)
+        {
+            Hall =	HAL_TIM_ReadCapturedValue (&htim1,TIM_CHANNEL_2);
+            __HAL_TIM_SET_COUNTER(&htim1,0);// mise a zero compteur apres capture
+
+        }
 
 }
 
@@ -228,12 +239,14 @@ int main(void)
     uint8_t CAN_US_mes[8];
     FloatToBuffer CAN_AHRS_mes;
     uint8_t CAN_OMx_mes[8];
+    uint8_t CAN_Hall_mes[8];
     char bufferMsg[100];
 
     for(int i = 0; i < 8; i++)
     {
         CAN_US_mes[i] = 0;
         CAN_OMx_mes[i] = 0;
+        CAN_Hall_mes[i]=0;
         CAN_AHRS_mes.buffer[i]=0;
     }
 
@@ -337,6 +350,19 @@ int main(void)
             CAN_Send(CAN_OMx_mes, CAN_OM2_id);
 
         }
+
+        //Capturer et envoyer les données du capteur
+        if(Hall_Flag==1)
+        {
+        	uint32_t Val_Hall=0;
+        	Hall_Flag=0;
+        	Val_Hall= HAL_GPIO_ReadPin(Hall_GPIO_Port, Hall_Pin);
+        	CAN_Hall_mes[0]=!Val_Hall;
+
+        	CAN_Send(CAN_Hall_mes, CAN_Hall_id);
+
+        }
+
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -349,19 +375,28 @@ void HAL_SYSTICK_Callback()
 {
     static uint32_t counter=0;
     static uint32_t counterAHRS=0;
+    static uint32_t counterHall=0;
 
     counter++;
     counterAHRS++;
+    counterHall++;
 
-    if (counterAHRS>=500){
+    if (counterAHRS>=100){
         counterAHRS=0;
         AHRS_Flag=1;
     }
 
-    if (counter>=1000) {
+    if (counter>=100) {
         counter=0;
         US_Flag=1;
     }
+    if(counterHall>=100)
+    {
+    	counterHall=0;
+    	Hall_Flag=1;
+    }
+
+
 }
 /**
  * @brief System Clock Configuration
@@ -729,6 +764,13 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+   /*Configure GPIO pins : Hall_Pin_44 */
+    GPIO_InitStruct.Pin = Hall_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     /*Configure GPIO pins : US_AV_G_Trig_Pin US_AV_C_Trig_Pin US_AV_D_Trig_Pin US_AR_G_Trig_Pin
                            US_AR_C_Trig_Pin US_AR_D_Trig_Pin */

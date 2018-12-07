@@ -1,1 +1,8 @@
-stm32f3xx_ll_crc.c:78:13:LL_CRC_DeInit	0	static
+stm32f3xx_ll_crc.h:173:22:LL_CRC_ResetCRCCalculationUnit	16	static
+stm32f3xx_ll_crc.h:189:22:LL_CRC_SetPolynomialSize	16	static
+stm32f3xx_ll_crc.h:220:22:LL_CRC_SetInputDataReverseMode	16	static
+stm32f3xx_ll_crc.h:249:22:LL_CRC_SetOutputDataReverseMode	16	static
+stm32f3xx_ll_crc.h:277:22:LL_CRC_SetInitialData	16	static
+stm32f3xx_ll_crc.h:307:22:LL_CRC_SetPolynomialCoef	16	static
+stm32f3xx_ll_crc.h:437:22:LL_CRC_Write_IDR	16	static
+stm32f3xx_ll_crc.c:78:13:LL_CRC_DeInit	24	static
