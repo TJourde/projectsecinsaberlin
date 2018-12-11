@@ -217,7 +217,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 		cmdSFM = read_cmd(hcan->pRxMsg->Data[2], &en_MAV);
 		cmdEMS = read_cmd(hcan->pRxMsg->Data[3], &en_EMS);
 	}
-	
+		
 	__HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP0);
 }
 /* USER CODE END 1 */

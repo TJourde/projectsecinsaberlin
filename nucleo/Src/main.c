@@ -84,10 +84,6 @@ GPIO_PinState en_EMS  = GPIO_PIN_RESET; // en_EMS = 1 -> solenoid levé
 /*********************************Informations rotation volant********************************/
 /* mesure angulaire potentiometre amplitudes volant +/- 17 % environ autour du centre        */
 /* PWM = 0.5 (50) % arret, PWM = 0.4 tourne gauche, PWM = 0.6 tourne droite                  */
-/*butees potar  volant :                                                                         */
-#define gauche_volant 2395  
-#define centre_volant 2056  
-#define droite_volant 1825  
 
 CanTxMsgTypeDef TxMessage;
 CanRxMsgTypeDef RxMessage;
@@ -234,8 +230,7 @@ int main(void)
 			UPDATE_CMD_FLAG = 0;
 			
 			wheels_set_speed(en_MARD, en_MARG, cmdRRM, cmdLRM);
-			steering_set_speed(en_MAV, cmdSFM);
-			//steering_set_position(en_MAV, cmdSFM);
+			position_cmd (en_MAV, cmdSFM);
 			set_solenoid_position(en_EMS);
 		}
 		
