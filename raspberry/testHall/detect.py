@@ -54,8 +54,8 @@ Hall= 0x103
 LIMIT_DIST = 35
 
 TCP_IP = '10.105.0.55'
-TCP_PORT = 9050
-BUFFER_SIZE = 20  # Normally 1024, but we want fast response
+TCP_PORT = 9052
+BUFFER_SIZE = 8  # Normally 1024, but we want fast response
 
 def listen_remote_can(num,delay,q):
     #while True:
@@ -64,7 +64,7 @@ def listen_remote_can(num,delay,q):
     #    print ("v:",LIMIT_DIST) 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((TCP_IP, TCP_PORT))
-    s.listen(1)
+    s.listen()
     conn, addr = s.accept()
     num = 1
     print ('Connection address:', addr)
@@ -72,13 +72,18 @@ def listen_remote_can(num,delay,q):
         time.sleep(delay)
         data = conn.recv(BUFFER_SIZE)
         if not data:
+            print("no data: lost connection")
             num = 0
             q.put(num)
             break
-        print ("received data:", data)
-        print('\n')
+        if "UFC" in data.decode("utf-8"):
+#            print("US2:",data)
+            us2 = data.decode("utf-8")
+            q.put(us2)
+#        print ("received data:", data)
+#        print('\n')
         q.put(num)
-        #conn.send(data)  # echo
+#        conn.send(data)  # echo
         #conn.close()
 
 def listen_can(num,q):
@@ -86,16 +91,30 @@ def listen_can(num,q):
     cpt_us = 0
     flag_cm = False
     cpt_cm = 0
-    
+    flag_ufc = False
+    cpt_ufc = 0
+    ufc = -1
     cpt_both = 0
-    num = 1 #toremove for connection with other car
+    #num = 1 #toremove for connection with other car
     
     while True :
         if not q.empty():
-            print('oui')
-            num=q.get_nowait()
-        else:
-            print('non')
+            if q.qsize() > 1:
+                us2=q.get()
+                num=q.get()
+                if "UFC" in us2:
+                    ufc=us2.strip("UFC:")
+               #     print(ufc.replace(';',''))
+                    ufc=ufc.replace(';','')
+                    ufc=int(ufc)
+              #      print("ufc:",ufc)
+             #   print("us2:",us2)
+            else:
+                num=q.get()
+            #print(num)
+            
+#        else:
+#            print('non')
         trame=False
         msg = bus.recv()
         
@@ -104,12 +123,12 @@ def listen_can(num,q):
 # ultrason arriere centre
             distance = int.from_bytes(msg.data[4:6], byteorder='big')
             message = "URC:" + str(distance)+ ";"
-#            print(message)
+            print(message)
             if distance > LIMIT_DIST:
                 cpt_us += 1
                 if cpt_us > 2:
                     flag_us = True
-#                    print('Car gone: décrochage détecté\n')
+                    print('ERROR URC\n',time.strftime("%X"))                   #print('US: décrochage détecté\n')
                     msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
                     bus.send(msg)
             elif distance <= LIMIT_DIST:
@@ -118,32 +137,52 @@ def listen_can(num,q):
         elif msg.arbitration_id == Hall:
             trame = True
             magnet=int.from_bytes(msg.data[0:1],byteorder='big')
-#            print(magnet)
+            print(magnet)
             if magnet==0:
                 cpt_cm += 1
                 if cpt_cm > 2:
                     flag_cm = True
-                    print('Too Far: décrochage détecté\n')
+                    print('ERROR CM\n',time.strftime("%X"))
                     msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
                     bus.send(msg)
             elif magnet==1:
                 cpt_cm = 0
 #                print("attache")
-
+        if ufc >LIMIT_DIST:
+            cpt_ufc +=1
+            if cpt_ufc > 2:
+                flag_ufc = True
+        else:
+            cpt_ufc = 0
         if num==0:
             print('Lost connexion with remote car: décrochage détecté\n')
             msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
             bus.send(msg)
+#        print ('ufc:',ufc)
+
         if trame:
             if flag_cm or flag_us:
                 cpt_both += 1
                 if cpt_both > 3:
-                    if flag_cm and flag_us:
-                        print('CM && US')
-                    elif flag_cm:
-                        print('CM')
+                    if flag_cm:
+                        if flag_us and flag_ufc:
+                            print("CM && US && UFC")
+                            print ('Décrochage: barre perdue -> correction possible ')
+                        elif flag_us or flag_ufc:
+                            print("CM && (US || UFC)")
+                            print ('Décrochage: us défaillant(s) -> pas de correction possible')
+                        else:
+                            print("CM")
+                            print('Capteur magnétique défaillant -> pas de correction mais toujours accrochée')
                     elif flag_us:
-                        print('US')
+                        if flag_ufc:
+                            print('US && UFC')
+                            print('Décrochage: Capteur magnétique défaillant ou barre cassée -> pas de correction posssible')
+                        else:
+                            print('US')
+                            print('US défaillant(s) -> pas de correction possible')
+                    exit()
+
 try:
     bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
 except OSError:
@@ -154,12 +193,12 @@ threads = []
 
 try:
     q = queue.Queue()
-    num = 0
-    t = Thread(target=listen_can,args=(num,q),daemon=True)
+    connected = -1
+    t = Thread(target=listen_can,args=(connected,q),daemon=True)
     threads.append(t)
     t.start()
 
-    t = Thread(target=listen_remote_can,args=(num,2,q),daemon=True)
+    t = Thread(target=listen_remote_can,args=(connected,2,q),daemon=True)
     threads.append(t)
     t.start()
 except:
