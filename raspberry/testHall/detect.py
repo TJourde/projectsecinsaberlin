@@ -95,93 +95,85 @@ def listen_can(num,q):
     cpt_ufc = 0
     ufc = -1
     cpt_both = 0
-    #num = 1 #toremove for connection with other car
-    
+    go = False
     while True :
+        trame = False
         if not q.empty():
             if q.qsize() > 1:
                 us2=q.get()
                 num=q.get()
+                go = True
                 if "UFC" in us2:
                     ufc=us2.strip("UFC:")
-               #     print(ufc.replace(';',''))
                     ufc=ufc.replace(';','')
                     ufc=int(ufc)
-              #      print("ufc:",ufc)
-             #   print("us2:",us2)
+                    if ufc >LIMIT_DIST:
+                        cpt_ufc +=1
+                        if cpt_ufc > 2:
+                            flag_ufc = True
+                            print('ERROR UFC\n',time.strftime("%X")
+                            msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
+                            bus.send(msg)
+                    else:
+                        cpt_ufc = 0
+                if num==0:
+                    print('Lost connexion with remote car: décrochage détecté\n')
+                    msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
+                    bus.send(msg)
+                    exit()
             else:
                 num=q.get()
-            #print(num)
-            
-#        else:
-#            print('non')
-        trame=False
-        msg = bus.recv()
-        
-        if msg.arbitration_id == US1:
-            trame = True
-# ultrason arriere centre
-            distance = int.from_bytes(msg.data[4:6], byteorder='big')
-            message = "URC:" + str(distance)+ ";"
-            print(message)
-            if distance > LIMIT_DIST:
-                cpt_us += 1
-                if cpt_us > 2:
-                    flag_us = True
-                    print('ERROR URC\n',time.strftime("%X"))                   #print('US: décrochage détecté\n')
-                    msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
-                    bus.send(msg)
-            elif distance <= LIMIT_DIST:
-                cpt_us = 0
-#                print('OK\n')
-        elif msg.arbitration_id == Hall:
-            trame = True
-            magnet=int.from_bytes(msg.data[0:1],byteorder='big')
-            print(magnet)
-            if magnet==0:
-                cpt_cm += 1
-                if cpt_cm > 2:
-                    flag_cm = True
-                    print('ERROR CM\n',time.strftime("%X"))
-                    msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
-                    bus.send(msg)
-            elif magnet==1:
-                cpt_cm = 0
-#                print("attache")
-        if ufc >LIMIT_DIST:
-            cpt_ufc +=1
-            if cpt_ufc > 2:
-                flag_ufc = True
-        else:
-            cpt_ufc = 0
-        if num==0:
-            print('Lost connexion with remote car: décrochage détecté\n')
-            msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
-            bus.send(msg)
-#        print ('ufc:',ufc)
-
-        if trame:
-            if flag_cm or flag_us:
-                cpt_both += 1
-                if cpt_both > 3:
-                    if flag_cm:
-                        if flag_us and flag_ufc:
-                            print("CM && US && UFC")
-                            print ('Décrochage: barre perdue -> correction possible ')
-                        elif flag_us or flag_ufc:
-                            print("CM && (US || UFC)")
-                            print ('Décrochage: us défaillant(s) -> pas de correction possible')
-                        else:
-                            print("CM")
-                            print('Capteur magnétique défaillant -> pas de correction mais toujours accrochée')
-                    elif flag_us:
-                        if flag_ufc:
-                            print('US && UFC')
-                            print('Décrochage: Capteur magnétique défaillant ou barre cassée -> pas de correction posssible')
-                        else:
-                            print('US')
-                            print('US défaillant(s) -> pas de correction possible')
-                    exit()
+        if go:
+            msg = bus.recv()
+            if msg.arbitration_id == US1:
+                trame = True
+                # ultrason arriere centre
+                distance = int.from_bytes(msg.data[4:6], byteorder='big')
+                message = "URC:" + str(distance)+ ";"
+                if distance > LIMIT_DIST:
+                    cpt_us += 1
+                    if cpt_us > 2:
+                        flag_us = True
+                        print('ERROR URC\n',time.strftime("%X"))
+                        msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
+                        bus.send(msg)
+                elif distance <= LIMIT_DIST:
+                    cpt_us = 0
+            elif msg.arbitration_id == Hall:
+                trame = True
+                #magnet
+                magnet=int.from_bytes(msg.data[0:1],byteorder='big')
+                if magnet==0:
+                    cpt_cm += 1
+                    if cpt_cm > 2:
+                        flag_cm = True
+                        print('ERROR CM\n',time.strftime("%X"))
+                        msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
+                        bus.send(msg)
+                elif magnet==1:
+                    cpt_cm = 0
+            if trame:
+                if flag_cm or flag_us or flag_ufc:
+                    cpt_both += 1
+                    if cpt_both > 6:
+                        if flag_cm:
+                            if flag_us and flag_ufc:
+                                print("CM && US && UFC")
+                                print ('Décrochage: barre perdue -> correction possible ')
+                            elif flag_us or flag_ufc:
+                                print("CM && (US || UFC)")
+                                print ('Décrochage: us défaillant(s) -> pas de correction possible')
+                            else:
+                                print("CM")
+                                print('Capteur magnétique défaillant -> pas de correction mais toujours accrochée')
+                        elif flag_us:
+                            if flag_ufc:
+                                print('US && UFC')
+                                print('Décrochage: Capteur magnétique défaillant ou barre cassée -> pas de correction posssible')
+                            else:
+                                print('US')
+                                print('US défaillant(s) -> pas de correction possible')
+                        exit()
 
 try:
     bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
@@ -190,6 +182,8 @@ except OSError:
     exit()
 
 threads = []
+msg = can.Message(arbitration_id=0x010,data=[0xBC, 0xBC, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
+bus.send(msg)
 
 try:
     q = queue.Queue()
