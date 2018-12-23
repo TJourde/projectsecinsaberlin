@@ -44,8 +44,9 @@
 
 /* USER CODE BEGIN 0 */
 
-extern int cmdEMS, en_EMS;
-extern int cmdLRM, cmdRRM, cmdSFM;
+extern int cmdSOL, en_SOL;
+extern int cmdPOS, en_POS;
+extern int cmdLRM, cmdRRM, cmdSFM ;
 extern int en_MARG, en_MARD, en_MAV;
 /* USER CODE END 0 */
 
@@ -212,12 +213,13 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 	/* Consigne vitesse moteur */
 	if(hcan->pRxMsg->StdId == CAN_ID_CMC)
 	{
-		cmdLRM  = read_cmd(hcan->pRxMsg->Data[0], &en_MARG);
-		cmdRRM  = read_cmd(hcan->pRxMsg->Data[1], &en_MARD);
+		cmdLRM = read_cmd(hcan->pRxMsg->Data[0], &en_MARG);
+		cmdRRM = read_cmd(hcan->pRxMsg->Data[1], &en_MARD);
 		cmdSFM = read_cmd(hcan->pRxMsg->Data[2], &en_MAV);
-		cmdEMS = read_cmd(hcan->pRxMsg->Data[3], &en_EMS);
+		cmdPOS = read_cmd(hcan->pRxMsg->Data[3], &en_POS);
+		cmdSOL = read_cmd(hcan->pRxMsg->Data[7], &en_SOL);
 	}
-		
+	
 	__HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP0);
 }
 /* USER CODE END 1 */
