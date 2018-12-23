@@ -69,17 +69,19 @@ int SEND_CAN = 0;
 */
 uint32_t ADCBUF[5];
 
-int cmdEMS = 0; // Variable fantôme mais nécessaire
+int cmdSOL = 50; // Variable fantôme
+int cmdPOS = 50; 
 int cmdLRM = 50, cmdRRM = 50, cmdSFM = 50; // 0 à 100 Moteur gauche, droit, avant
 
 uint32_t VMG_mes = 0, VMD_mes = 0, per_vitesseG = 0, per_vitesseD = 0;
-
+//int	volatile i=0;
 /* Enable Moteurs */
 GPIO_PinState en_MARG = GPIO_PIN_RESET;
 GPIO_PinState en_MARD = GPIO_PIN_RESET;
-GPIO_PinState en_MAV  = GPIO_PIN_RESET;
+GPIO_PinState en_MAV = GPIO_PIN_RESET;
+GPIO_PinState en_POS = GPIO_PIN_RESET;
 /* Enable Solenoid */
-GPIO_PinState en_EMS  = GPIO_PIN_RESET; // en_EMS = 1 -> solenoid levé
+GPIO_PinState en_SOL = GPIO_PIN_RESET;
 
 /*********************************Informations rotation volant********************************/
 /* mesure angulaire potentiometre amplitudes volant +/- 17 % environ autour du centre        */
@@ -168,7 +170,6 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-	
 
   /* USER CODE END SysInit */
 
@@ -181,12 +182,13 @@ int main(void)
   MX_TIM4_Init();
   MX_ADC1_Init();
   MX_CAN_Init();
-	
   /* USER CODE BEGIN 2 */
-	
-	EM_GPIO_Init();
 
   /* Initialisations */
+	
+	/* Initialisation Solenoid */
+	SOL_GPIO_Init();
+	
 	
 	/*gestion systic 1Khz*/
 	
@@ -219,6 +221,9 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	
+	/* Initialisation Steering */
+	steering_Init();
+	
   while (1)
   {
   /* USER CODE END WHILE */
@@ -230,8 +235,15 @@ int main(void)
 			UPDATE_CMD_FLAG = 0;
 			
 			wheels_set_speed(en_MARD, en_MARG, cmdRRM, cmdLRM);
-			position_cmd (en_MAV, cmdSFM);
-			set_solenoid_position(en_EMS);
+			
+			// Assure la non-contradiction des commandes moteurs
+			if ((en_MAV == GPIO_PIN_SET) && (en_POS == GPIO_PIN_SET))
+			{
+				en_POS = GPIO_PIN_RESET;
+			}
+			steering_set_speed(en_MAV, cmdSFM);
+			steering_set_position(en_POS, cmdPOS);
+			set_solenoid_position(en_SOL);
 		}
 		
 		/* CAN */
@@ -251,7 +263,6 @@ int main(void)
 			data[7] = VMD_mes & 0xFF;
 			
 			CAN_Send(data, CAN_ID_MS);
-			
 		}
 		
   }
