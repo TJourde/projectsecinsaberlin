@@ -96,9 +96,8 @@ void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 2 */
 
-void EM_GPIO_Init (void)
+void SOL_GPIO_Init (void)
 {	
-	
   GPIO_InitTypeDef GPIO_InitStruct;
 	
 	/*Configure GPIO pins : PA6 (Solendoid CMD) */
@@ -106,8 +105,7 @@ void EM_GPIO_Init (void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	
-}
+	}
 
 /* USER CODE END 2 */
 
