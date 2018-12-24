@@ -8,10 +8,10 @@
 
 /* Private define ------------------------------------------------------------*/
 
-#define LEFT_MAX_SPEED_STEERING 65
-#define LEFT_MED_SPEED_STEERING 58
-#define RIGHT_MAX_SPEED_STEERING 35
-#define RIGHT_MED_SPEED_STEERING 42 
+#define LEFT_MAX_SPEED_STEERING 65 // Left steering max speed
+#define RIGHT_MAX_SPEED_STEERING 35 // Right steering max speed
+#define LEFT_MED_SPEED_STEERING 58 // Left steering medium speed
+#define RIGHT_MED_SPEED_STEERING 42 // Right steering medium speed
 #define NO_STEERING 50
 
 #define centre_volant (gauche_volant + droite_volant)/2 // valeur initiale = 2110
@@ -54,12 +54,7 @@ void steering_set_speed(GPIO_PinState en_steering, int speed){
 	}
 	
 	speed = 3200 * ( speed/ 100.0 );
-	
 	TIM1->CCR3 = speed;
-	
-	/*        Enable moteurs        */
-	/* GPIO_PIN_SET : activation    */
-	/* GPIO_PIN_RESET : pont ouvert */
 	HAL_GPIO_WritePin( GPIOC, GPIO_PIN_12, en_steering);  //PC12  AV
 }
 
@@ -72,7 +67,7 @@ void steering_set_position (GPIO_PinState en_steering, int msg_CAN){
 	int cpt_pos = steering_get_angle();
 	int cpt_centre, msg_corr, angle_diff;
 	
-	// Information correction
+	// Correction messages
 	if (msg_CAN > 100){msg_CAN = 100;} // limit the CAN msg to [0,100]
 	msg_corr = 6*(msg_CAN - CENTER_CMD_STEERING);
 	cpt_centre = cpt_pos - centre_volant;
