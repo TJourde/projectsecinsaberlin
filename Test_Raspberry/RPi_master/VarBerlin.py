@@ -30,6 +30,9 @@ Connect.clear()
 global Approach
 Approach = Event()
 Approach.clear()
+global ApproachComplete
+ApproachComplete = Event()
+ApproachComplete.clear()
 global TowingActive
 TowingActive = Event()
 TowingActive.clear()

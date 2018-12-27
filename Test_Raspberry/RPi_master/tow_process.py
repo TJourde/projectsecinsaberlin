@@ -7,6 +7,10 @@ import os
 import struct
 import socket
 
+# importing local threads
+import VarBerlin as VB
+
+# IDENTIFIANT MESSAGE
 US1 = 0x000
 US2 = 0x001
 MCM = 0x010 #cmde moteur
@@ -15,41 +19,33 @@ OM1 = 0x101
 OM2 = 0x102
 HALL= 0x103
 
-'''
-    - ULTRASON AVANT GAUCHE
-    HEADER : UFL PAYLOAD : ENTIER, DISTANCE EN CM
-    - ULTRASON AVANT CENTRE
-    HEADER : UFC PAYLOAD : ENTIER, DISTANCE EN CM
-    - ULTRASON AVANT DROITE
-    HEADER : UFR PAYLOAD : ENTIER, DISTANCE EN CM
-    - ULTRASON ARRIERE GAUCHE
-    HEADER : URL PAYLOAD : ENTIER, DISTANCE EN CM
-    - ULTRASON ARRIERE CENTRE
-    HEADER : URC PAYLOAD : ENTIER, DISTANCE EN CM
-    - ULTRASON ARRIERE DROITE
-    HEADER : URR PAYLOAD : ENTIER, DISTANCE EN CM
-    - POSITION VOLANT
-    HEADER : POS PAYLOAD : ENTIER, VALEUR BRUTE DU CAPTEUR
-    - VITESSE ROUE GAUCHE
-    HEADER : SWL PAYLOAD : ENTIER, *0.01RPM
-    - VITESSE ROUE DROITE
-    HEADER : SWR PAYLOAD : ENTIER, *0.01RPM
-    - NIVEAU DE LA BATTERIE
-    HEADER : BAT PAYLOAD : ENTIER, MV
-    - PITCH
-    HEADER : PIT PAYLOAD : FLOAT, ANGLE EN DEGRÉE
-    - YAW
-    HEADER : YAW PAYLOAD : FLOAT, ANGLE EN DEGRÉE
-    - ROLL
-    HEADER : ROL PAYLOAD : FLOAT, ANGLE EN DEGRÉE
+# COMMANDES SOLENOID
+SOLENOID_UP = 0xFF
+SOLENOID_DOWN = 0x00
 
-    - MODIFICATION DE LA VITESSE
-    HEADER : SPE PAYLOAD : VALEUR ENTRE 0 ET 50
-    - Control du volant (droite, gauche)
-    header : STE paylaod : left | right | stop
-    - Contra l de l'avancée
-    header : MOV payload : forward | backward | stop
-'''
+# COMMANDES ROUES
+NO_MOVE = 0xB1
+BACKING_FAST = 0xA0
+BACKING_SLOW = 0xAD
+WHEELS_CENTER = 0xB1
+cmd_mv = 0
+cmd_pos = 0
+
+# Données distance US/état capteur magnet
+measured_distance = -1
+magnet_detected = -1
+HOOKING_DIST = 30
+# Compteur et auxiliaire
+cpt_us_close = 0
+cpt_us_touch = 0
+cpt_magnet = 0
+nb_us_close = 3
+nb_us_touch = 3
+nb_magnet_detection = 3
+# Flag US/Magnet
+US_POS = 'away' # valeur: away | close | touch
+FLAG_MAGNET = False
+
 
 class Approach(Thread)
     
@@ -64,5 +60,63 @@ class Approach(Thread)
 
     def run(self):
         while True:
+            msg = self.bus.recv()
+            
+            # Check si l'utilisateur demande la manoeuvre d'approche/accroche du 2e véhicule
             if VB.Approach.isSet():
                 
+                # --------------------------------------
+                # PART 1 - Traitement des données et levée des flag
+                # --------------------------------------
+
+                # Données US
+                if msg.arbitration_id == US1:
+                    measured_distance = int.from_bytes(msg.data[4:6], byteorder='big')
+                    if measured_distance <= HOOKING_DIST:
+                        cpt_us_touch += 1
+                        if cpt_us_touch == nb_us_touch:
+                            US_POS = 'touch'
+                    elif measured_distance <=  HOOKING_DIST + 15 and  measured_distance >  HOOKING_DIST :
+                        cpt_us_touch = 0
+                        cpt_us_close += 1
+                        if cpt_us_close == nb_us_close:
+                            US_POS = 'close'
+                    else: 
+                        cpt_us_close = 0
+                        cpt_us_touch = 0
+                        US_POS = 'away'
+
+                # Données capteur magnétique
+                if msg.arbitration_id == HALL:
+                    magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
+                    if magnet_detected:
+                        cpt_magnet += 1
+                    else: 
+                        cpt_magnet
+                        FLAG_MAGNET = False
+                    if cpt_magnet == nb_magnet_detection:
+                        FLAG_MAGNET = True
+
+                # --------------------------------------
+                # PART 2 - Traitement des flag et envoi des ordres aux moteurs/solenoid
+                # --------------------------------------
+                if US_POS == 'touch' and FLAG_MAGNET:
+                    msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                    bus.send(msg)
+                    time.sleep(1)
+                    msg = can.Message(arbitration_id=FROM_PI,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                    bus.send(msg)
+                    VB.ApproachComplete.set()
+                elif US_POS == 'touch' and not(FLAG_MAGNET):
+                    print('Alignment error')
+                elif US_POS != 'touch' and FLAG_MAGNET:
+                    print('Distance detection error')
+                elif US_POS == 'close'
+                    print('Slowing down and opening solenoid')
+                    msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
+                    bus.send(msg)
+                elif US_POS == 'away'
+                    print('Car away, backing in progress')
+                    msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                    bus.send(msg)
+

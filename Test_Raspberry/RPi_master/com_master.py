@@ -149,6 +149,12 @@ class MySend(Thread):
                 size = self.conn.send(message.encode())
                 if size == 0: break
 
+            if VB.ApproachComplete.IsSet():
+                message = "TOW: ApproachComplete;"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+
+
 
 class MyReceive(Thread):
     def __init__(self,conn, bus):
@@ -239,7 +245,7 @@ class MyReceive(Thread):
                         self.enable = 1
                     if (payload == 'resume'):
                         print("Resume towing")
-
+                        VB.TowingActive.set()
                     if (payload == 'off'):
                         print("Stopping towing mode")
                         VB.Connect.clear() # closing communication with 2nd car
@@ -286,3 +292,4 @@ class MyReceive(Thread):
                     self.bus.send(msg)
 
         self.conn.close()
+        
