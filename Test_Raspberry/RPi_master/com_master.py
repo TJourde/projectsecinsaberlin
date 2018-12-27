@@ -5,6 +5,7 @@ import time
 import can
 import os
 import struct
+import socket
 
 #importing variables linked
 import VarBerlin as VB
@@ -60,6 +61,8 @@ HALL = 0x103
     header : MOV payload : forward | backward | stop
     - Controle de la position du Solenoid
     header : SOL payload : up | down
+    - Controle du mode "towing"
+    header : TOW payload : request | on | resume | off
 '''
 
 class MySend(Thread):
@@ -73,20 +76,7 @@ class MySend(Thread):
     def run(self):
         while True :
             
-            #US of towed car
-            if VN.US3Sem.acquire(False): #acquire semaphore without blocking
-                #print(self.getName(), 'access DistLidar')
-                message = "US3:" + str(VB.US3) + ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                VN.US3.release()
-            else:
-                print(self.getName(), 'can not access US of 2nd car')
-            
             msg = self.bus.recv()
-
-            #print(msg.arbitration_id, msg.data)
-            #st = ""
             
             if msg.arbitration_id == US1:
                 # ultrason avant gauche
@@ -159,8 +149,6 @@ class MySend(Thread):
                 size = self.conn.send(message.encode())
                 if size == 0: break
 
-            #if (st!=""):print(st)
-
 
 class MyReceive(Thread):
     def __init__(self,conn, bus):
@@ -168,16 +156,20 @@ class MyReceive(Thread):
         self.conn = conn
         self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
         self.speed_cmd = 0
+        self.position_cmd = 0
         self.move = 0
         self.turn = 0
         self.enable = 0
+        self.position = 0
         print(self.getName(), 'initialized')
 
     def run(self):
         self.speed_cmd = 0
+        self.position_cmd = 0
         self.move = 0
         self.turn = 0
         self.enable = 0
+        self.position = 0
 
         while True :
             data = self.conn.recv(1024)
@@ -201,6 +193,13 @@ class MyReceive(Thread):
                 if (header == 'SPE'):  # speed
                     self.speed_cmd = int(payload)
                     print("speed is updated to ", self.speed_cmd)
+
+                elif (header == 'POS'): # front wheels position
+                    self.position_cmd = int(payload)
+                    print("steering wheels position is updated to ", self.position_cmd)
+                    self.pos = 1
+                    self.enable = 1
+
                 elif (header == 'STE'):  # steering
                     if (payload == 'left'):
                         self.turn = -1
@@ -229,7 +228,8 @@ class MyReceive(Thread):
                         self.enable = 1
                 elif (header == 'TOW'):
                     if (payload == 'request'):
-                        print("Starting approach")
+                        print("Starting connection & approach")
+                        VB.Connect.set() # initiate connection
                         VB.Approach.set() # start approaching the 2nd car
                         self.enable = 0
                     if (payload == 'on'):
@@ -237,12 +237,13 @@ class MyReceive(Thread):
                         VB.Approach.clear() # stop approaching the 2nd car
                         VB.TowingActive.set() #start error detection
                         self.enable = 1
-                    if (payload == 'continue'):
-                        print("Continue towing")
+                    if (payload == 'resume'):
+                        print("Resume towing")
 
                     if (payload == 'off'):
                         print("Stopping towing mode")
-                        VN.TowingActive.clear() #stop error detection
+                        VB.Connect.clear() # closing communication with 2nd car
+                        VB.TowingActive.clear() #stop error detection
 
                 print(self.speed_cmd)
                 print(self.move)
@@ -251,11 +252,13 @@ class MyReceive(Thread):
 
                 #edition des commandes de mouvement si enabled
                 if self.enable:
+
                     #Speed Command
                     if self.move == 0:
                         cmd_mv = (50 + self.move*self.speed_cmd) & ~0x80
                     else:
                         cmd_mv = (50 + self.move*self.speed_cmd) | 0x80
+
                     #Steering Command
                     if self.turn == 0:
                         cmd_turn = 50
@@ -267,26 +270,19 @@ class MyReceive(Thread):
                             cmd_turn = 0
                         cmd_turn |= 0x80
                         #cmd_turn = 50 + self.turn*20 | 0x80
+                        
+                    #Steering position command
+                    if self.pos == 0:
+                        cmd_pos = (50 + self.position_cmd) & ~0x80
+                    else:
+                        cmd_pos = (50 + self.position_cmd) | 0x80
+
                     #Recap
                     print("mv:",cmd_mv,"turn:",cmd_turn)
                     #Create message
-                    msg = can.Message(arbitration_id=MCM,data=[cmd_mv, cmd_mv, cmd_turn, 0, 0, 0, 0, 0], extended_id=False)
+                    msg = can.Message(arbitration_id=MCM,data=[cmd_mv, cmd_mv, cmd_turn, cmd_pos, 0, 0, 0, 0], extended_id=False)
                     print(msg)
                     #Send message
                     self.bus.send(msg)
 
         self.conn.close()
-
-
-# Connection à la 2e voiture, récupèration les données envoyées et les transmission à l'appli principale
-class MyTransmitTow(Thread)
-    
-    def __init__(self,bus):
-        Thread.__init__(self)
-        self.bus = bus
-        print(self.getName(), 'initialized')
-
-    def run(self):
-        while True :
-            print("Attempt to connect to second car\n")
-
