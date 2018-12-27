@@ -24,9 +24,12 @@ global stop_all
 stop_all = Event()
 
 #Event for automatic towing
-global TowingActive
-TowingActive = Event()
-TowingActive.clear()
+global Connect
+Connect = Event()
+Connect.clear()
 global Approach
 Approach = Event()
 Approach.clear()
+global TowingActive
+TowingActive = Event()
+TowingActive.clear()
