@@ -26,8 +26,10 @@ class MyTowCom(Thread)
 
         while True :
 
+            # Check si l'utilisateur demande l'activation du mode TOWING
             if (VB.Connect.IsSet()):
 
+                # Check si aucune connection n'est en cours
                 if ((self.addr_tow == -1) and (self.waiting_connection == False)):
                     waiting_connection = True
                     try:
@@ -38,6 +40,7 @@ class MyTowCom(Thread)
                     except socket.error
                         print('Socket error while attempting to connect to second car')
 
+                # Check si l'adresse connectée est bien celle de la voiture rose, si oui récupère et transmet les données US 
                 elif (self.addr_tow == VB.IpRose):
                     self.waiting_connection = False
                     print('Connected to second car with address' + repr(self.addr_tow))
@@ -67,6 +70,7 @@ class MyTowCom(Thread)
                             print(self.getName(), ': conflict with another protocol, can not access front US of second car')
 
 
+                # Si une quelqu'un d'autre que la RPi rose se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle connection
                 elif (self.addr_tow != VB.IpRose):
                     self.waiting_connection = True
                     print('Connected to unknown device, with address ' + repr(self.addr_tow))
@@ -74,7 +78,10 @@ class MyTowCom(Thread)
                     self.conn_tow.close()
                     self.addr_tow = -1
 
+            # Si le mode TOWING est desactivé et qu'une connection est en cours, clôture de la connection
             elif (not(VB.Connect.IsSet()) and (addr_tow != -1)):
+                if (addr_tow == VB.IpRose):
+                    print('Towing mode OFF, ', self.getName(), ' closing connection with second car')
+                else: print('Towing mode OFF, ', self.getName(), ' closing connection with unknown user')
                 self.conn_tow.close()
                 self.addr_tow = -1
-                print('Towing mode OFF, ', self.getName(), ' closed connection with second car')
