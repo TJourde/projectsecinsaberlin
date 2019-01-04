@@ -10,6 +10,11 @@ import socket
 # importing local threads
 import VarBerlin as VB
 
+
+# ******************************
+# Variables locales
+# ******************************
+
 # IDENTIFIANT MESSAGE
 US1 = 0x000
 US2 = 0x001
@@ -47,15 +52,14 @@ US_POS = 'away' # valeur: away | close | touch
 FLAG_MAGNET = False
 
 
+# ******************************
+# THREAD 1 - Procédure d'approche
+# ******************************
 class Approach(Thread)
     
-     def __init__(self, bus):
+    def __init__(self, bus):
         Thread.__init__(self)
         self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
-        self.speed_cmd = 0
-        self.move = 0
-        self.turn = 0
-        self.enable = 0
         print(self.getName(), 'initialized')
 
     def run(self):
@@ -74,6 +78,7 @@ class Approach(Thread)
                     measured_distance = int.from_bytes(msg.data[4:6], byteorder='big')
                     if measured_distance <= HOOKING_DIST:
                         cpt_us_touch += 1
+                        # cpt_us_close = 0 ----> Non placé car permet de reculer et d'arriver en dessous de la HOOKING_DIST
                         if cpt_us_touch == nb_us_touch:
                             US_POS = 'touch'
                     elif measured_distance <=  HOOKING_DIST + 15 and  measured_distance >  HOOKING_DIST :
@@ -98,7 +103,7 @@ class Approach(Thread)
                         FLAG_MAGNET = True
 
                 # --------------------------------------
-                # PART 2 - Traitement des flag et envoi des ordres aux moteurs/solenoid
+                # PART 2 - Traitement des flag et envoi des commandes aux moteurs/solenoid
                 # --------------------------------------
                 if US_POS == 'touch' and FLAG_MAGNET:
                     msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
@@ -120,3 +125,25 @@ class Approach(Thread)
                     msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
 
+
+
+# ******************************
+# THREAD 2 - Détection d'erreur pendant le remorquage
+# ******************************
+class ErrorDetection(Thread)
+
+     def __init__(self, bus):
+        Thread.__init__(self)
+        self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
+        self.speed_cmd = 0
+        self.move = 0
+        self.turn = 0
+        self.enable = 0
+        print(self.getName(), 'initialized')
+
+    def run(self):
+        while True:
+            msg = self.bus.recv()
+            
+            # Check si l'utilisateur demande l'activation du remarquage (donc du mode détection d'erreurs)
+            if VB.TowingActive.isSet():

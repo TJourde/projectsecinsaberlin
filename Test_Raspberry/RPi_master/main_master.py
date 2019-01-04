@@ -30,15 +30,15 @@ PORT = 6666              # Arbitrary non-privileged port
 
 if __name__ == "__main__":
 
-    #Looking for IP address to "know" which network is used
-    ip = os.popen('hostname -I').read() #get chain with '[@IP] \n'
-    ip = ip[:len(ip)-2] #(suppress ' \n')
+    # Looking for IP address to "know" which network is used
+    ip = os.popen('hostname -I').read() # get chain with '[@IP] \n'
+    ip = ip[:len(ip)-2] # (suppress ' \n')
 
     # Only correct with the two cars black and pink
-    if ip == '10.105.1.17': #IOT network
+    if ip == '10.105.1.17': # IOT network
         VB.IpTowing = '10.105.0.55'
         VB.IpRose = '10.105.0.53'
-    elif ip == '192.168.137.149': #Berlin network
+    elif ip == '192.168.137.149': # Berlin network
         VB.IpTowing = '192.168.137.'
         VB.IpRose = '192.168.137.'
     
@@ -55,23 +55,33 @@ if __name__ == "__main__":
         VB.conn, VB.addr = s.accept()
         print('Connected with ' + repr(VB.addr))
 
-        #starting HMI Communications Threads
+        # starting HMI Communications Threads
         newreceive = MyReceive(VB.conn, bus)
         newreceive.start()
         newsend = MySend(VB.conn, bus)
         newsend.start()
 
-        #starting communication with pink car
-        newtowcom = MyTowCom(VB.conn,IpTowing)
+        # starting communication with pink car
+        newtowcom = MyTowCom(IpTowing)
         newtowcom.start
 
-    except KeyboardInterrupt:#To finish : Stop correctly all the threads
-        VB.stop_all.set()
-    	print("Shutting down all processes...")
+        # launching approach thread (starting procedure only if VB.Approach == True)
+        newapproach = Approach(bus)
+        newapproach.start
 
+        # launching error detection thread (starting procedure only if VB.TowingActive == True)
+
+
+    except KeyboardInterrupt: # To finish : Stop correctly all the threads
+        VB.stop_all.set()
+    	print("Shutting down all process...")
+    except socket.error
+    	print('Socket error')
+
+    newtowcom.join()
+    newapproach.join()
     newreceive.join()
     newsend.join()
-    newtowcom.join()
 
-    print("All processes are shut down")
+    print("All process are shut down")
     
