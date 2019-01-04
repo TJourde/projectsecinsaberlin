@@ -111,7 +111,7 @@ def listen_can(num,q):
                         cpt_ufc +=1
                         if cpt_ufc > 2:
                             flag_ufc = True
-                            print('ERROR UFC\n',time.strftime("%X")
+                            print('ERROR UFC\n',time.strftime("%X"))
                             msg = can.Message(arbitration_id=0x010,data=[0x00, 0x00, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00],extended_id=False)
                             bus.send(msg)
                     else:
