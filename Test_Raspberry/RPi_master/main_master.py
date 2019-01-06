@@ -70,18 +70,21 @@ if __name__ == "__main__":
         newapproach.start
 
         # launching error detection thread (starting procedure only if VB.TowingActive == True)
+        newdetect = ErrorDetection(bus)
+        newdetect.start
 
 
-    except KeyboardInterrupt: # To finish : Stop correctly all the threads
+    except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         VB.stop_all.set()
     	print("Shutting down all process...")
     except socket.error
     	print('Socket error')
 
-    newtowcom.join()
-    newapproach.join()
     newreceive.join()
     newsend.join()
+    newtowcom.join()
+    newapproach.join()
+    newdetect.join()
 
     print("All process are shut down")
     
