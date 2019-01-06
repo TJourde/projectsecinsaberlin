@@ -11,7 +11,11 @@ import VarBerlin as VB
 TCP_PORT = 9052
 BUFFER_SIZE = 20  # Normally 1024, but we want fast response
 
-# Connection à la 2e voiture, récupèration les données envoyées et les transmission à l'appli principale
+
+# *********************************************************
+# THREAD 1 - Connection à la 2e voiture, récupèration les données envoyées et les transmission à l'appli principale
+# *********************************************************
+
 class MyTowCom(Thread)
     
     def __init__(self,IpAddr):
@@ -24,10 +28,12 @@ class MyTowCom(Thread)
 
     def run(self):
 
+        VB.WriteUS3(-1)
+
         while True :
 
             # Check si l'utilisateur demande l'activation du mode TOWING
-            if (VB.Connect.IsSet()):
+            if (VB.Connect.is_set()):
 
                 # Check si aucune connection n'est en cours
                 if ((self.addr_tow == -1) and (self.waiting_connection == False)):
@@ -48,26 +54,24 @@ class MyTowCom(Thread)
                     data = self.conn.recv(BUFFER_SIZE)
                     if not data:
                         print("No data: lost connection with second car")
+                        self.addr_tow = -1
+                        VB.WriteUS3(-1)
+
 
                     if "UFC_slave" in data.decode("utf-8"): # look for the identifier in received msg
-                        if VN.US3Sem.acquire(False): # acquire semaphore without blocking
                             data = str(data)
                             data = data[2:len(data)-1]
                             data = data.split(';')
                             header_slave, payload_slave = data.split(':')
 
-                            # retrieve message
-                            US3 = int(payload_slave)
-                            VN.US3.release() # release the semaphore because no longer needed
+                            VB.WriteUS3(payload_slave)
 
                             # send it to main application
-                            message = "UFC_slave:" + str(playload_slave) + ";"
+                            message = "UFC_slave:" + str(payload_slave) + ";"
                             size = self.conn.send(message.encode())
                             if size == 0: 
                                 break
                                 print(self.getName(),': error while sending data to main application')
-                        else:
-                            print(self.getName(), ': conflict with another protocol, can not access front US of second car')
 
 
                 # Si une quelqu'un d'autre que la RPi rose se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle connection
@@ -77,12 +81,14 @@ class MyTowCom(Thread)
                     print('Closing communication channel with this address')
                     self.conn_tow.close()
                     self.addr_tow = -1
+                    VB.WriteUS3(-1)
 
             # Si le mode TOWING est desactivé et qu'une connection est en cours, clôture de la connection
-            elif (not(VB.Connect.IsSet()) and (addr_tow != -1)):
-                if (addr_tow == VB.IpRose):
+            elif (not(VB.Connect.is_set()) and (self.addr_tow != -1)):
+                if (self.addr_tow == VB.IpRose):
                     print('Towing mode OFF, ', self.getName(), ' closing connection with second car')
                 else: print('Towing mode OFF, ', self.getName(), ' closing connection with unknown user')
                 self.conn_tow.close()
                 self.addr_tow = -1
+                VB.WriteUS3(-1)
                 

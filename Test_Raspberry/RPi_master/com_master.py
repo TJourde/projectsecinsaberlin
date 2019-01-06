@@ -65,6 +65,10 @@ HALL = 0x103
     header : TOW payload : request | on | resume | off
 '''
 
+# *********************************************************
+# THREAD 1 - Récupération des données du CAN ou interne à la RPi, envoi à l'application
+# *********************************************************
+
 class MySend(Thread):
 
     def __init__(self, conn, bus):
@@ -149,11 +153,24 @@ class MySend(Thread):
                 size = self.conn.send(message.encode())
                 if size == 0: break
 
-            if VB.ApproachComplete.IsSet():
+
+            # Valeurs propres au towing
+            if VB.ApproachComplete.is_set():
                 message = "TOW: ApproachComplete;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
+            if VB.ProbSem.acquire():
+                message = "TPB: " + VB.SourceProb
+                size = self.conn.send(message.encode())
+                if size == 0: break
+                VB.ProbSem.release()
 
+
+
+
+# *********************************************************
+# THREAD 2 - Réception des données de l'application, envoi des commandes sur le CAN + modification variables internes
+# *********************************************************
 
 
 class MyReceive(Thread):
@@ -241,15 +258,23 @@ class MyReceive(Thread):
                     if (payload == 'on'):
                         print("Starting towing mode")
                         VB.Approach.clear() # stop approaching the 2nd car
-                        VB.TowingActive.set() #start error detection
+                        VB.TowingActive.set() # start error detection
                         self.enable = 1
                     if (payload == 'resume'):
                         print("Resume towing")
+                        VB.MajorPb.clear()
+                        VB.MinorPb.clear()
                         VB.TowingActive.set()
                     if (payload == 'off'):
                         print("Stopping towing mode")
                         VB.Connect.clear() # closing communication with 2nd car
-                        VB.TowingActive.clear() #stop error detection
+                        VB.TowingActive.clear() # stop error detection
+                        VB.MajorPb.clear()
+                        VB.MinorPb.clear()
+
+                # In case of an error detection while towing
+                if VB.TowingActive.is_set() and (VB.MajorPb.is_set() or VB.MinorPb.is_set()):
+                    enable = 0
 
                 print(self.speed_cmd)
                 print(self.move)
@@ -284,7 +309,7 @@ class MyReceive(Thread):
                         cmd_pos = (50 + self.position_cmd) | 0x80
 
                     #Recap
-                    print("mv:",cmd_mv,"turn:",cmd_turn)
+                    print("mv:",cmd_mv,"turn:",cmd_turn,"pos:",cmd_pos)
                     #Create message
                     msg = can.Message(arbitration_id=MCM,data=[cmd_mv, cmd_mv, cmd_turn, cmd_pos, 0, 0, 0, 0], extended_id=False)
                     print(msg)
