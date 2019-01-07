@@ -13,7 +13,7 @@ BUFFER_SIZE = 20  # Normally 1024, but we want fast response
 
 
 # *********************************************************
-# THREAD 1 - Connection à la 2e voiture, récupèration les données envoyées et les transmission à l'appli principale
+# THREAD 3 - Connection à la 2e voiture, récupèration les données envoyées et les transmission à l'appli principale
 # *********************************************************
 
 class MyTowCom(Thread)
@@ -78,7 +78,7 @@ class MyTowCom(Thread)
                 elif (self.addr_tow != VB.IpRose):
                     self.waiting_connection = True
                     print('Connected to unknown device, with address ' + repr(self.addr_tow))
-                    print('Closing communication channel with this address')
+                    print('Closing communication channel')
                     self.conn_tow.close()
                     self.addr_tow = -1
                     VB.WriteUS3(-1)

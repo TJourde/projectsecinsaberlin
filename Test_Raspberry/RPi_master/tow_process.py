@@ -36,25 +36,9 @@ WHEELS_CENTER = 0xB1
 cmd_mv = 0
 cmd_pos = 0
 
-# Données distance US/état capteur magnet
-measured_distance = -1
-magnet_detected = -1
-HOOKING_DIST = 30
-LIMIT_DIST = 35
-# Compteur et auxiliaire
-cpt_us_close = 0
-cpt_us_touch = 0
-cpt_magnet = 0
-nb_us_close = 3
-nb_us_touch = 3
-nb_magnet_detection = 3
-# Flag US/Magnet
-US_POS = 'away' # valeur: away | close | touch
-FLAG_MAGNET = False
-
 
 # ******************************
-# THREAD 1 - Procédure d'approche
+# THREAD 4 - Procédure d'approche
 # ******************************
 class Approach(Thread)
     
@@ -62,6 +46,8 @@ class Approach(Thread)
         Thread.__init__(self)
         self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
 
+        self.measured_distance = -1
+        self.magnet_detected = -1
         # Compteurs et valeurs limites
         self.cpt_us_close = 0
         self.cpt_us_touch = 0
@@ -77,6 +63,8 @@ class Approach(Thread)
 
     def run(self):
 
+        self.measured_distance = -1
+        self.magnet_detected = -1
         self.cpt_us_close = 0
         self.cpt_us_touch = 0
         self.cpt_magnet = 0
@@ -98,14 +86,14 @@ class Approach(Thread)
 
                 # Données US
                 if msg.arbitration_id == US1:
-                    measured_distance = int.from_bytes(msg.data[4:6], byteorder='big')
-                    if measured_distance <= HOOKING_DIST:
+                    self.measured_distance = int.from_bytes(msg.data[4:6], byteorder='big')
+                    if self.measured_distance <= HOOKING_DIST:
                         self.cpt_us_touch += 1
                         # self.cpt_us_close = 0 ----> Non placé car permet de reculer et d'arriver en dessous de la HOOKING_DIST
                         if self.cpt_us_touch == self.nb_us_touch:
                             self.cpt_us_close = 0
                             self.US_POS = 'touch'
-                    elif measured_distance > HOOKING_DIST and measured_distance <= HOOKING_DIST + 15:
+                    elif self.measured_distance > HOOKING_DIST and self.measured_distance <= HOOKING_DIST + 15:
                         self.cpt_us_touch = 0
                         self.cpt_us_close += 1
                         if self.cpt_us_close == self.nb_us_close:
@@ -117,8 +105,8 @@ class Approach(Thread)
 
                 # Données capteur magnétique
                 if msg.arbitration_id == HALL:
-                    magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
-                    if magnet_detected:
+                    self.magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
+                    if self.magnet_detected:
                         self.cpt_magnet += 1
                     else:
                         self.FLAG_MAGNET = False
@@ -151,7 +139,7 @@ class Approach(Thread)
 
 
 # ******************************
-# THREAD 2 - Détection d'erreur pendant le remorquage
+# THREAD 5 - Détection d'erreur pendant le remorquage
 # ******************************
 class ErrorDetection(Thread)
 
@@ -174,14 +162,34 @@ class ErrorDetection(Thread)
         self.limit_cm = 3
         self.limit_multi = 3
         # Flag US/Magnet
-        self.trame = False
         self.FLAG_US = False
         self.FLAG_US3 = False
         self.FLAG_CM = False
+        # Problem source + explanation
+        self.Prob = -1
+        self.Expl = -1
 
         print(self.getName(), 'initialized')
 
     def run(self):
+
+        self.distance_us = -1
+        self.distance_us3 = -1
+        self.magnet_detected = -1
+        self.cpt_us = 0
+        self.cpt_us3 = 0
+        self.cpt_cm = 0
+        self.cpt_multi = 0
+        self.limit_us = 3
+        self.limit_us3 = 3
+        self.limit_cm = 3
+        self.limit_multi = 3
+        self.FLAG_US = False
+        self.FLAG_US3 = False
+        self.FLAG_CM = False
+        self.Prob = -1
+        self.Expl = -1
+
         while True:
             msg = self.bus.recv()
             
@@ -200,39 +208,78 @@ class ErrorDetection(Thread)
 
                     # Données US
                     if msg.arbitration_id == US1:
-                        distance_us = int.from_bytes(msg.data[4:6], byteorder='big')
-                        if distance_us > LIMIT_DIST:
-                            cpt_us += 1
-                        else: cpt_us = 0
-                        if cpt_us == limit_us:
-                            FLAG_US = True
+                        self.distance_us = int.from_bytes(msg.data[4:6], byteorder='big')
+                        if self.distance_us > LIMIT_DIST:
+                            self.cpt_us += 1
+                        else: self.cpt_us = 0
+                        if self.cpt_us == self.limit_us:
+                            self.FLAG_US = True
+                            print("Error US - ", time.strftime("%X"))
 
                     # Données US3
                     self.distance_us3 = VB.US3
-                    if distance_us3 > LIMIT_DIST:
-                        cpt_us3 += 1
-                    else: cpt_us3 = 0
-                    if cpt_us3 == limit_us3:
-                        FLAG_US3 = True
+                    if self.distance_us3 > LIMIT_DIST:
+                        self.cpt_us3 += 1
+                    else: self.cpt_us3 = 0
+                    if self.cpt_us3 == self.limit_us3:
+                        self.FLAG_US3 = True
+                        print("Error US3 - ", time.strftime("%X"))
 
                     # Données CM
                     if msg.arbitration_id == HALL:
-                        magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
-                        if magnet_detected == 0:
-                            cpt_cm += 1
-                        else: cpt_cm = 0
-                        if cpt_cm == limit_cm:
-                            FLAG_CM = True
+                        self.magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
+                        if self.magnet_detected == 0:
+                            self.cpt_cm += 1
+                        else: self.cpt_cm = 0
+                        if self.cpt_cm == self.limit_cm:
+                            self.FLAG_CM = True
+                            print("Error CM - ", time.strftime("%X"))
 
                     # --------------------------------------
                     # PART 2 - Traitement des flag
                     # --------------------------------------
-                    if FLAG_CM or FLAG_US or FLAG_US3:
+                    if self.FLAG_CM or self.FLAG_US or self.FLAG_US3:
+                        VB.TowingActive.clear()
                         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
                         self.bus.send(msg)
-                        cpt_multi += 1
+                        self.cpt_multi += 1
 
-                    if cpt_multi == limit_multi:
-                        if FLAG_CM and FLAG_US and FLAG_US3:
+                    # Détermine le message à envoyer en fonction du problème rencontré
+                    if self.cpt_multi == self.limit_multi:
+                        if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
+                            self.Prob = "CM && US && US3"
+                            self.Expl = "Décrochage de la 2e voiture"
+                        elif self.FLAG_CM and (self.FLAG_US or self.FLAG_US3):
+                            self.Prob = "CM && (US || US3)"
+                            self.Expl = "Décrochage de la 2e voiture + capteur US défaillant"
+                        elif self.FLAG_CM:
+                            self.Prob = "CM"
+                            self.Expl = "Capteur magnétique défaillant, 2e voiture toujours accrochée"
+                        elif self.FLAG_US and self.FLAG_US3:
+                            self.Prob = "US && US3"
+                            self.Expl = "Décrochage de la 2e voiture + capteur magnétique défaillant OU barre cassée"
+                        elif self.FLAG_US:
+                            self.Prob = "US"
+                            self.Expl = "US défaillant sur la 1e voiture"
+                        elif self.FLAG_US3:
+                            self.Prob = "US3"
+                            self.Expl = "US défaillant sur la 2e voiture"
+
+                        print("Probleme rencontre: " + self.Prob)
 
 
+                        # --------------------------------------
+                        # PART 3 - Modification des variables à envoyer à l'application et envoi d'un mail d'alerte en cas de panne
+                        # --------------------------------------
+                   
+                        # Ecriture dans la variable "SourceProb" utilisée pour l'envoi du message à l'appli
+                        VB.WriteSourceProb(self.Prob)
+
+                        if not(self.FLAG_CM and self.FLAG_US and self.FLAG_US3): # En cas de probleme not corrigible, envoie un mail et arrete le thread
+                            mail_subjet = "Unsolvable problem during towing"
+                            mail_body = "Origin of the issue : " + self.Prob + "\nPossible explanation : " + self.Expl
+                            os.system(echo mail_body | mail -s mail_subjet teamberlingei@gmail.com)
+                            break
+                        else: # Sinon, réinitialisation des variables en cas de décrochage normal pour le prochain remorquage
+                            self.Prob = -1
+                            self.Expl = -1

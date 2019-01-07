@@ -21,7 +21,7 @@ US3 = -1
 
 #Semaphore and variable to transmit source of the problem
 global ProbSem
-US3Sem = BoundedSemaphore(1)
+ProbSem = BoundedSemaphore(1)
 global SourceProb
 SourceProb = -1
 
@@ -48,7 +48,6 @@ TowingActive.clear()
 # *********************************************************
 # FUNCTION 1 - Ecrit la valeur en argument dans la variable "US3" (définie au-dessus)
 # *********************************************************
-
 def WriteUS3(protocol, value):
     if US3Sem.acquire(False):
         US3 = value
@@ -60,7 +59,6 @@ def WriteUS3(protocol, value):
 # *********************************************************
 # FUNCTION 2 - Ecrit la valeur en argument dans la variable "SourceProb" avec blocage (définie au-dessus)
 # *********************************************************
-
 def WriteSourceProb(value):
 	await ProbSem.acquire()
 	SourceProb = value
