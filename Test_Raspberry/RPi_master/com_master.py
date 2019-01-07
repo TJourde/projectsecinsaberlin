@@ -156,11 +156,11 @@ class MySend(Thread):
 
             # Valeurs propres au towing
             if VB.ApproachComplete.is_set():
-                message = "TOW: ApproachComplete;"
+                message = "TOWSTATE: ApproachComplete;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
             if VB.ProbSem.acquire():
-                message = "TPB: " + VB.SourceProb
+                message = "ERR: " + VB.SourceProb
                 size = self.conn.send(message.encode())
                 if size == 0: break
                 VB.ProbSem.release()
@@ -222,7 +222,6 @@ class MyReceive(Thread):
                     print("steering wheels position is updated to ", self.position_cmd)
                     self.pos = 1
                     self.enable = 1
-
                 elif (header == 'STE'):  # steering
                     if (payload == 'left'):
                         self.turn = -1
@@ -262,18 +261,14 @@ class MyReceive(Thread):
                         self.enable = 1
                     if (payload == 'resume'):
                         print("Resume towing")
-                        VB.MajorPb.clear()
-                        VB.MinorPb.clear()
                         VB.TowingActive.set()
                     if (payload == 'off'):
                         print("Stopping towing mode")
                         VB.Connect.clear() # closing communication with 2nd car
                         VB.TowingActive.clear() # stop error detection
-                        VB.MajorPb.clear()
-                        VB.MinorPb.clear()
 
                 # In case of an error detection while towing
-                if VB.TowingActive.is_set() and (VB.MajorPb.is_set() or VB.MinorPb.is_set()):
+                if VB.ProbSem.acquire() and VB.TowingActive.is_set() and VB.SourceProb != -1:
                     enable = 0
 
                 print(self.speed_cmd)
@@ -304,9 +299,9 @@ class MyReceive(Thread):
                         
                     #Steering position command
                     if self.pos == 0:
-                        cmd_pos = (50 + self.position_cmd) & ~0x80
+                        cmd_pos = self.position_cmd & ~0x80
                     else:
-                        cmd_pos = (50 + self.position_cmd) | 0x80
+                        cmd_pos = self.position_cmd | 0x80
 
                     #Recap
                     print("mv:",cmd_mv,"turn:",cmd_turn,"pos:",cmd_pos)
