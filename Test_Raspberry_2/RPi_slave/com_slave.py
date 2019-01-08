@@ -21,7 +21,9 @@ BUFFER_SIZE = 20
 global IpPink
 global IpBlack
 global Connection_ON
+Connection_ON = False
 global conn
+conn = -1
 
 # Search own IP address to know which network it's on
 IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
@@ -30,7 +32,7 @@ if IpPink == '10.105.0.53': # IOT network
     IpBlack = '10.105.0.55'
 elif IpPink == '192.168.137.12': # Berlin network
     IpBlack = '192.168.137.201'
-    
+
 # *********************************************************
 # THREAD 1 - Connection à la voiture noire
 # *********************************************************
@@ -50,7 +52,7 @@ class MyComSlave(Thread):
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.bind((IpPink,TCP_PORT))
                     s.listen()
-                    conn, self.addr = sock.accept()
+                    conn, self.addr = s.accept()
                 except socket.error:
                     conn.close()
                     print('Socket error while receiving connection from black car')
