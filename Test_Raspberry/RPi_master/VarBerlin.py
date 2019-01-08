@@ -25,7 +25,7 @@ US3 = -1
 global CodeSem
 CodeSem = BoundedSemaphore(1)
 global CodeErreur
-CodeErreur = -1
+CodeErreur = ''
 
 #Signal all stop
 global stop_all

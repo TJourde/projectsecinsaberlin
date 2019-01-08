@@ -62,7 +62,7 @@ if __name__ == "__main__":
         newsend.start()
 
         # starting communication with pink car
-        newtowcom = MyTowCom(IpTowing)
+        newtowcom = MyTowCom(VB.IpTowing)
         newtowcom.start
 
         # launching approach thread (starting procedure only if VB.Approach == True)
