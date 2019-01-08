@@ -8,6 +8,7 @@ import socket
 #importing towing variables
 import VarBerlin as VB
 
+from com_slave import *
 
 #Looking for IP address to "know" which network is used
 ip = os.popen('hostname -I').read() #get chain with '[@IP] \n'
@@ -24,6 +25,7 @@ BUFFER_SIZE = 20
 
 try:
     bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
+    print('Connected to bus can')
 except OSError:
     print('Cannot find PiCAN board.')
     exit()
@@ -33,7 +35,7 @@ try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((VB.IpTowing,TCP_PORT))
     print('Connected with towing car with address ', VB.addr)
-except socket.error():
+except socket.error:
 	print('Connection error')
 except KeyboardInterrupt:#To finish : Stop correctly all the threads
     VN.stop_all.set()
