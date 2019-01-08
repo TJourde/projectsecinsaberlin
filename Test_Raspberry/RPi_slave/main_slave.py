@@ -41,9 +41,9 @@ except KeyboardInterrupt:#To finish : Stop correctly all the threads
     VN.stop_all.set()
 
 
-newreceiveslave = MyReceiveSlave(conn, bus)
+newreceiveslave = MyReceiveSlave(s, bus)
 newreceiveslave.start()
-newsendslave = MySendSlave(conn, bus)
+newsendslave = MySendSlave(s, bus)
 newsendslave.start()
 
 newreceiveslave.join()

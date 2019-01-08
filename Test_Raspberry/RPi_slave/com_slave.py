@@ -59,9 +59,9 @@ OM2 = 0x102
 
 class MySendSlave(Thread):
 
-    def __init__(self,conn, bus):
+    def __init__(self,socket, bus):
         Thread.__init__(self)
-        self.conn = conn
+        self.socket = socket
         self.bus = bus
         print(self.getName(), 'MySend initialized')
 
@@ -73,23 +73,23 @@ class MySendSlave(Thread):
                 # ultrason arriere gauche
                 distance = int.from_bytes(msg.data[0:2], byteorder='big')
                 message = "URL_slave:" + str(distance)+ ";"
-                #size = self.conn.send(message.encode())
+                #size = self.socket.send(message.encode())
                 #if size == 0: break
                 # ultrason arriere droit
                 distance = int.from_bytes(msg.data[2:4], byteorder='big')
                 message = "URR_slave:" + str(distance)+ ";"
-                #size = self.conn.send(message.encode())
+                #size = self.socket.send(message.encode())
                 #if size == 0: break
                 # ultrason avant centre
                 distance = int.from_bytes(msg.data[4:6], byteorder='big')
                 message = "UFC_slave:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
+                size = self.socket.send(message.encode())
                 if size == 0: break
 
 class MyReceiveSlave(Thread):
-    def __init__(self,conn, bus):
+    def __init__(self,socket, bus):
         Thread.__init__(self)
-        self.conn = conn
+        self.socket = socket
         self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
 
         self.speed_cmd = 0
@@ -106,4 +106,4 @@ class MyReceiveSlave(Thread):
 
         while True :
             self.speed_cmd = 0
-        conn.close()
+        socket.close()
