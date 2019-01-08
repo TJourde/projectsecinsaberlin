@@ -75,9 +75,9 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         VB.stop_all.set()
-    	print("Shutting down all process...")
+        print('Shutting down all process...')
     except socket.error:
-    	print('Socket error')
+        print('Socket error')
 
     newreceive.join()
     newsend.join()
