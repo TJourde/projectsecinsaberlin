@@ -20,7 +20,7 @@ class MyTowCom(Thread):
     
     def __init__(self,IpAddr):
         Thread.__init__(self)
-        print(self.getName(), 'initialized')
+        print(self.getName(), 'MyTowCom initialized')
         self.conn_tow = -1
         self.addr_tow = -1
         self.waiting_connection = False
