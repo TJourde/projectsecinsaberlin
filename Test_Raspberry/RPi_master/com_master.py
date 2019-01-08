@@ -198,8 +198,8 @@ class MyReceive(Thread):
         self.move = 0
         self.turn = 0
         self.enable = 0
-        self.position = 0
-
+        self.position = 0   
+        
         while True :
             data = self.conn.recv(1024)
             data = str(data)

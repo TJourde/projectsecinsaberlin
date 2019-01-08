@@ -51,7 +51,7 @@ TowingActive.clear()
 # FUNCTION 1 - Ecrit la valeur en argument dans la variable "US3" (définie au-dessus)
 # *********************************************************
 def WriteUS3(dispo, value):
-    await US3Sem.acquire():
+    await US3Sem.acquire(False):
     US3Dispo = dispo
     US3 = value
     US3.release() # release the semaphore because no longer needed
@@ -61,27 +61,27 @@ def WriteUS3(dispo, value):
 # FUNCTION 2 - Retourne True si variable US3 disponible
 # *********************************************************
 def US3Dispo()
-	await US3Sem.acquire()
-	Dispo = US3Dispo
-	US3Sem.release()
-	return Dispo
+    await US3Sem.acquire(False)
+    Dispo = US3Dispo
+    US3Sem.release()
+    return Dispo
 
 
 # *********************************************************
 # FUNCTION 3 - Retourne la valeur contenue dans US3 (suppose qu'une valeur est dispo)
 # *********************************************************
 def ReadUS3()
-	await US3Sem.acquire()
-	USpink = US3
-	US3Dispo = False
-	US3Sem.release()
-	return USpink
+    await US3Sem.acquire(False)
+    USpink = US3
+    US3Dispo = False
+    US3Sem.release()
+    return USpink
 
 
 # *********************************************************
 # FUNCTION 4 - Ecrit la valeur en argument dans la variable "SourceProb" avec blocage (définie au-dessus)
 # *********************************************************
 def WriteSourceProb(value):
-	await ProbSem.acquire()
-	SourceProb = value
-	ProbSem.release()
+    await ProbSem.acquire(False)
+    SourceProb = value
+    ProbSem.release()
