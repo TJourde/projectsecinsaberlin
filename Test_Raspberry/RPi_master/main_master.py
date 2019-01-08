@@ -35,13 +35,11 @@ if __name__ == "__main__":
     ip = ip[:len(ip)-2] # (suppress ' \n')
 
     # Only correct with the two cars black and pink
-    if ip == '10.105.1.17': # IOT network
-        VB.IpTowing = '10.105.0.55'
+    if ip == '10.105.0.55': # IOT network
         VB.IpRose = '10.105.0.53'
-    elif ip == '192.168.137.149': # Berlin network
-        VB.IpTowing = '192.168.137.201'
+    elif ip == '192.168.137.201': # Berlin network
         VB.IpRose = '192.168.137.12'
-    
+
     try:
         bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
     except OSError:
