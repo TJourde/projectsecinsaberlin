@@ -40,7 +40,7 @@ cmd_pos = 0
 # ******************************
 # THREAD 4 - Procédure d'approche
 # ******************************
-class Approach(Thread)
+class Approach(Thread):
     
     def __init__(self, bus):
         Thread.__init__(self)
@@ -80,7 +80,7 @@ class Approach(Thread)
             # Check si l'utilisateur demande la manoeuvre d'approche/accroche du 2e véhicule
             if VB.Approach.is_set():
                 
-                
+
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
                 # --------------------------------------
@@ -143,7 +143,7 @@ class Approach(Thread)
 # ******************************
 # THREAD 5 - Détection d'erreur pendant le remorquage
 # ******************************
-class ErrorDetection(Thread)
+class ErrorDetection(Thread):
 
     def __init__(self, bus):
         Thread.__init__(self)
