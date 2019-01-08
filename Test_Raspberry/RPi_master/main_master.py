@@ -73,11 +73,10 @@ if __name__ == "__main__":
         newdetect = ErrorDetection(bus)
         newdetect.start
 
-
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         VB.stop_all.set()
     	print("Shutting down all process...")
-    except socket.error
+    except socket.error:
     	print('Socket error')
 
     newreceive.join()
