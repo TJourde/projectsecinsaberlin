@@ -155,7 +155,7 @@ class MySend(Thread):
             elif msg.arbitration_id == HALL:
                 # capteur magnétique
                 magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
-                message = "MAG:" + str(magnetic_sensor[0])+ ";"
+                message = "MAG:" + str(magnetic_sensor)+ ";"
                 size = self.conn.send(message.encode())
                 if size == 0: break
 
@@ -189,7 +189,7 @@ class MyReceive(Thread):
         self.move = 0
         self.turn = 0
         self.enable = 0
-        self.position = 0
+        self.pos = 0
         print(self.getName(), 'MyReceive initialized')
 
     def run(self):
@@ -198,7 +198,7 @@ class MyReceive(Thread):
         self.move = 0
         self.turn = 0
         self.enable = 0
-        self.position = 0   
+        self.pos = 0   
 
         while True :
             data = self.conn.recv(1024)
