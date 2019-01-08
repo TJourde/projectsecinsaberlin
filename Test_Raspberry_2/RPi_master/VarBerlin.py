@@ -1,5 +1,6 @@
 # coding: utf-8
 from threading import *
+import os
 
 
 #IP of the towed vehicle
@@ -12,14 +13,10 @@ IpBlack = IpBlack[:len(IpBlack)-2] # (suppress ' \n')
 
 # Only correct with the two cars black and pink
 if IpBlack == '10.105.0.55': # IOT network
-    VB.IpRose = '10.105.0.53'
+    IpPink = '10.105.0.53'
 elif IpBlack == '192.168.137.201': # Berlin network
-    VB.IpRose = '192.168.137.12'
-
-
-#Communication variables
-global conn
-global addr
+    IpPink = '192.168.137.12'
+    
 
 #Semaphore and variable to transmit front US from 2nd car
 global US3Sem
@@ -47,9 +44,9 @@ global ConnectComplete
 ConnectComplete = Event()
 ConnectComplete.clear()
 #Events for approaching and hooking
-global Approach
-Approach = Event()
-Approach.clear()
+global TryApproach
+TryApproach = Event()
+TryApproach.clear()
 global ApproachComplete
 ApproachComplete = Event()
 ApproachComplete.clear()

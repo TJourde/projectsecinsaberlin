@@ -28,24 +28,26 @@ class MyTowCom(Thread):
     def run(self):
 
         VB.WriteUS3(False,-1)
-
         while True :
-
+            
+            if VB.stop_all.is_set():break
+            
             # Check si l'utilisateur demande l'activation du mode TOWING
             if VB.TryConnect.is_set() and not(VB.ConnectComplete.is_set()):
                 try:
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.connect((VB.IpPink,TCP_PORT))
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.connect((VB.IpPink,TCP_PORT))
                     print('Connect to pink car with address ' + VB.IpPink)
                     VB.ConnectComplete.set()
                     VB.TryConnect.clear()
                 except socket.error:
                     print('Socket error while attempting to connect to pink car')
-                    VB.ConnectComplete.set()
-
+                    VB.ConnectComplete.clear()
             # Réception des données et écriture dans variable US3
-            if VB.ConnectComplete.is_set():
-                data = sock.recv(BUFFER_SIZE)
+            elif not(VB.ConnectComplete.is_set() and VB.TryConnect.is_set() and VB.TowingActive.is_set()):
+                s.close()
+            elif VB.ConnectComplete.is_set():
+                data = s.recv(BUFFER_SIZE)
                 if not data:
                     print("No data: lost connection with second car")
                     VB.WriteUS3(False,-1)
@@ -60,7 +62,7 @@ class MyTowCom(Thread):
 
                         # send it to main application
                         message = "UFC_slave:" + str(payload_slave) + ";"
-                        size = sock.send(message.encode())
+                        size = s.send(message.encode())
                         if size == 0: 
                             break
                             print(self.getName(),': error while sending data to IHM')

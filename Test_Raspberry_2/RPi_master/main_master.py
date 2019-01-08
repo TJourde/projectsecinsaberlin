@@ -1,9 +1,5 @@
 # coding: utf-8
 
-'''
-# -- change the ip addresses of the BERLIN NETWORK
-'''
-
 from threading import *
 import time
 import can
@@ -42,13 +38,13 @@ if __name__ == "__main__":
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((HOST, PORT))
         s.listen(1)
-        VB.conn, VB.addr = s.accept()
-        print('Connected with ' + repr(VB.addr))
+        conn, addr = s.accept()
+        print('Connected with ' + repr(addr))
 
         # starting HMI Communications Threads
-        newreceive = MyReceive(VB.conn, bus)
+        newreceive = MyReceive(conn, bus)
         newreceive.start()
-        newsend = MySend(VB.conn, bus)
+        newsend = MySend(conn, bus)
         newsend.start()
 
         # starting communication with pink car
@@ -75,7 +71,7 @@ if __name__ == "__main__":
     newapproach.join()
     newdetect.join()
 
-    VB.conn.close()
+    conn.close()
 
     print("All process are shut down")
     
