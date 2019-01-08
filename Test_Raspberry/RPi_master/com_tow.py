@@ -28,7 +28,7 @@ class MyTowCom(Thread):
 
     def run(self):
 
-        VB.WriteUS3(,False,-1)
+        VB.WriteUS3(False,-1)
 
         while True :
 
@@ -43,7 +43,7 @@ class MyTowCom(Thread):
                         s.bind((VB.IpTowing, TCP_PORT))
                         s.listen()
                         self.conn_tow, self.addr_tow = s.accept()
-                    except socket.error
+                    except socket.error:
                         print('Socket error while attempting to connect to second car')
 
                 # Check si l'adresse connectée est bien celle de la voiture rose, si oui récupère et transmet les données US 
