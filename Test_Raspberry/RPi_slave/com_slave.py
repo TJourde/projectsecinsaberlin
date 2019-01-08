@@ -57,7 +57,7 @@ OM2 = 0x102
 
 
 
-class MySend(Thread):
+class MySendSlave(Thread):
 
     def __init__(self,conn, bus):
         Thread.__init__(self)
@@ -145,7 +145,7 @@ class MySend(Thread):
 '''
 
 
-class MyReceive(Thread):
+class MyReceiveSlave(Thread):
     def __init__(self,conn, bus):
         Thread.__init__(self)
         self.conn = conn
