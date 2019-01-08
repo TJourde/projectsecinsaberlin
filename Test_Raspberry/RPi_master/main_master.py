@@ -39,8 +39,8 @@ if __name__ == "__main__":
         VB.IpTowing = '10.105.0.55'
         VB.IpRose = '10.105.0.53'
     elif ip == '192.168.137.149': # Berlin network
-        VB.IpTowing = '192.168.137.'
-        VB.IpRose = '192.168.137.'
+        VB.IpTowing = '192.168.137.201'
+        VB.IpRose = '192.168.137.12'
     
     try:
         bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
