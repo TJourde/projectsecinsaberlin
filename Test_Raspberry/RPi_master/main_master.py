@@ -85,5 +85,7 @@ if __name__ == "__main__":
     newapproach.join()
     newdetect.join()
 
+    VB.conn.close()
+
     print("All process are shut down")
     
