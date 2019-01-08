@@ -33,9 +33,9 @@ newcomslave = MyComSlave()
 newcomslave.start()
 
 # starting message threads
-newreceiveslave = MyReceiveSlave(conn, bus)
+newreceiveslave = MyReceiveSlave(bus)
 newreceiveslave.start()
-newsendslave = MySendSlave(conn, bus)
+newsendslave = MySendSlave(bus)
 newsendslave.start()
 
 # ending threads
