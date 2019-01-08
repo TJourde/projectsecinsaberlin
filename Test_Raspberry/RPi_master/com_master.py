@@ -152,11 +152,18 @@ class MySend(Thread):
                 message = "ROL:" + str(roll[0])+ ";"
                 size = self.conn.send(message.encode())
                 if size == 0: break
+            elif msg.arbitration_id == HALL:
+                # capteur magnétique
+                magnetic_sensor = struct.unpack('>f',msg.data[0:1])
+                message = "MAG:" + str(magnetic_sensor[0])+ ";"
+                size = self.conn.send(message.encode())
+                if size == 0: break
 
 
             # Valeurs propres au towing
             if VB.ApproachComplete.is_set():
-                message = "TOWSTATE: ApproachComplete;"
+                VB.ApproachComplete.clear()
+                message = "TOWSTATE:ApproachComplete;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
             if VB.CodeSem.acquire():
@@ -215,7 +222,6 @@ class MyReceive(Thread):
                 if (header == 'SPE'):  # speed
                     self.speed_cmd = int(payload)
                     print("speed is updated to ", self.speed_cmd)
-
                 elif (header == 'POS'): # front wheels position
                     self.position_cmd = int(payload)
                     print("steering wheels position is updated to ", self.position_cmd)
