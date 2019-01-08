@@ -80,6 +80,7 @@ class Approach(Thread)
             # Check si l'utilisateur demande la manoeuvre d'approche/accroche du 2e véhicule
             if VB.Approach.is_set():
                 
+                
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
                 # --------------------------------------
@@ -112,6 +113,7 @@ class Approach(Thread)
                         self.FLAG_MAGNET = False
                     if self.cpt_magnet == self.nb_magnet_detection:
                         self.FLAG_MAGNET = True
+
 
                 # --------------------------------------
                 # PART 2 - Traitement des flag et envoi des commandes aux moteurs/solenoid
@@ -147,6 +149,7 @@ class ErrorDetection(Thread)
         Thread.__init__(self)
         self.bus = bus
 
+        self.trame = False
         # Valeurs données
         self.distance_us = -1
         self.distance_us3 = -1
@@ -166,6 +169,7 @@ class ErrorDetection(Thread)
         self.FLAG_US3 = False
         self.FLAG_CM = False
         # Problem source + explanation
+        self.CodeErreur = ''
         self.Prob = -1
         self.Expl = -1
 
@@ -173,7 +177,9 @@ class ErrorDetection(Thread)
 
     def run(self):
 
+        self.trame = False
         self.distance_us = -1
+        self.dispo_us3 = -1
         self.distance_us3 = -1
         self.magnet_detected = -1
         self.cpt_us = 0
@@ -187,6 +193,7 @@ class ErrorDetection(Thread)
         self.FLAG_US = False
         self.FLAG_US3 = False
         self.FLAG_CM = False
+        self.CodeErreur = ''
         self.Prob = -1
         self.Expl = -1
 
@@ -196,10 +203,17 @@ class ErrorDetection(Thread)
             # Check si l'utilisateur demande l'activation du remorquage (donc du mode détection d'erreurs)
             if VB.TowingActive.is_set():
 
-                # Check si la 2e voiture est bien connectée, sinon arrête le remorquage
-                if VB.US3 == -1:
-                    print('No connection with 2nd car, ', self.getName(), ' is suspended' )
+                # Regarde si US3 Dispo et récupère la valeur de US3 si True
+                if VB.US3Dispo():
+                    self.dispo_us3 = True
+                    self.distance_us3 = VB.ReadUS3()
+                else: 
+                    self.dispo_us3 = False
+                    self.distance_us3 = -1
 
+                # Check si la 2e voiture est bien connectée, sinon arrête le remorquage
+                if distance_us3 == -1:
+                    print('No connection with 2nd car, ', self.getName(), ' is suspended' )
                 else
 
                     # --------------------------------------
@@ -208,6 +222,7 @@ class ErrorDetection(Thread)
 
                     # Données US
                     if msg.arbitration_id == US1:
+                        self.trame = True
                         self.distance_us = int.from_bytes(msg.data[4:6], byteorder='big')
                         if self.distance_us > LIMIT_DIST:
                             self.cpt_us += 1
@@ -217,16 +232,18 @@ class ErrorDetection(Thread)
                             print("Error US - ", time.strftime("%X"))
 
                     # Données US3
-                    self.distance_us3 = VB.US3
-                    if self.distance_us3 > LIMIT_DIST:
-                        self.cpt_us3 += 1
-                    else: self.cpt_us3 = 0
-                    if self.cpt_us3 == self.limit_us3:
-                        self.FLAG_US3 = True
-                        print("Error US3 - ", time.strftime("%X"))
+                    if dispo_us3 = True:
+                        self.trame = True
+                        if self.distance_us3 > LIMIT_DIST:
+                            self.cpt_us3 += 1
+                        else: self.cpt_us3 = 0
+                        if self.cpt_us3 == self.limit_us3:
+                            self.FLAG_US3 = True
+                            print("Error US3 - ", time.strftime("%X"))
 
                     # Données CM
                     if msg.arbitration_id == HALL:
+                        self.trame = True
                         self.magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
                         if self.magnet_detected == 0:
                             self.cpt_cm += 1
@@ -235,23 +252,39 @@ class ErrorDetection(Thread)
                             self.FLAG_CM = True
                             print("Error CM - ", time.strftime("%X"))
 
+
                     # --------------------------------------
                     # PART 2 - Traitement des flag
                     # --------------------------------------
-                    if self.FLAG_CM or self.FLAG_US or self.FLAG_US3:
+                    if self.trame and self.FLAG_CM or self.FLAG_US or self.FLAG_US3:
+                        self.trame = False
+                        self.cpt_multi += 1
+
+                    if self.cpt_multi == self.limit_multi:
+
+                        # Arret de la voiture
                         VB.TowingActive.clear()
                         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
                         self.bus.send(msg)
-                        self.cpt_multi += 1
 
-                    # Détermine le message à envoyer en fonction du problème rencontré
-                    if self.cpt_multi == self.limit_multi:
+                        # Détermine code erreur
+                        if self.FLAG_CM:
+                            self.CodeErreur = self.CodeErreur + "a"
+                        if self.FLAG_US:
+                            self.CodeErreur = self.CodeErreur + "b"
+                        if self.FLAG_US3:
+                            self.CodeErreur = self.CodeErreur + "c"
+
+                        # Détermine le message à envoyer en fonction du problème rencontré
                         if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
                             self.Prob = "CM && US && US3"
                             self.Expl = "Décrochage de la 2e voiture"
-                        elif self.FLAG_CM and (self.FLAG_US or self.FLAG_US3):
-                            self.Prob = "CM && (US || US3)"
+                        elif self.FLAG_CM and self.FLAG_US:
+                            self.Prob = "CM && US"
                             self.Expl = "Décrochage de la 2e voiture + capteur US défaillant"
+                        elif self.FLAG_CM and self.FLAG_US3:
+                            self.Prob = "CM && US3"
+                            self.Expl = "Décrochage de la 2e voiture + capteur US3 (rose) défaillant"
                         elif self.FLAG_CM:
                             self.Prob = "CM"
                             self.Expl = "Capteur magnétique défaillant, 2e voiture toujours accrochée"
@@ -265,6 +298,7 @@ class ErrorDetection(Thread)
                             self.Prob = "US3"
                             self.Expl = "US défaillant sur la 2e voiture"
 
+                        print("Code erreur: " + self.CodeErreur)
                         print("Probleme rencontre: " + self.Prob)
 
 
@@ -273,7 +307,7 @@ class ErrorDetection(Thread)
                         # --------------------------------------
                    
                         # Ecriture dans la variable "SourceProb" utilisée pour l'envoi du message à l'appli
-                        VB.WriteSourceProb(self.Prob)
+                        VB.WriteSourceProb(self.CodeErreur)
 
                         if not(self.FLAG_CM and self.FLAG_US and self.FLAG_US3): # En cas de probleme not corrigible, envoie un mail et arrete le thread
                             mail_subjet = "Unsolvable problem during towing"
@@ -281,5 +315,6 @@ class ErrorDetection(Thread)
                             os.system(echo mail_body | mail -s mail_subjet teamberlingei@gmail.com)
                             break
                         else: # Sinon, réinitialisation des variables en cas de décrochage normal pour le prochain remorquage
+                            self.CodeErreur = -1
                             self.Prob = -1
                             self.Expl = -1

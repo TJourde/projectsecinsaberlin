@@ -159,11 +159,11 @@ class MySend(Thread):
                 message = "TOWSTATE: ApproachComplete;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            if VB.ProbSem.acquire():
-                message = "ERR: " + VB.SourceProb
+            if VB.CodeSem.acquire():
+                message = "ERR:" + VB.CodeErreur
                 size = self.conn.send(message.encode())
-                if size == 0: break
                 VB.ProbSem.release()
+                if size == 0: break
 
 
 
@@ -171,7 +171,6 @@ class MySend(Thread):
 # *********************************************************
 # THREAD 2 - Réception des données de l'application, envoi des commandes sur le CAN + modification variables internes
 # *********************************************************
-
 
 class MyReceive(Thread):
     def __init__(self,conn, bus):

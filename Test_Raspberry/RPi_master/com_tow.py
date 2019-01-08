@@ -28,7 +28,7 @@ class MyTowCom(Thread)
 
     def run(self):
 
-        VB.WriteUS3(-1)
+        VB.WriteUS3(,False,-1)
 
         while True :
 
@@ -55,7 +55,7 @@ class MyTowCom(Thread)
                     if not data:
                         print("No data: lost connection with second car")
                         self.addr_tow = -1
-                        VB.WriteUS3(-1)
+                        VB.WriteUS3(False,-1)
 
 
                     if "UFC_slave" in data.decode("utf-8"): # look for the identifier in received msg
@@ -64,7 +64,7 @@ class MyTowCom(Thread)
                             data = data.split(';')
                             header_slave, payload_slave = data.split(':')
 
-                            VB.WriteUS3(payload_slave)
+                            VB.WriteUS3(True,payload_slave)
 
                             # send it to main application
                             message = "UFC_slave:" + str(payload_slave) + ";"
@@ -81,7 +81,7 @@ class MyTowCom(Thread)
                     print('Closing communication channel')
                     self.conn_tow.close()
                     self.addr_tow = -1
-                    VB.WriteUS3(-1)
+                    VB.WriteUS3(False,-1)
 
             # Si le mode TOWING est desactivé et qu'une connection est en cours, clôture de la connection
             elif (not(VB.Connect.is_set()) and (self.addr_tow != -1)):
@@ -90,5 +90,5 @@ class MyTowCom(Thread)
                 else: print('Towing mode OFF, ', self.getName(), ' closing connection with unknown user')
                 self.conn_tow.close()
                 self.addr_tow = -1
-                VB.WriteUS3(-1)
+                VB.WriteUS3(False,-1)
                 
