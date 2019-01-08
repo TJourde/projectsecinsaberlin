@@ -50,7 +50,7 @@ TowingActive.clear()
 # *********************************************************
 # FUNCTION 1 - Ecrit la valeur en argument dans la variable "US3" (définie au-dessus)
 # *********************************************************
-def WriteUS3(dispo, value):
+async def WriteUS3(dispo, value):
     await US3Sem.acquire(False):
     US3Dispo = dispo
     US3 = value
@@ -60,7 +60,7 @@ def WriteUS3(dispo, value):
 # *********************************************************
 # FUNCTION 2 - Retourne True si variable US3 disponible
 # *********************************************************
-def US3Dispo()
+async def US3Dispo()
     await US3Sem.acquire(False)
     Dispo = US3Dispo
     US3Sem.release()
@@ -70,7 +70,7 @@ def US3Dispo()
 # *********************************************************
 # FUNCTION 3 - Retourne la valeur contenue dans US3 (suppose qu'une valeur est dispo)
 # *********************************************************
-def ReadUS3()
+async def ReadUS3()
     await US3Sem.acquire(False)
     USpink = US3
     US3Dispo = False
@@ -81,7 +81,7 @@ def ReadUS3()
 # *********************************************************
 # FUNCTION 4 - Ecrit la valeur en argument dans la variable "SourceProb" avec blocage (définie au-dessus)
 # *********************************************************
-def WriteSourceProb(value):
+async def WriteSourceProb(value):
     await ProbSem.acquire(False)
     SourceProb = value
     ProbSem.release()
