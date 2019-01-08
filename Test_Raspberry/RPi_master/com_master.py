@@ -154,7 +154,7 @@ class MySend(Thread):
                 if size == 0: break
             elif msg.arbitration_id == HALL:
                 # capteur magnétique
-                magnetic_sensor = struct.unpack('>f',msg.data[0:1])
+                magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
                 message = "MAG:" + str(magnetic_sensor[0])+ ";"
                 size = self.conn.send(message.encode())
                 if size == 0: break
