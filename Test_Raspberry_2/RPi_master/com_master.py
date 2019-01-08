@@ -79,7 +79,9 @@ class MySend(Thread):
 
     def run(self):
         while True :
-            
+
+            if VB.stop_all.is_set():break
+                        
             msg = self.bus.recv()
             
             if msg.arbitration_id == US1:
@@ -161,12 +163,20 @@ class MySend(Thread):
 
 
             # Valeurs propres au towing
-            if VB.ApproachComplete.is_set():
-                VB.ApproachComplete.clear()
-                message = "TOWSTATE:ApproachComplete;"
+            if not(VB.ConnectComplete.is_set() and VB.ApproachComplete.is_set() and VB.TowingActive.is_set()):
+                message = "STATE:Idle"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            if VB.CodeSem.acquire():
+            if VB.ConnectComplete.is_set():
+                message = "STATE:ConnectComplete"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+            if VB.ApproachComplete.is_set():
+                message = "STATE:Hooking;"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+            if VB.TowingError.is_set():
+                await VB.CodeSem.acquire()
                 message = "ERR:" + VB.CodeErreur
                 size = self.conn.send(message.encode())
                 VB.CodeSem.release()
@@ -201,6 +211,9 @@ class MyReceive(Thread):
         self.pos = 0   
 
         while True :
+
+            if VB.stop_all.is_set():break
+
             data = self.conn.recv(1024)
             data = str(data)
             data = data[2:len(data)-1]
@@ -257,20 +270,21 @@ class MyReceive(Thread):
                     if (payload == 'request'):
                         print("Starting connection & approach")
                         VB.TryConnect.set() # initiate connection
-                        VB.Approach.set() # start approaching the 2nd car
+                        VB.TryApproach.set() # start approaching the 2nd car
                         self.enable = 0
                     if (payload == 'on'):
                         print("Starting towing mode")
-                        VB.Approach.clear() # stop approaching the 2nd car
                         VB.TowingActive.set() # start error detection
                         self.enable = 1
-                    if (payload == 'resume'):
-                        print("Resume towing")
-                        VB.TowingActive.set()
                     if (payload == 'off'):
                         print("Stopping towing mode")
                         VB.TryConnect.clear() # closing communication with 2nd car
+                        VB.ConnectComplete.clear()
+                        VB.TryApproach.clear()
+                        VB.ApproachComplete.clear()
                         VB.TowingActive.clear() # stop error detection
+                        VB.TowingError.clear()
+
 
                 # In case of an error detection while towing
                 if VB.CodeSem.acquire() and VB.TowingActive.is_set() and VB.SourceProb != -1:

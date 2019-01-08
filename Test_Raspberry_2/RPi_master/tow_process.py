@@ -75,10 +75,13 @@ class Approach(Thread):
         self.FLAG_MAGNET = False
 
         while True:
+
+            if VB.stop_all.is_set():break
+            
             msg = self.bus.recv()
             
             # Check si l'utilisateur demande la manoeuvre d'approche/accroche du 2e véhicule
-            if VB.Approach.is_set():
+            if VB.TryApproach.is_set():
                 
 
                 # --------------------------------------
@@ -125,6 +128,7 @@ class Approach(Thread):
                     msg = can.Message(arbitration_id=FROM_PI,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
                     VB.ApproachComplete.set()
+                    VB.TryApproach.clear()
                 elif self.US_POS == 'touch' and not(self.FLAG_MAGNET):
                     print('Alignment error')
                 elif self.US_POS != 'touch' and self.FLAG_MAGNET:
@@ -198,6 +202,9 @@ class ErrorDetection(Thread):
         self.Expl = -1
 
         while True:
+            
+            if VB.stop_all.is_set():break
+            
             msg = self.bus.recv()
             
             # Check si l'utilisateur demande l'activation du remorquage (donc du mode détection d'erreurs)
@@ -264,6 +271,7 @@ class ErrorDetection(Thread):
 
                         # Arret de la voiture
                         VB.TowingActive.clear()
+                        VB.TowingError.set()
                         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
                         self.bus.send(msg)
 
