@@ -5,7 +5,7 @@ import os
 import can
 import socket
 
-import com_slave
+from com_slave import *
 
 
 # Try connection to bus interface
