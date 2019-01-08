@@ -199,7 +199,7 @@ class MyReceive(Thread):
         self.turn = 0
         self.enable = 0
         self.position = 0   
-        
+
         while True :
             data = self.conn.recv(1024)
             data = str(data)
@@ -273,7 +273,7 @@ class MyReceive(Thread):
                         VB.TowingActive.clear() # stop error detection
 
                 # In case of an error detection while towing
-                if VB.ProbSem.acquire() and VB.TowingActive.is_set() and VB.SourceProb != -1:
+                if VB.CodeSem.acquire() and VB.TowingActive.is_set() and VB.SourceProb != -1:
                     enable = 0
 
                 print(self.speed_cmd)
