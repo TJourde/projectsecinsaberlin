@@ -59,7 +59,7 @@ class Approach(Thread):
         self.US_POS = 'away' # valeur: away | close | touch
         self.FLAG_MAGNET = False
 
-        print(self.getName(), 'initialized')
+        print(self.getName(), 'Approach initialized')
 
     def run(self):
 
@@ -173,7 +173,7 @@ class ErrorDetection(Thread):
         self.Prob = -1
         self.Expl = -1
 
-        print(self.getName(), 'initialized')
+        print(self.getName(), 'ErrorDetection initialized')
 
     def run(self):
 
