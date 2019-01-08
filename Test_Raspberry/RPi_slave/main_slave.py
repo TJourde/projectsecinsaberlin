@@ -13,10 +13,11 @@ import VarBerlin as VB
 ip = os.popen('hostname -I').read() #get chain with '[@IP] \n'
 ip = ip[:len(ip)-2] #(suppress ' \n')
 # Only correct with the two cars black and pink
-if ip == '10.105.1.17': #IOT network
+if ip == '10.105.1.17': # IOT network
     VB.IpTowing = '10.105.0.55'
-elif ip == '192.168.137.149': #Berlin network
-    VB.IpTowing = '192.168.137.31'
+elif ip == '192.168.137.149': # Berlin network
+    VB.IpTowing = '192.168.137.201'
+    
 
 TCP_PORT = 9000
 BUFFER_SIZE = 20
