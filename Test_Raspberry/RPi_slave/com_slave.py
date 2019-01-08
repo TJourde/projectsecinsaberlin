@@ -63,6 +63,7 @@ class MySend(Thread):
         Thread.__init__(self)
         self.conn = conn
         self.bus = bus
+        print(self.getName(), 'MySend initialized')
 
     def run(self):
         while True :
@@ -154,6 +155,7 @@ class MyReceive(Thread):
         self.move = 0
         self.turn = 0
         self.enable = 0
+        print(self.getName(), 'MyReceive initialized')
 
     def run(self):
         self.speed_cmd = 0
