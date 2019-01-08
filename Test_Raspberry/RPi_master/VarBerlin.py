@@ -60,7 +60,7 @@ async def WriteUS3(dispo, value):
 # *********************************************************
 # FUNCTION 2 - Retourne True si variable US3 disponible
 # *********************************************************
-async def US3Dispo()
+async def US3Dispo():
     await US3Sem.acquire()
     Dispo = US3Dispo
     US3Sem.release()
@@ -70,7 +70,7 @@ async def US3Dispo()
 # *********************************************************
 # FUNCTION 3 - Retourne la valeur contenue dans US3 (suppose qu'une valeur est dispo)
 # *********************************************************
-async def ReadUS3()
+async def ReadUS3():
     await US3Sem.acquire()
     USpink = US3
     US3Dispo = False

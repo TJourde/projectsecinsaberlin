@@ -16,7 +16,7 @@ BUFFER_SIZE = 20  # Normally 1024, but we want fast response
 # THREAD 3 - Connection à la 2e voiture, récupèration les données envoyées et les transmission à l'appli principale
 # *********************************************************
 
-class MyTowCom(Thread)
+class MyTowCom(Thread):
     
     def __init__(self,IpAddr):
         Thread.__init__(self)
