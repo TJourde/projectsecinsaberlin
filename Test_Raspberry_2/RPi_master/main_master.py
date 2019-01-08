@@ -32,16 +32,6 @@ PORT = 6666              # Arbitrary non-privileged port
 
 if __name__ == "__main__":
 
-    # Looking for IP address to "know" which network is used
-    IpBlack = os.popen('hostname -I').read() # get chain with '[@IP] \n'
-    IpBlack = IpBlack[:len(IpBlack)-2] # (suppress ' \n')
-
-    # Only correct with the two cars black and pink
-    if IpBlack == '10.105.0.55': # IOT network
-        VB.IpRose = '10.105.0.53'
-    elif IpBlack == '192.168.137.201': # Berlin network
-        VB.IpRose = '192.168.137.12'
-
     try:
         bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
     except OSError:
@@ -62,7 +52,7 @@ if __name__ == "__main__":
         newsend.start()
 
         # starting communication with pink car
-        newtowcom = MyTowCom(VB.IpTowing)
+        newtowcom = MyTowCom()
         newtowcom.start
 
         # launching approach thread (starting procedure only if VB.Approach == True)

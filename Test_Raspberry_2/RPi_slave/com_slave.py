@@ -41,6 +41,7 @@ class MyComSlave(Thread):
         Thread.__init__(self)
         self.addr = -1
         self.waiting_connection = False
+        print(self.getName(), 'MyComSlave initialized')
 
     def run(self):
         while True:

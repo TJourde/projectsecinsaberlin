@@ -32,19 +32,19 @@ class MyTowCom(Thread):
         while True :
 
             # Check si l'utilisateur demande l'activation du mode TOWING
-            if TryConnect.is_set() and not(ConnectComplete.is_set()):
+            if VB.TryConnect.is_set() and not(VB.ConnectComplete.is_set()):
                 try:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.connect((IpPink,TCP_PORT))
-                    print('Connect to pink car with address ' + IpPink)
-                    ConnectComplete.set()
-                    TryConnect.clear()
+                    sock.connect((VB.IpPink,TCP_PORT))
+                    print('Connect to pink car with address ' + VB.IpPink)
+                    VB.ConnectComplete.set()
+                    VB.TryConnect.clear()
                 except socket.error:
                     print('Socket error while attempting to connect to pink car')
-                    ConnectComplete.set()
+                    VB.ConnectComplete.set()
 
             # Réception des données et écriture dans variable US3
-            if ConnectComplete.is_set():
+            if VB.ConnectComplete.is_set():
                 data = sock.recv(BUFFER_SIZE)
                 if not data:
                     print("No data: lost connection with second car")
