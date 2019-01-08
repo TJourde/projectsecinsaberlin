@@ -129,11 +129,11 @@ class Approach(Thread):
                     print('Alignment error')
                 elif self.US_POS != 'touch' and self.FLAG_MAGNET:
                     print('Distance detection error')
-                elif self.US_POS == 'close'
+                elif self.US_POS == 'close':
                     print('Slowing down and opening solenoid')
                     msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
                     bus.send(msg)
-                elif self.US_POS == 'away'
+                elif self.US_POS == 'away':
                     print('Car away, backing in progress')
                     msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
@@ -214,7 +214,7 @@ class ErrorDetection(Thread):
                 # Check si la 2e voiture est bien connectée, sinon arrête le remorquage
                 if distance_us3 == -1:
                     print('No connection with 2nd car, ', self.getName(), ' is suspended' )
-                else
+                else:
 
                     # --------------------------------------
                     # PART 1 - Traitement des données et levée des flag
@@ -232,7 +232,7 @@ class ErrorDetection(Thread):
                             print("Error US - ", time.strftime("%X"))
 
                     # Données US3
-                    if dispo_us3 = True:
+                    if dispo_us3 == True:
                         self.trame = True
                         if self.distance_us3 > LIMIT_DIST:
                             self.cpt_us3 += 1
@@ -312,7 +312,7 @@ class ErrorDetection(Thread):
                         if not(self.FLAG_CM and self.FLAG_US and self.FLAG_US3): # En cas de probleme not corrigible, envoie un mail et arrete le thread
                             mail_subjet = "Unsolvable problem during towing"
                             mail_body = "Origin of the issue : " + self.Prob + "\nPossible explanation : " + self.Expl
-                            os.system(echo mail_body | mail -s mail_subjet teamberlingei@gmail.com)
+                            os.system("echo mail_body | mail -s mail_subjet teamberlingei@gmail.com")
                             break
                         else: # Sinon, réinitialisation des variables en cas de décrochage normal pour le prochain remorquage
                             self.CodeErreur = -1
