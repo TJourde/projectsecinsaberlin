@@ -6,6 +6,7 @@ import time
 import can
 import os
 import struct
+import socket
 
 MCM = 0x010
 MS = 0x100
