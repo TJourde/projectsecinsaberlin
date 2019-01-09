@@ -3,6 +3,7 @@
 from threading import *
 import socket
 import struct
+import asyncio
 
 #importing variables linked
 import VarBerlin as VB
@@ -26,7 +27,6 @@ class MyTowCom(Thread):
         self.connected = False
 
     def run(self):
-
         VB.WriteUS3(False,-1)
         while True :
             
@@ -44,8 +44,8 @@ class MyTowCom(Thread):
                     print('Socket error while attempting to connect to pink car')
                     VB.ConnectComplete.clear()
             # Réception des données et écriture dans variable US3
-            elif not(VB.ConnectComplete.is_set() and VB.TryConnect.is_set() and VB.TowingActive.is_set()):
-                s.close()
+            #elif not(VB.ConnectComplete.is_set() and VB.TryConnect.is_set() and VB.TowingActive.is_set()):
+            #    s.close()
             elif VB.ConnectComplete.is_set():
                 data = s.recv(BUFFER_SIZE)
                 if not data:
