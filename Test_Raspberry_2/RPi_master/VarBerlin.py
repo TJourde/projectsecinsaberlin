@@ -14,7 +14,7 @@ IpBlack = IpBlack[:len(IpBlack)-2] # (suppress ' \n')
 # Only correct with the two cars black and pink
 if IpBlack == '10.105.0.55': # IOT network
     IpPink = '10.105.0.53'
-elif IpBlack == '192.168.137.201': # Berlin network
+elif IpBlack == '192.168.137.27': # Berlin network
     IpPink = '192.168.137.12'
     
 
