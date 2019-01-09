@@ -78,7 +78,7 @@ def US3Dispo():
         Dispo = US3Dispo
         US3Sem.release()
         return Dispo
-    return false
+    return False
 
 
 # *********************************************************
@@ -90,7 +90,7 @@ def ReadUS3():
         US3Dispo = False
         US3Sem.release()
         return USpink
-    return false
+    return -1
 
 
 # *********************************************************

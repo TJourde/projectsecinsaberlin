@@ -215,6 +215,7 @@ class MyReceive(Thread):
         while True :
 
             if VB.stop_all.is_set():break
+            
             data=""
             self.conn.setblocking(0)
             try:
