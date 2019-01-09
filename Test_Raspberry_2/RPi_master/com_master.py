@@ -85,6 +85,7 @@ class MySend(Thread):
             msg = self.bus.recv()
             
             if msg.arbitration_id == US1:
+                print('oui')
                 # ultrason avant gauche
                 distance = int.from_bytes(msg.data[0:2], byteorder='big')
                 message = "UFL:" + str(distance) + ";"
@@ -98,6 +99,7 @@ class MySend(Thread):
                 # ultrason arriere centre
                 distance = int.from_bytes(msg.data[4:6], byteorder='big')
                 message = "URC:" + str(distance)+ ";"
+                print(message)
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif msg.arbitration_id == US2:
@@ -176,10 +178,10 @@ class MySend(Thread):
                 size = self.conn.send(message.encode())
                 if size == 0: break
             if VB.TowingError.is_set():
-                await VB.CodeSem.acquire()
-                message = "ERR:" + VB.CodeErreur
-                size = self.conn.send(message.encode())
-                VB.CodeSem.release()
+                if VB.CodeSem.acquire(false):
+                    message = "ERR:" + VB.CodeErreur
+                    size = self.conn.send(message.encode())
+                    VB.CodeSem.release()
                 if size == 0: break
 
 
@@ -213,16 +215,20 @@ class MyReceive(Thread):
         while True :
 
             if VB.stop_all.is_set():break
-
-            data = self.conn.recv(1024)
-            data = str(data)
-            data = data[2:len(data)-1]
-
-            if not data: break
+            data=""
+            self.conn.setblocking(0)
+            try:
+                data = self.conn.recv(1024)
+                data = str(data)
+                data = data[2:len(data)-1]
+            except IOError as e:
+                pass
+            
+            #if not data: continue
             
             #split each command received if there are more of 1 
             for cmd in data.split(';'):
-                print('val cmd : ',cmd)
+                #print('val cmd : ',cmd)
                 
                 # don't try an empty command
                 if not cmd: continue 
@@ -284,6 +290,12 @@ class MyReceive(Thread):
                         VB.ApproachComplete.clear()
                         VB.TowingActive.clear() # stop error detection
                         VB.TowingError.clear()
+                elif (header == 'HOO'):
+                    if (payload == 'request'):
+                        print("Starting connection & approach")
+                        VB.TryConnect.set() # initiate connection
+                        VB.TryApproach.set() # start approaching the 2nd car
+                        self.enable = 0
 
 
                 # In case of an error detection while towing
@@ -330,5 +342,5 @@ class MyReceive(Thread):
                     #Send message
                     self.bus.send(msg)
 
-        self.conn.close()
+#        self.conn.close()
         

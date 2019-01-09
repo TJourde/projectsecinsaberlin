@@ -63,38 +63,40 @@ TowingError.clear()
 # *********************************************************
 # FUNCTION 1 - Ecrit la valeur en argument dans la variable "US3" (définie au-dessus)
 # *********************************************************
-async def WriteUS3(dispo, value):
-    await US3Sem.acquire()
-    US3Dispo = dispo
-    US3 = value
-    US3.release() # release the semaphore because no longer needed
+def WriteUS3(dispo, value):
+    if US3Sem.acquire(False):
+        US3Dispo = dispo
+        US3 = value
+        US3Sem.release() # release the semaphore because no longer needed
 
 
 # *********************************************************
 # FUNCTION 2 - Retourne True si variable US3 disponible
 # *********************************************************
-async def US3Dispo():
-    await US3Sem.acquire()
-    Dispo = US3Dispo
-    US3Sem.release()
-    return Dispo
+def US3Dispo():
+    if US3Sem.acquire(False):
+        Dispo = US3Dispo
+        US3Sem.release()
+        return Dispo
+    return false
 
 
 # *********************************************************
 # FUNCTION 3 - Retourne la valeur contenue dans US3 (suppose qu'une valeur est dispo)
 # *********************************************************
-async def ReadUS3():
-    await US3Sem.acquire()
-    USpink = US3
-    US3Dispo = False
-    US3Sem.release()
-    return USpink
+def ReadUS3():
+    if US3Sem.acquire(False):
+        USpink = US3
+        US3Dispo = False
+        US3Sem.release()
+        return USpink
+    return false
 
 
 # *********************************************************
 # FUNCTION 4 - Ecrit la valeur en argument dans la variable "SourceProb" avec blocage (définie au-dessus)
 # *********************************************************
-async def WriteSourceProb(value):
-    await ProbSem.acquire()
-    SourceProb = value
-    ProbSem.release()
+def WriteSourceProb(value):
+    if ProbSem.acquire(False):
+        SourceProb = value
+        ProbSem.release()

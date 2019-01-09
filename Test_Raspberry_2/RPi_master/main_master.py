@@ -33,7 +33,7 @@ if __name__ == "__main__":
     except OSError:
         print('Cannot find PiCAN board.')
         exit()
-
+    alldone = False
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((HOST, PORT))
@@ -49,29 +49,32 @@ if __name__ == "__main__":
 
         # starting communication with pink car
         newtowcom = MyTowCom()
-        newtowcom.start
+        newtowcom.start()
 
         # launching approach thread (starting procedure only if VB.Approach == True)
         newapproach = Approach(bus)
-        newapproach.start
+        newapproach.start()
 
         # launching error detection thread (starting procedure only if VB.TowingActive == True)
         newdetect = ErrorDetection(bus)
-        newdetect.start
+        newdetect.start()
+        alldone = True
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         VB.stop_all.set()
         print('Shutting down all process...')
     except socket.error:
         print('Socket error')
+        print(socket.error)
 
-    newreceive.join()
-    newsend.join()
-    newtowcom.join()
-    newapproach.join()
-    newdetect.join()
+    if alldone:
+        newreceive.join()
+        newsend.join()
+        newtowcom.join()
+        newapproach.join()
+        newdetect.join()
 
-    conn.close()
+        conn.close()
 
     print("All process are shut down")
     

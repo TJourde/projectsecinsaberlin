@@ -82,7 +82,7 @@ class Approach(Thread):
             
             # Check si l'utilisateur demande la manoeuvre d'approche/accroche du 2e véhicule
             if VB.TryApproach.is_set():
-                
+                print("approach")
 
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
