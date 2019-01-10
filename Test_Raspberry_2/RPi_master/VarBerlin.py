@@ -22,15 +22,26 @@ elif IpBlack == '192.168.137.27': # Berlin network
 global US3Sem
 US3Sem = BoundedSemaphore(1)
 global US3Dispo
-US3Dispo = False
+US3Dispo = Event()
+US3Dispo.clear()
 global US3
 US3 = -1
 
 #Semaphore and variable to transmit source of the problem
-global CodeSem
-CodeSem = BoundedSemaphore(1)
-global CodeErreur
-CodeErreur = ''
+global ErrorCodeSem
+ErrorCodeSem = BoundedSemaphore(1)
+global ErrorCode
+ErrorCode = 0000
+
+global ErrorUSFail
+ErrorUSFail = 0b0001
+global ErrorUS3Fail
+ErrorUS3Fail = 0b0010
+global ErrorMag
+ErrorMag = 0b0100
+global ErrorLostConnection
+ErrorLostConnection = 0b1000
+
 
 #Signal all stop
 global stop_all
@@ -40,9 +51,9 @@ stop_all = Event()
 global TryConnect
 TryConnect = Event()
 TryConnect.clear()
-global ConnectComplete
-ConnectComplete = Event()
-ConnectComplete.clear()
+global ConnectedWithPink
+ConnectedWithPink = Event()
+ConnectedWithPink.clear()
 #Events for approaching and hooking
 global TryApproach
 TryApproach = Event()
@@ -64,39 +75,28 @@ TowingError.clear()
 # FUNCTION 1 - Ecrit la valeur en argument dans la variable "US3" (définie au-dessus)
 # *********************************************************
 def WriteUS3(dispo, value):
-    if US3Sem.acquire(False):
-        US3Dispo = dispo
-        US3 = value
-        US3Sem.release() # release the semaphore because no longer needed
+    US3Sem.acquire(True):
+    US3 = value
+    US3Sem.release() # release the semaphore because no longer needed
+    US3Dispo.is_set()
 
 
 # *********************************************************
-# FUNCTION 2 - Retourne True si variable US3 disponible
-# *********************************************************
-def US3Dispo():
-    if US3Sem.acquire(False):
-        Dispo = US3Dispo
-        US3Sem.release()
-        return Dispo
-    return False
-
-
-# *********************************************************
-# FUNCTION 3 - Retourne la valeur contenue dans US3 (suppose qu'une valeur est dispo)
+# FUNCTION 2 - Retourne la valeur contenue dans US3 (suppose qu'une valeur est dispo)
 # *********************************************************
 def ReadUS3():
     if US3Sem.acquire(False):
         USpink = US3
-        US3Dispo = False
         US3Sem.release()
+        US3Dispo.clear()
         return USpink
     return -1
 
 
 # *********************************************************
-# FUNCTION 4 - Ecrit la valeur en argument dans la variable "SourceProb" avec blocage (définie au-dessus)
+# FUNCTION 3 - Ecrit la valeur en argument dans la variable "ErrorCode" avec blocage (définie au-dessus)
 # *********************************************************
-def WriteSourceProb(value):
-    if ProbSem.acquire(False):
-        SourceProb = value
-        ProbSem.release()
+def WriteErrorCode(value):
+    ErrorCodeSem.acquire(True):
+    ErrorCode = ErrorCode | value
+    ErrorCodeSem.release()

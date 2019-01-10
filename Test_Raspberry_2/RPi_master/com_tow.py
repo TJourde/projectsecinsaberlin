@@ -3,11 +3,9 @@
 from threading import *
 import socket
 import struct
-import asyncio
 
 #importing variables linked
 import VarBerlin as VB
-
 
 TCP_PORT = 9052
 BUFFER_SIZE = 20  # Normally 1024, but we want fast response
@@ -17,7 +15,7 @@ BUFFER_SIZE = 20  # Normally 1024, but we want fast response
 # THREAD 3 - Connection à la 2e voiture, récupèration les données envoyées et les transmission à l'appli principale
 # *********************************************************
 
-class MyTowCom(Thread):
+class MyComTow(Thread):
     
     def __init__(self):
         Thread.__init__(self)
@@ -32,27 +30,39 @@ class MyTowCom(Thread):
             
             if VB.stop_all.is_set():break
             
-            # Check si l'utilisateur demande l'activation du mode TOWING
-            if VB.TryConnect.is_set() and not(VB.ConnectComplete.is_set()):
+            # --------------------------------------
+            # PART 1 - Essai de connexion à la voiture rose
+            # --------------------------------------
+
+            if VB.TryConnect.is_set() and not(VB.ConnectedWithPink.is_set()):
                 try:
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.connect((VB.IpPink,TCP_PORT))
                     print('Connect to pink car with address ' + VB.IpPink)
-                    VB.ConnectComplete.set()
+                    VB.ConnectedWithPink.set()
                     VB.TryConnect.clear()
                 except socket.error:
                     print('Socket error while attempting to connect to pink car')
-                    VB.ConnectComplete.clear()
+                    VB.ConnectedWithPink.clear()
+                    VB.TryConnect.clear()
+
+            # --------------------------------------
+            # PART 2 - Traitement des données envoyées par la voiture rose
+            # --------------------------------------
+
             # Réception des données et écriture dans variable US3
-            #elif not(VB.ConnectComplete.is_set() and VB.TryConnect.is_set() and VB.TowingActive.is_set()):
-            #    s.close()
-            elif VB.ConnectComplete.is_set():
+            elif VB.ConnectedWithPink.is_set():
+
                 data = s.recv(BUFFER_SIZE)
                 if not data:
                     print("No data: lost connection with second car")
                     VB.WriteUS3(False,-1)
+                    VB.ConnectedWithPink.clear()
+                    VB.TowingError.set()
+                    VB.WriteErrorCode(VB.ErrorLostConnection)
 
-                if "UFC_slave" in data.decode("utf-8"): # look for the identifier in received msg
+                # look for the identifier in received msg
+                if "UFC_slave" in data.decode("utf-8"): 
                         data = str(data)
                         data = data[2:len(data)-1]
                         data = data.split(';')
@@ -65,4 +75,4 @@ class MyTowCom(Thread):
                         size = s.send(message.encode())
                         if size == 0: 
                             break
-                            print(self.getName(),': error while sending data to IHM')
+                            print(self.getName(),': error while sending UFC_slave data to IHM')

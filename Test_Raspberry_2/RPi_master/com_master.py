@@ -56,7 +56,7 @@ HALL = 0x103
     - Modification de la vitesse
     header : SPE payload : valeur entre 0 et 50
     - Control du volant (droite, gauche)
-    header : STE paylaod : left | right | stop
+    header : STE payload : left | right | stop
     - Control de l'avancée
     header : MOV payload : forward | backward | stop
     - Controle de la position du Solenoid
@@ -84,6 +84,9 @@ class MySend(Thread):
                         
             msg = self.bus.recv()
             
+            # --------------------------------------
+            # PART 1 - Native messages
+            # --------------------------------------
             if msg.arbitration_id == US1:
                 print('oui')
                 # ultrason avant gauche
@@ -156,14 +159,61 @@ class MySend(Thread):
                 message = "ROL:" + str(roll[0])+ ";"
                 size = self.conn.send(message.encode())
                 if size == 0: break
+            
+            # --------------------------------------
+            # PART 2 - added messages
+            # --------------------------------------
+            # capteur magnétique
             elif msg.arbitration_id == HALL:
-                # capteur magnétique
                 magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
                 message = "MAG:" + str(magnetic_sensor)+ ";"
                 size = self.conn.send(message.encode())
                 if size == 0: break
+            
+            # connexion voiture rose
+            if VB.ConnectedWIthPink.is_set():
+                message = "CON_PINK:on"
+                size = self.conn.send(message.encore())
+                if size == 0: break
+            else:
+                message = "CON_PINK:off"
+                size = self.conn.send(message.encore())
+                if size == 0: break
 
+            # etat voiture noire
+            if VB.TryApproach.is_set():
+                message = "STATE:approaching"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+            elif VB.ApproachComplete.is_set():
+                message = "STATE:approach_complete"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+            elif VB.TowingActive.is_set():
+                message = "STATE:towing"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+            elif VB.TowingError.is_set():
+                message = "STATE:towing_error"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+                error_code = read(CodeError)
+                message = "ERR:" + str(error_code) + ";"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+            else:
+                message = "STATE:idle"
+                size = self.conn.send(message.encode())
+                if size == 0: break
+            
+            # code erreur pendant remorquage
+            if VB.TowingError.is_set():
+                error_code = read(CodeError)
+                message = "ERR:" + str(error_code) + ";"
+                size = self.conn.send(message.encode())
+                if size == 0: break
 
+'''
             # Valeurs propres au towing
             if not(VB.ConnectComplete.is_set() and VB.ApproachComplete.is_set() and VB.TowingActive.is_set()):
                 message = "STATE:Idle"
@@ -183,7 +233,7 @@ class MySend(Thread):
                     size = self.conn.send(message.encode())
                     VB.CodeSem.release()
                 if size == 0: break
-
+'''
 
 
 
@@ -215,7 +265,7 @@ class MyReceive(Thread):
         while True :
 
             if VB.stop_all.is_set():break
-            
+
             data=""
             self.conn.setblocking(0)
             try:
@@ -238,16 +288,16 @@ class MyReceive(Thread):
                 header, payload = cmd.split(':')
                 print("header :", header, " payload:", payload)
                 
-                #Deal with the command
-                if (header == 'SPE'):  # speed
+                # --------------------------------------
+                # PART 1 - Native messages
+                # --------------------------------------
+                
+                # speed
+                if (header == 'SPE'): 
                     self.speed_cmd = int(payload)
                     print("speed is updated to ", self.speed_cmd)
-                elif (header == 'POS'): # front wheels position
-                    self.position_cmd = int(payload)
-                    print("steering wheels position is updated to ", self.position_cmd)
-                    self.pos = 1
-                    self.enable = 1
-                elif (header == 'STE'):  # steering
+                # steering
+                elif (header == 'STE'):  
                     if (payload == 'left'):
                         self.turn = -1
                         self.enable = 1
@@ -260,7 +310,8 @@ class MyReceive(Thread):
                         self.turn = 0
                         self.enable = 1
                         print("Stop turn")
-                elif (header == 'MOV'):  # move
+                # move
+                elif (header == 'MOV'):  
                     if (payload == 'stop'):
                         self.move = 0
                         self.enable = 1
@@ -273,6 +324,40 @@ class MyReceive(Thread):
                         print("Move backward")
                         self.move = -1
                         self.enable = 1
+
+
+                # --------------------------------------
+                # PART 2 - added messages
+                # --------------------------------------
+                # front wheels position
+                elif (header == 'POS'): 
+                    self.position_cmd = int(payload)
+                    print("steering wheels position is updated to ", self.position_cmd)
+                    self.pos = 1
+                    self.enable = 1
+                # hooking related commands
+                elif (header == 'HOO'):
+                    if (payload == 'start'):
+                        print('Start hooking manoeuver')
+                        VB.TryConnect.set()
+                        VB.TryApproach.set()
+                        self.enable = 0
+                    if (payload == 'stop'):
+                        print('Stopping hooking manoeuver')
+                        VB.TryConnect.clear()
+                        VB.TryApproach.clear()
+                # towing related commands
+                elif (header == 'TOW'):
+                    if (payload == 'start'):
+                        print('Starting towing mode - error detection ON')
+                        VB.TowingActive.set()
+                    if (payload == 'stop'):
+                        print('Stopping towing mode - error detection OFF - disconnected from pink car')
+                        VB.TowingActive.clear()
+
+
+
+'''
                 elif (header == 'TOW'):
                     if (payload == 'request'):
                         print("Starting connection & approach")
@@ -302,7 +387,7 @@ class MyReceive(Thread):
                 # In case of an error detection while towing
                 if VB.CodeSem.acquire() and VB.TowingActive.is_set() and VB.SourceProb != -1:
                     enable = 0
-
+'''
                 print(self.speed_cmd)
                 print(self.move)
                 print(self.turn)
