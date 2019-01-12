@@ -17,7 +17,7 @@ OM2 = 0x102
 
 TCP_PORT = 9000
 BUFFER_SIZE = 20
-
+'''
 # *********************************************************
 # THREAD 1 - Connection à la voiture noire
 # *********************************************************
@@ -25,8 +25,8 @@ class MyComSlave(Thread):
     def __init__(self,IpPink,IpBlack):
         Thread.__init__(self)
         self.addr = -1
-        self.IpPink = VBS.IpPink
-        self.IpBlack = VBS.IpBlack
+        self.IpPink = IpPink
+        self.IpBlack = IpBlack
         print(self.getName(), 'MyComSlave initialized')
 
     def run(self):
@@ -56,22 +56,23 @@ class MyComSlave(Thread):
                 print('Closing communication channel')
                 VBS.conn.close()
                 self.addr = -1
-
+'''
 
 # *********************************************************
 # THREAD 2 - Envoi de message à la voiture noire
 # *********************************************************
 class MySendSlave(Thread):
 
-    def __init__(self,bus):
+    def __init__(self,conn,bus):
         Thread.__init__(self)
         self.bus = bus
+        self.conn = conn
         print(self.getName(), 'MySend initialized')
 
     def run(self):
         while True :
             msg = self.bus.recv()
-            if not VBS.Connection_ON.is_set():
+            if VBS.Connection_ON.is_set():
                 conn = VBS.conn
                 if msg.arbitration_id == US2:
                     # ultrason avant centre
