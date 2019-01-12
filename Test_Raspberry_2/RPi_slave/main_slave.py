@@ -42,7 +42,7 @@ print('IpPink - ' + IpPink)
 # *********************************************************
 addr = -1
 while not VBS.Connection_ON.is_set():
-	if addr == -1:
+    if addr == -1:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.bind((IpPink,TCP_PORT))
