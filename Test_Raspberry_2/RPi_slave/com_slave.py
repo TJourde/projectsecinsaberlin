@@ -47,6 +47,7 @@ class MyComSlave(Thread):
                 VBS.conn_tow = -1
                 print('Waiting 10 sec before continuing')
                 time.sleep(10)
+                VBS.BrokenPipeEvent.clear()
 
             if not VBS.Connection_ON.is_set():
                 if addr == -1 and not waiting_connection:
@@ -100,9 +101,7 @@ class MySendSlave(Thread):
     def run(self):
         while True :
             msg = self.bus.recv()
-            if not VBS.Connection_ON.is_set():
-                print('exit MySendSlave')
-                break
+            if not VBS.Connection_ON.is_set(): break
 
             if msg.arbitration_id == US2:
                 # ultrason avant centre
