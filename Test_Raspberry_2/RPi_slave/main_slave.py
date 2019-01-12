@@ -18,11 +18,10 @@ except OSError:
     print('Cannot find PiCAN board.')
     exit()
 
-FindIp()
-
-
+print('Black' + VBS.IpBlack)
+print('Pink' + VBS.IpPink)
 # starting communication with black car
-newcomslave = MyComSlave(VBS.IpPink,VBS.IpBlack)
+newcomslave = MyComSlave(VBS.IpBlack, VBS.IpPink)
 newcomslave.start()
 
 # starting message threads
