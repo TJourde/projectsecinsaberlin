@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # coding: utf-8
 from threading import Thread
 import time
@@ -19,7 +17,6 @@ OM2 = 0x102
 
 TCP_PORT = 9000
 BUFFER_SIZE = 20
-
 
 # *********************************************************
 # THREAD 1 - Connection à la voiture noire
@@ -61,7 +58,6 @@ class MyComSlave(Thread):
                 self.addr = -1
 
 
-
 # *********************************************************
 # THREAD 2 - Envoi de message à la voiture noire
 # *********************************************************
@@ -83,7 +79,6 @@ class MySendSlave(Thread):
                     message = "UFC_slave:" + str(distance_us3)+ ";"
                     size = conn.send(message.encode())
                     if size == 0: break
-
 
 
 # *********************************************************
