@@ -42,17 +42,18 @@ print('IpPink - ' + IpPink)
 # *********************************************************
 addr = -1
 waiting_connection = False
+conn = -1
 while not VBS.Connection_ON.is_set():
-    if addr == -1 and waiting_connection:
-        waiting_connection = False
+    if addr == -1 and not waiting_connection:
+        waiting_connection = True
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.bind((IpPink,TCP_PORT))
             s.listen()
             print('Pink car ready to receive connection')
-            VBS.conn, addr = s.accept()
+            conn, addr = s.accept()
         except socket.error:
-            VBS.conn.close()
+            conn.close()
             print('Socket error while receiving connection')
 
     # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
@@ -62,12 +63,12 @@ while not VBS.Connection_ON.is_set():
         VBS.Connection_ON.set()
 
     # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
-    elif (addr != IpBlack):
+    elif addr != IpBlack and addr != -1:
+        waiting_connection = False
         VBS.Connection_ON.clear()
         print('Connected to unknown device, with address ' + repr(addr))
         print('Closing communication channel')
-        VBS.conn.close()
-        waiting_connection = True
+        conn.close()
         addr = -1
 
 '''        
