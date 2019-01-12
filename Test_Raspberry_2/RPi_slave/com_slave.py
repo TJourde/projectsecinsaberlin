@@ -44,7 +44,7 @@ class MyComSlave(Thread):
                     print('Pink car ready to receive connection')
                     VBS.conn, self.addr = s.accept()
                 except socket.error:
-                    conn.close()
+                    VBS.conn.close()
                     print('Socket error while receiving connection')
 
             # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
@@ -57,7 +57,7 @@ class MyComSlave(Thread):
                 Connection_ON.clear()
                 print('Connected to unknown device, with address ' + repr(self.addr))
                 print('Closing communication channel')
-                conn.close()
+                VBS.conn.close()
                 self.addr = -1
 
 
@@ -75,7 +75,7 @@ class MySendSlave(Thread):
     def run(self):
         while True :
             msg = self.bus.recv()
-            if not Connection_ON.is_set():
+            if not VBS.Connection_ON.is_set():
                 conn = VBS.conn
                 if msg.arbitration_id == US2:
                     # ultrason avant centre
