@@ -7,6 +7,8 @@ import socket
 
 from com_slave import *
 
+import VarBerlin_slave as VBS
+
 
 # Try connection to bus interface
 try:
@@ -18,14 +20,15 @@ except OSError:
 
 FindIp()
 
+
 # starting communication with black car
-newcomslave = MyComSlave(IpPink,IpBlack)
+newcomslave = MyComSlave(VBS.IpPink,VBS.IpBlack)
 newcomslave.start()
 
 # starting message threads
-newreceiveslave = MyReceiveSlave(conn,bus)
+newreceiveslave = MyReceiveSlave(bus)
 newreceiveslave.start()
-newsendslave = MySendSlave(conn,bus)
+newsendslave = MySendSlave(bus)
 newsendslave.start()
 
 # ending threads

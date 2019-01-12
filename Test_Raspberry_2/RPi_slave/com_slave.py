@@ -8,6 +8,8 @@ import os
 import struct
 import socket
 
+import VarBerlin_slave as VBS
+
 MCM = 0x010
 MS = 0x100
 US1 = 0x000
@@ -20,36 +22,14 @@ BUFFER_SIZE = 20
 
 
 # *********************************************************
-# FUNCTION 1 - trouve l'adresse IP en fonction du réseau
-# *********************************************************
-def FindIp():
-    global IpPink
-    global IpBlack
-
-    # Search own IP address to know which network it's on
-    IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
-    IpPink = IpPink[:len(IpPink)-2] #(suppress ' \n')
-    if IpPink == '10.105.0.53': # IOT network
-        IpBlack = '10.105.0.55'
-    elif IpPink == '192.168.137.12': # Berlin network
-        IpBlack = '192.168.137.27'
-    elif IpPink == '192.168.1.21': # Grenier network
-        IpBlack = '192.168.1.20'
-
-
-# *********************************************************
 # THREAD 1 - Connection à la voiture noire
 # *********************************************************
 class MyComSlave(Thread):
     def __init__(self,IpPink,IpBlack):
         Thread.__init__(self)
         self.addr = -1
-        self.IpPink = IpPink
-        self.IpBlack = IpBlack
-        global Connection_ON
-        Connection_ON = False
-        global conn
-        conn = -1   
+        self.IpPink = VBS.IpPink
+        self.IpBlack = VBS.IpBlack
         print(self.getName(), 'MyComSlave initialized')
 
     def run(self):
@@ -61,7 +41,8 @@ class MyComSlave(Thread):
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.bind((self.IpPink,TCP_PORT))
                     s.listen()
-                    conn, self.addr = s.accept()
+                    print('Pink car ready to receive connection')
+                    VBS.conn, self.addr = s.accept()
                 except socket.error:
                     conn.close()
                     print('Socket error while receiving connection')
@@ -69,11 +50,11 @@ class MyComSlave(Thread):
             # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
             elif (self.addr == self.IpBlack):
                 print('Connected to Berlin car with address' + repr(self.addr))
-                Connection_ON = True
+                Connection_ON.set()
 
             # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
             elif (self.addr != self.IpBlack):
-                Connection_ON = False
+                Connection_ON.clear()
                 print('Connected to unknown device, with address ' + repr(self.addr))
                 print('Closing communication channel')
                 conn.close()
@@ -86,16 +67,16 @@ class MyComSlave(Thread):
 # *********************************************************
 class MySendSlave(Thread):
 
-    def __init__(self,conn,bus):
+    def __init__(self,bus):
         Thread.__init__(self)
         self.bus = bus
-        self.conn = conn
         print(self.getName(), 'MySend initialized')
 
     def run(self):
         while True :
             msg = self.bus.recv()
-            if Connection_ON:
+            if not Connection_ON.is_set():
+                conn = VBS.conn
                 if msg.arbitration_id == US2:
                     # ultrason avant centre
                     distance_us3 = int.from_bytes(msg.data[4:6], byteorder='big')
@@ -109,10 +90,9 @@ class MySendSlave(Thread):
 # THREAD 3 - Réception de messages depuis la voiture noire
 # *********************************************************
 class MyReceiveSlave(Thread):
-    def __init__(self,conn,bus):
+    def __init__(self,bus):
         Thread.__init__(self)
         self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
-        self.conn = conn
         self.speed_cmd = 0
         self.move = 0
         self.turn = 0
