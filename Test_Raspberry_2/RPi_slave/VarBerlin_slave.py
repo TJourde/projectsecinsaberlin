@@ -3,10 +3,6 @@
 from threading import *
 import os
 
-global Connection_ON
-Connection_ON = Event()
-global conn_tow
-conn_tow = -1
 
 # *********************************************************
 # IP addresses configuration
@@ -29,3 +25,14 @@ elif IpPink == '192.168.1.21': # Grenier network
 
 print('IpBlack - ' + IpBlack)
 print('IpPink - ' + IpPink)
+
+
+# *********************************************************
+# Connection with black car
+# *********************************************************
+global Connection_ON
+Connection_ON = Event()
+global conn_tow
+conn_tow = -1
+global BrokenPipeEvent
+BrokenPipeEvent = Event()

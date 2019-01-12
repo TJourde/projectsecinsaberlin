@@ -35,6 +35,13 @@ class MyComSlave(Thread):
         IpBlack = VBS.IpBlack
 
         while 1:
+            if VBS.BrokenPipeEvent.is_set():
+                print('BrokenPipeError encountered')
+                newsendslave.join()
+                newreceiveslave.join()
+                stow.close()
+                addr = -1
+
             if not VBS.Connection_ON.is_set():
                 if addr == -1 and not waiting_connection:
                     waiting_connection = True
@@ -60,8 +67,6 @@ class MyComSlave(Thread):
                     newsendslave = MySendSlave(VBS.conn_tow,self.bus)
                     newsendslave.start()
 
-                    newsendslave.join()
-                    newreceiveslave.join()
 
                 # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
                 elif IpBlack not in addr and addr != -1:
@@ -71,6 +76,8 @@ class MyComSlave(Thread):
                     print('Closing communication channel')
                     stow.close()
                     addr = -1
+
+        print('exit MyComSlave')
 
 
 # *********************************************************
@@ -95,8 +102,15 @@ class MySendSlave(Thread):
                 # ultrason avant centre
                 distance_us3 = int.from_bytes(msg.data[4:6], byteorder='big')
                 message = "UFC_slave:" + str(distance_us3)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
+                try:
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                except BrokenPipeError:
+                    VBS.BrokenPipeEvent.set()
+                    VBS.Connection_ON.clear()
+                    break
+
+        print('exit MySendSlave')
 
 # *********************************************************
 # THREAD 3 - Réception de messages depuis la voiture noire
@@ -118,7 +132,6 @@ class MyReceiveSlave(Thread):
         self.enable = 0
 
         while True :
-            if not VBS.Connection_ON.is_set():
-                print('exit MyReceiveSlave')
-                break
+            if not VBS.Connection_ON.is_set():break
             pass
+        print('exit MyReceiveSlave')
