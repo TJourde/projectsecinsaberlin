@@ -161,7 +161,7 @@ class MySend(Thread):
                 if size == 0: break
             
             # --------------------------------------
-            # PART 2 - added messages
+            # PART 2 - Towing-related messages
             # --------------------------------------
             # capteur magnétique
             elif msg.arbitration_id == HALL:
@@ -196,23 +196,20 @@ class MySend(Thread):
             elif VB.TowingError.is_set():
                 message = "STATE:towing_error"
                 size = self.conn.send(message.encode())
-                if size == 0: break
-                error_code = read(CodeError)
-                message = "ERR:" + str(error_code) + ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
+                if size == 0: break             
             else:
                 message = "STATE:idle"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            
-            # code erreur pendant remorquage
-            if VB.TowingError.is_set():
-                error_code = read(CodeError)
-                message = "ERR:" + str(error_code) + ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
 
+            # code d'erreur pendant remorquage
+            if VB.TowingActive.is_set() or VB.TowingError.is_set():
+                if VB.ErrorCodeSem.acquire(False)
+                    message = "ERR:" + str(VB.ErrorCode) + ";"
+                    VB.ErrorCodeSem.release()
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+            
 '''
             # Valeurs propres au towing
             if not(VB.ConnectComplete.is_set() and VB.ApproachComplete.is_set() and VB.TowingActive.is_set()):
@@ -290,8 +287,7 @@ class MyReceive(Thread):
                 
                 # --------------------------------------
                 # PART 1 - Native messages
-                # --------------------------------------
-                
+                # --------------------------------------                
                 # speed
                 if (header == 'SPE'): 
                     self.speed_cmd = int(payload)
@@ -327,7 +323,7 @@ class MyReceive(Thread):
 
 
                 # --------------------------------------
-                # PART 2 - added messages
+                # PART 2 - Towing-related messages
                 # --------------------------------------
                 # front wheels position
                 elif (header == 'POS'): 
@@ -340,11 +336,12 @@ class MyReceive(Thread):
                     if (payload == 'start'):
                         print('Start hooking manoeuver')
                         VB.TryConnect.set()
-                        VB.TryApproach.set()
+                        # VB.TryApproach.set()
                         self.enable = 0
                     if (payload == 'stop'):
                         print('Stopping hooking manoeuver')
                         VB.TryConnect.clear()
+                        VB.ConnectedWIthPink.clear()
                         VB.TryApproach.clear()
                 # towing related commands
                 elif (header == 'TOW'):

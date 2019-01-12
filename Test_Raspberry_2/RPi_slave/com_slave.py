@@ -32,6 +32,8 @@ if IpPink == '10.105.0.53': # IOT network
     IpBlack = '10.105.0.55'
 elif IpPink == '192.168.137.12': # Berlin network
     IpBlack = '192.168.137.27'
+elif IpPink == '192.168.1.21': # Grenier network
+    IpBlack = '192.168.1.20'
 
 # *********************************************************
 # THREAD 1 - Connection à la voiture noire
@@ -56,12 +58,12 @@ class MyComSlave(Thread):
                     conn, self.addr = s.accept()
                 except socket.error:
                     conn.close()
-                    print('Socket error while receiving connection from black car')
+                    print('Socket error while receiving connection')
 
             # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
             elif (self.addr == IpBlack):
                 self.waiting_connection = False
-                print('Connected to second car with address' + repr(self.addr))
+                print('Connected to Berlin car with address' + repr(self.addr))
                 Connection_ON = True
 
             # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
@@ -119,5 +121,4 @@ class MyReceiveSlave(Thread):
         self.enable = 0
 
         while True :
-            if Connection_ON:
-                pass
+            pass

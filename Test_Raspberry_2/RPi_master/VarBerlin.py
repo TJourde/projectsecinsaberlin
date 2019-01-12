@@ -3,6 +3,9 @@ from threading import *
 import os
 
 
+# *********************************************************
+# VARIABLE - connexion voiture rose
+# *********************************************************
 #IP of the towed vehicle
 global IpBlack
 global IpPink
@@ -16,7 +19,8 @@ if IpBlack == '10.105.0.55': # IOT network
     IpPink = '10.105.0.53'
 elif IpBlack == '192.168.137.27': # Berlin network
     IpPink = '192.168.137.12'
-    
+elif IpBlack == '192.168.1.20': # Grenier network
+    IpPink = '192.168.1.21'    
 
 #Semaphore and variable to transmit front US from 2nd car
 global US3Sem
@@ -27,6 +31,18 @@ US3Dispo.clear()
 global US3
 US3 = -1
 
+# *********************************************************
+# VARIABLE - communication par mail
+# *********************************************************
+global SrcAddr
+SrcAddr = 'teamberlingei@gmail.com'
+global DestAddr
+DestAddr = 'teamberlingei@gmail.com'
+
+
+# *********************************************************
+# VARIABLE - code d'erreur
+# *********************************************************
 #Semaphore and variable to transmit source of the problem
 global ErrorCodeSem
 ErrorCodeSem = BoundedSemaphore(1)
@@ -37,12 +53,15 @@ global ErrorUSFail
 ErrorUSFail = 0b0001
 global ErrorUS3Fail
 ErrorUS3Fail = 0b0010
-global ErrorMag
+global ErrorMagFail
 ErrorMag = 0b0100
 global ErrorLostConnection
 ErrorLostConnection = 0b1000
 
 
+# *********************************************************
+# VARIABLE - signaux inter-threads
+# *********************************************************
 #Signal all stop
 global stop_all
 stop_all = Event()
@@ -94,7 +113,7 @@ def ReadUS3():
 
 
 # *********************************************************
-# FUNCTION 3 - Ecrit la valeur en argument dans la variable "ErrorCode" avec blocage (définie au-dessus)
+# FUNCTION 3 - Ecrit la valeur en argument dans la variable "ErrorCode" (définie au-dessus) avec blocage 
 # *********************************************************
 def WriteErrorCode(value):
     ErrorCodeSem.acquire(True):

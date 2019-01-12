@@ -28,6 +28,13 @@ PORT = 6666              # Arbitrary non-privileged port
 
 if __name__ == "__main__":
 
+    # Bring up CAN0
+    print('Bring up CAN0....')
+    os.system("sudo ifconfig can0 down")
+    time.sleep(0.1)
+    os.system("sudo /sbin/ip link set can0 up type can bitrate 400000")
+    time.sleep(0.1)
+
     try:
         bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
     except OSError:
@@ -61,8 +68,8 @@ if __name__ == "__main__":
         alldone = True
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
-        VB.stop_all.set()
         print('Shutting down all process...')
+        VB.stop_all.set()
     except socket.error:
         print('Socket error')
         print(socket.error)

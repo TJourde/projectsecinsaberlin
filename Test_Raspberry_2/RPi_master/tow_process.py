@@ -170,10 +170,8 @@ class ErrorDetection(Thread):
         self.FLAG_US = False
         self.FLAG_US3 = False
         self.FLAG_CM = False
-        # Problem source + explanation
-        self.CodeErreur = ''
-        self.Prob = -1
-        self.Expl = -1
+        # Code d'erreur
+        self.CodeErreur = 0
 
         print(self.getName(), 'ErrorDetection initialized')
 
@@ -195,9 +193,7 @@ class ErrorDetection(Thread):
         self.FLAG_US = False
         self.FLAG_US3 = False
         self.FLAG_CM = False
-        self.CodeErreur = ''
-        self.Prob = -1
-        self.Expl = -1
+        self.CodeErreur = 0
 
         while True:
             
@@ -261,14 +257,32 @@ class ErrorDetection(Thread):
                     msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
                     self.bus.send(msg)
 
-                    # Détermine code erreur
-                    if self.FLAG_CM:
-                        self.CodeErreur = self.CodeErreur + "a"
+                    # Détermine code erreur et l'écrit dans VB.ErrorCode
                     if self.FLAG_US:
-                        self.CodeErreur = self.CodeErreur + "b"
+                        self.CodeErreur = self.CodeErreur | VB.ErrorUSFail
                     if self.FLAG_US3:
-                        self.CodeErreur = self.CodeErreur + "c"
+                        self.CodeErreur = self.CodeErreur | VB.ErrorUS3Fail
+                    if self.FLAG_CM:
+                        self.CodeErreur = self.CodeErreur | VB.ErrorMagFail
 
+                    WriteErrorCode(self.CodeErreur)
+
+                    # --------------------------------------
+                    # PART 3 - Modification des variables à envoyer à l'application et envoi d'un mail d'alerte en cas de panne
+                    # --------------------------------------
+
+                    mail_subject = 'Towing process'
+                    mail_body = 'Error while towing - code: ' + str(self.CodeErreur)
+                    print(mail_body)
+
+                    if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
+                        print('Décrochage de la 2e voiture détecté')
+                        self.CodeErreur = 0
+                    else:                        
+                        VB.SendMail(mail_subject, mail_body)
+                        break
+
+'''
                     # Détermine le message à envoyer en fonction du problème rencontré
                     if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
                         self.Prob = "CM && US && US3"
@@ -296,12 +310,8 @@ class ErrorDetection(Thread):
                     print("Probleme rencontre: " + self.Prob)
 
 
-                    # --------------------------------------
-                    # PART 3 - Modification des variables à envoyer à l'application et envoi d'un mail d'alerte en cas de panne
-                    # --------------------------------------
                
                     # Ecriture dans la variable "SourceProb" utilisée pour l'envoi du message à l'appli
-                    VB.WriteErrorCode(self.CodeErreur)
 
                     if not(self.FLAG_CM and self.FLAG_US and self.FLAG_US3): # En cas de probleme not corrigible, envoie un mail et arrete le thread
                         mail_subjet = "Unsolvable problem during towing"
@@ -312,3 +322,4 @@ class ErrorDetection(Thread):
                         self.CodeErreur = -1
                         self.Prob = -1
                         self.Expl = -1
+'''

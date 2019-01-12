@@ -3,6 +3,7 @@
 from threading import *
 import socket
 import struct
+import smtplib
 
 #importing variables linked
 import VarBerlin as VB
@@ -28,13 +29,15 @@ class MyComTow(Thread):
         VB.WriteUS3(False,-1)
         while True :
             
-            if VB.stop_all.is_set():break
+            if VB.stop_all.is_set():
+                break
+                s.close()
             
             # --------------------------------------
             # PART 1 - Essai de connexion à la voiture rose
             # --------------------------------------
 
-            if VB.TryConnect.is_set() and not(VB.ConnectedWithPink.is_set()):
+            if VB.TryConnect.is_set():
                 try:
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.connect((VB.IpPink,TCP_PORT))
@@ -76,3 +79,19 @@ class MyComTow(Thread):
                         if size == 0: 
                             break
                             print(self.getName(),': error while sending UFC_slave data to IHM')
+
+
+
+# *********************************************************
+# FONCTION - envoie un mail avec comme contenu les arguments de la fonctions
+# *********************************************************
+def SendMail(subject,body):
+    mail = smtplib.STMP('smtp.gmail.com',587)
+    s.starttls()
+    s.ehlo()
+    s.login('teamberlingei','teamberlingei2018')
+
+    msg = 'Subject: ' + subject + '\n' + body
+    mail.sendmail(VB.SrcAddr,VB.DestAddr,msg)
+    mail.quit()
+    print('Mail sent to ' + VB.DestAddr + 'with content: ' + body)
