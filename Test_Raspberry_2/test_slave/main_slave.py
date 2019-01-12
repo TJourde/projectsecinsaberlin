@@ -25,6 +25,4 @@ newcomslave = MyComSlave(bus)
 newcomslave.start()
 
 # ending threads
-newreceiveslave.join()
-newsendslave.join()
 newcomslave.join()

@@ -21,8 +21,8 @@ BUFFER_SIZE = 20
 # *********************************************************
 # THREAD 1 - Connection à la voiture noire
 # *********************************************************
-class MyComSlave(Thread,bus):
-    def __init__(self):
+class MyComSlave(Thread):
+    def __init__(self,bus):
         Thread.__init__(self)
         self.bus = bus
         print(self.getName(), 'MyComSlave initialized')
@@ -60,6 +60,9 @@ class MyComSlave(Thread,bus):
                     newsendslave = MySendSlave(VBS.conn_tow,self.bus)
                     newsendslave.start()
 
+                    newsendslave.join()
+                    newreceiveslave.join()
+
                 # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
                 elif IpBlack not in addr and addr != -1:
                     waiting_connection = False
@@ -96,7 +99,9 @@ class MySendSlave(Thread):
                 except BrokenPipeError:
                     print('BrokenPipeError while sending msg')
                     VBS.Connection_ON.clear()
+                    print('before break')
                     break
+                    print('after break')
 
 # *********************************************************
 # THREAD 3 - Réception de messages depuis la voiture noire
@@ -118,5 +123,7 @@ class MyReceiveSlave(Thread):
         self.enable = 0
 
         while True :
-            if not VBS.Connection_ON.is_set(): break
+            if not VBS.Connection_ON.is_set():
+                print('exit MyReceiveSlave')
+                break
             pass
