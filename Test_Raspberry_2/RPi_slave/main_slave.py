@@ -41,8 +41,10 @@ print('IpPink - ' + IpPink)
 # Awaiting connection from black car
 # *********************************************************
 addr = -1
+waiting_connection = False
 while not VBS.Connection_ON.is_set():
-    if addr == -1:
+    if addr == -1 and waiting_connection:
+    	waiting_connection = False
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.bind((IpPink,TCP_PORT))
@@ -55,6 +57,7 @@ while not VBS.Connection_ON.is_set():
 
     # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
     elif (addr == IpBlack):
+    	waiting_connection = False
         print('Connected to Berlin car with address' + repr(addr))
         VBS.Connection_ON.set()
 
@@ -64,6 +67,7 @@ while not VBS.Connection_ON.is_set():
         print('Connected to unknown device, with address ' + repr(addr))
         print('Closing communication channel')
         VBS.conn.close()
+    	waiting_connection = True
         addr = -1
 
 '''        
