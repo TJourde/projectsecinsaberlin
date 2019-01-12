@@ -17,46 +17,61 @@ OM2 = 0x102
 
 TCP_PORT = 9000
 BUFFER_SIZE = 20
-'''
+
 # *********************************************************
 # THREAD 1 - Connection à la voiture noire
 # *********************************************************
 class MyComSlave(Thread):
-    def __init__(self,IpPink,IpBlack):
+    def __init__(self,bus):
         Thread.__init__(self)
-        self.addr = -1
-        self.IpPink = IpPink
-        self.IpBlack = IpBlack
+        self.bus = bus
         print(self.getName(), 'MyComSlave initialized')
 
     def run(self):
-        while True:
 
-            # Check si aucune connection n'est en cours
-            if self.addr == -1:
-                try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.bind((self.IpPink,TCP_PORT))
-                    s.listen()
-                    print('Pink car ready to receive connection')
-                    VBS.conn, self.addr = s.accept()
-                except socket.error:
-                    VBS.conn.close()
-                    print('Socket error while receiving connection')
+        waiting_connection = False
+        addr = -1
+        IpPink = VBS.IpPink
+        IpBlack = VBS.IpBlack
 
-            # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
-            elif (self.addr == self.IpBlack):
-                print('Connected to Berlin car with address' + repr(self.addr))
-                Connection_ON.set()
+        while 1:
+            if not VBS.Connection_ON.is_set():
+                if addr == -1 and not waiting_connection:
+                    waiting_connection = True
+                    try:
+                        stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        stow.bind((IpPink,TCP_PORT))
+                        stow.listen()
+                        print('Pink car ready to receive connection')
+                        VBS.conn_tow, addr = stow.accept()
+                    except socket.error:
+                        VBS.Connection_ON.clear()
+                        stow.close()
+                        print('Socket error while receiving connection')
+                        
+                # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
+                elif IpBlack in addr:
+                    waiting_connection = False
+                    print('Connected to Berlin car with address' + repr(addr))
+                    VBS.Connection_ON.set()
 
-            # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
-            elif (self.addr != self.IpBlack):
-                Connection_ON.clear()
-                print('Connected to unknown device, with address ' + repr(self.addr))
-                print('Closing communication channel')
-                VBS.conn.close()
-                self.addr = -1
-'''
+                    newreceiveslave = MyReceiveSlave(self.bus)
+                    newreceiveslave.start()
+                    newsendslave = MySendSlave(VBS.conn_tow,self.bus)
+                    newsendslave.start()
+
+                    newsendslave.join()
+                    newreceiveslave.join()
+
+                # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
+                elif IpBlack not in addr and addr != -1:
+                    waiting_connection = False
+                    VBS.Connection_ON.clear()
+                    print('Connected to unknown device, with address ' + repr(addr))
+                    print('Closing communication channel')
+                    stow.close()
+                    addr = -1
+
 
 # *********************************************************
 # THREAD 2 - Envoi de message à la voiture noire
@@ -72,14 +87,16 @@ class MySendSlave(Thread):
     def run(self):
         while True :
             msg = self.bus.recv()
-            if VBS.Connection_ON.is_set():
-                if msg.arbitration_id == US2:
-                    # ultrason avant centre
-                    distance_us3 = int.from_bytes(msg.data[4:6], byteorder='big')
-                    message = "UFC_slave:" + str(distance_us3)+ ";"
-                    size = self.conn.send(message.encode())
-                    if size == 0: break
+            if not VBS.Connection_ON.is_set():
+                print('exit MySendSlave')
+                break
 
+            if msg.arbitration_id == US2:
+                # ultrason avant centre
+                distance_us3 = int.from_bytes(msg.data[4:6], byteorder='big')
+                message = "UFC_slave:" + str(distance_us3)+ ";"
+                size = self.conn.send(message.encode())
+                if size == 0: break
 
 # *********************************************************
 # THREAD 3 - Réception de messages depuis la voiture noire
@@ -101,4 +118,7 @@ class MyReceiveSlave(Thread):
         self.enable = 0
 
         while True :
+            if not VBS.Connection_ON.is_set():
+                print('exit MyReceiveSlave')
+                break
             pass
