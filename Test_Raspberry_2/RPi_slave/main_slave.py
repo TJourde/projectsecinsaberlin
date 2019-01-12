@@ -54,7 +54,7 @@ while not VBS.Connection_ON.is_set():
             stow.bind((IpPink,TCP_PORT))
             stow.listen()
             print('Pink car ready to receive connection')
-            conn, addr = s.accept()
+            conn, addr = stow.accept()
         except (socket.error,BrokenPipeError):
             VBS.Connection_ON.clear()
             stow.close()
