@@ -73,12 +73,11 @@ class MySendSlave(Thread):
         while True :
             msg = self.bus.recv()
             if VBS.Connection_ON.is_set():
-                conn = VBS.conn
                 if msg.arbitration_id == US2:
                     # ultrason avant centre
                     distance_us3 = int.from_bytes(msg.data[4:6], byteorder='big')
                     message = "UFC_slave:" + str(distance_us3)+ ";"
-                    size = conn.send(message.encode())
+                    size = self.conn.send(message.encode())
                     if size == 0: break
 
 

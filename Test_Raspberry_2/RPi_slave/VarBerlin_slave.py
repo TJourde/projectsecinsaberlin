@@ -5,5 +5,3 @@ import os
 
 global Connection_ON
 Connection_ON = Event()
-global conn
-conn = '-1'
