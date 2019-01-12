@@ -37,10 +37,16 @@ class MyComSlave(Thread):
         while 1:
             if VBS.BrokenPipeEvent.is_set():
                 print('BrokenPipeError encountered')
+                VBS.Connection_ON.clear()
                 newsendslave.join()
                 newreceiveslave.join()
+                #stow.shutdown()
                 stow.close()
+                stow = -1
                 addr = -1
+                VBS.conn_tow = -1
+                print('Waiting 10 sec before continuing')
+                time.sleep(10)
 
             if not VBS.Connection_ON.is_set():
                 if addr == -1 and not waiting_connection:
@@ -107,7 +113,6 @@ class MySendSlave(Thread):
                     if size == 0: break
                 except BrokenPipeError:
                     VBS.BrokenPipeEvent.set()
-                    VBS.Connection_ON.clear()
                     break
 
         print('exit MySendSlave')
