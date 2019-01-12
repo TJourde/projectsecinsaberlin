@@ -56,11 +56,11 @@ while not VBS.Connection_ON.is_set():
     # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
     elif (addr == IpBlack):
         print('Connected to Berlin car with address' + repr(addr))
-        Connection_ON.set()
+        VBS.Connection_ON.set()
 
     # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
     elif (addr != IpBlack):
-        Connection_ON.clear()
+        VBS.Connection_ON.clear()
         print('Connected to unknown device, with address ' + repr(addr))
         print('Closing communication channel')
         VBS.conn.close()
