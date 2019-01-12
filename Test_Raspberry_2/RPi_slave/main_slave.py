@@ -16,14 +16,16 @@ except OSError:
     print('Cannot find PiCAN board.')
     exit()
 
+FindIp()
+
 # starting communication with black car
-newcomslave = MyComSlave()
+newcomslave = MyComSlave(IpPink,IpBlack)
 newcomslave.start()
 
 # starting message threads
-newreceiveslave = MyReceiveSlave(bus)
+newreceiveslave = MyReceiveSlave(conn,bus)
 newreceiveslave.start()
-newsendslave = MySendSlave(bus)
+newsendslave = MySendSlave(conn,bus)
 newsendslave.start()
 
 # ending threads

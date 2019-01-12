@@ -18,42 +18,48 @@ OM2 = 0x102
 TCP_PORT = 9000
 BUFFER_SIZE = 20
 
-global IpPink
-global IpBlack
-global Connection_ON
-Connection_ON = False
-global conn
-conn = -1
 
-# Search own IP address to know which network it's on
-IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
-IpPink = IpPink[:len(IpPink)-2] #(suppress ' \n')
-if IpPink == '10.105.0.53': # IOT network
-    IpBlack = '10.105.0.55'
-elif IpPink == '192.168.137.12': # Berlin network
-    IpBlack = '192.168.137.27'
-elif IpPink == '192.168.1.21': # Grenier network
-    IpBlack = '192.168.1.20'
+# *********************************************************
+# FUNCTION 1 - trouve l'adresse IP en fonction du réseau
+# *********************************************************
+def FindIp():
+    global IpPink
+    global IpBlack
+
+    # Search own IP address to know which network it's on
+    IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
+    IpPink = IpPink[:len(IpPink)-2] #(suppress ' \n')
+    if IpPink == '10.105.0.53': # IOT network
+        IpBlack = '10.105.0.55'
+    elif IpPink == '192.168.137.12': # Berlin network
+        IpBlack = '192.168.137.27'
+    elif IpPink == '192.168.1.21': # Grenier network
+        IpBlack = '192.168.1.20'
+
 
 # *********************************************************
 # THREAD 1 - Connection à la voiture noire
 # *********************************************************
 class MyComSlave(Thread):
-    def __init__(self):
+    def __init__(self,IpPink,IpBlack):
         Thread.__init__(self)
         self.addr = -1
-        self.waiting_connection = False
+        self.IpPink = IpPink
+        self.IpBlack = IpBlack
+        global Connection_ON
+        Connection_ON = False
+        global conn
+        conn = -1   
         print(self.getName(), 'MyComSlave initialized')
 
     def run(self):
         while True:
 
             # Check si aucune connection n'est en cours
-            if ((self.addr == -1) and (self.waiting_connection == False)):
-                waiting_connection = True
+            if self.addr == -1:
                 try:
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.bind((IpPink,TCP_PORT))
+                    s.bind((self.IpPink,TCP_PORT))
                     s.listen()
                     conn, self.addr = s.accept()
                 except socket.error:
@@ -61,19 +67,17 @@ class MyComSlave(Thread):
                     print('Socket error while receiving connection')
 
             # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
-            elif (self.addr == IpBlack):
-                self.waiting_connection = False
+            elif (self.addr == self.IpBlack):
                 print('Connected to Berlin car with address' + repr(self.addr))
                 Connection_ON = True
 
             # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
-            elif (self.addr != IpBlack):
+            elif (self.addr != self.IpBlack):
                 Connection_ON = False
                 print('Connected to unknown device, with address ' + repr(self.addr))
                 print('Closing communication channel')
                 conn.close()
                 self.addr = -1
-                self.waiting_connection = True
 
 
 
@@ -82,9 +86,10 @@ class MyComSlave(Thread):
 # *********************************************************
 class MySendSlave(Thread):
 
-    def __init__(self, bus):
+    def __init__(self,conn,bus):
         Thread.__init__(self)
         self.bus = bus
+        self.conn = conn
         print(self.getName(), 'MySend initialized')
 
     def run(self):
@@ -104,10 +109,10 @@ class MySendSlave(Thread):
 # THREAD 3 - Réception de messages depuis la voiture noire
 # *********************************************************
 class MyReceiveSlave(Thread):
-    def __init__(self, bus):
+    def __init__(self,conn,bus):
         Thread.__init__(self)
         self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
-
+        self.conn = conn
         self.speed_cmd = 0
         self.move = 0
         self.turn = 0
