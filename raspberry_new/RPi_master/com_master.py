@@ -267,12 +267,7 @@ class MyReceive(Thread):
             data = str(data)
             data = data[2:len(data)-1]
 
-            if not data:
-                print('no data')
-                continue
-            if data == '':
-                print('data == ""')
-                continue
+            if not data: break
 
             print(data)
             #except IOError as e:

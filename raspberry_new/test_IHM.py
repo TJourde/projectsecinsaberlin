@@ -48,9 +48,9 @@ try:
         data = stest.recv(50)
         data = str(data)
         data = data[2:len(data)-1]
-        data = data.split(';')
-        if not data: continue
-        print(data)
+        if not data: break
+        for cmd in data.split(';')
+        	print(data)
 except BrokenPipeError:
 	stest.close()
 	print('Exiting test_IHM program')
