@@ -9,18 +9,18 @@ import os
 global IpBlack
 global IpPink
 
-IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
-IpPink = IpPink[:len(IpPink)-2] #(suppress ' \n')
+IpBlack = os.popen('hostname -I').read() #get chain with '[@IP] \n'
+IpBlack = IpBlack[:len(IpBlack)-2] #(suppress ' \n')
 try:
-    IpPink, MACAddr = IpPink.split(' ') # remove MAC address appended
+    IpBlack, MACAddr = IpBlack.split(' ') # remove MAC address appended
 except ValueError:
     pass
-if IpPink == '10.105.0.53': # IOT network
-    IpBlack = '10.105.0.55'
-elif IpPink == '192.168.137.12': # Berlin network
-    IpBlack = '192.168.137.27'
-elif IpPink == '192.168.1.21': # Grenier network
-    IpBlack = '192.168.1.20'
+if IpBlack == '10.105.0.53': # IOT network
+    IpPink = '10.105.0.55'
+elif IpBlack == '192.168.137.12': # Berlin network
+    IpPink = '192.168.137.27'
+elif IpBlack == '192.168.1.21': # Grenier network
+    IpPink = '192.168.1.20'
 
 print('IpBlack - ' + IpBlack)
 print('IpPink - ' + IpPink)    
