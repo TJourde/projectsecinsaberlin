@@ -60,19 +60,21 @@ class MyComTow(Thread):
 
                 if not data: continue
 
-                # look for the identifier in received msg
-                if "UFC_slave" in data.decode("utf-8"): 
+                for cmd in data.split(';'):
 
-                        header_slave, payload_slave = data.split(':')
+                    # look for the identifier in received msg
+                    if "UFC_slave" in cmd: 
 
-                        VB.WriteUS3(True,payload_slave)
+                            header_slave, payload_slave = cmd.split(':')
 
-                        # send it to main application
-                        message = "UFC_slave:" + str(payload_slave) + ";"
-                        size = stow.send(message.encode())
-                        if size == 0: 
-                            print(self.getName(),': error while sending UFC_slave data to IHM')
-                            break
+                            VB.WriteUS3(True,payload_slave)
+
+                            # send it to main application
+                            message = "UFC_slave:" + str(payload_slave) + ";"
+                            size = stow.send(message.encode())
+                            if size == 0: 
+                                print(self.getName(),': error while sending UFC_slave data to IHM')
+                                break
 
             # --------------------------------------
             # Fermeture du socket si arrêt hooking/towing

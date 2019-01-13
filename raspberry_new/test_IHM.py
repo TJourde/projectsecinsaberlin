@@ -49,8 +49,8 @@ try:
         data = str(data)
         data = data[2:len(data)-1]
         if not data: break
-        for cmd in data.split(';')
-        	print(data)
+        for cmd in data.split(';'):
+        	print(cmd)
 except BrokenPipeError:
 	stest.close()
 	print('Exiting test_IHM program')
