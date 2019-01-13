@@ -65,11 +65,11 @@ if __name__ == "__main__":
         newtowingerrordetect = TowingErrorDetection(bus)
         newtowingerrordetect.start()
 
-    newreceive.join()
-    newsend.join()
-    newtowcom.join()
-    newapproach.join()
-    newtowingerrordetect.join()
+        newreceive.join()
+        newsend.join()
+        newtowcom.join()
+        newapproach.join()
+        newtowingerrordetect.join()
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         print('Shutting down all process...')
