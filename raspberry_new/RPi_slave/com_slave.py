@@ -36,7 +36,7 @@ class MyComSlave(Thread):
 
         while 1:
             if VBS.ConnectionErrorEvent.is_set():
-                print('BrokenPipeError encountered')
+                print(self.getName(),'BrokenPipeError encountered')
                 VBS.Connection_ON.clear()
                 newsendslave.join()
                 newreceiveslave.join()
@@ -47,7 +47,7 @@ class MyComSlave(Thread):
                 stow = -1
                 addr = -1
                 VBS.conn_tow = -1
-                print('Waiting 15 sec before continuing')
+                print(self.getName(),'Waiting 15 sec before continuing')
                 time.sleep(15)
                 VBS.ConnectionErrorEvent.clear()
 
@@ -58,17 +58,17 @@ class MyComSlave(Thread):
                         stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         stow.bind((IpPink,TCP_PORT))
                         stow.listen()
-                        print('Pink car ready to receive connection')
+                        print(self.getName(),'Pink car ready to receive connection')
                         VBS.conn_tow, addr = stow.accept()
                     except socket.error:
                         VBS.Connection_ON.clear()
                         stow.close()
-                        print('Socket error while receiving connection')
+                        print(self.getName(),'Socket error while receiving connection')
                         
                 # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
                 elif IpBlack in addr:
                     waiting_connection = False
-                    print('Connected to Berlin car with address' + repr(addr))
+                    print(self.getName(),'Connected to Berlin car with address' + repr(addr))
                     VBS.Connection_ON.set()
 
                     newreceiveslave = MyReceiveSlave(self.bus)
@@ -81,12 +81,12 @@ class MyComSlave(Thread):
                 elif IpBlack not in addr and addr != -1:
                     waiting_connection = False
                     VBS.Connection_ON.clear()
-                    print('Connected to unknown device, with address ' + repr(addr))
-                    print('Closing communication channel')
+                    print(self.getName(),'Connected to unknown device, with address ' + repr(addr))
+                    print(self.getName(),'Closing communication channel')
                     stow.close()
                     addr = -1
 
-        print('exit MyComSlave')
+        print(self.getName(),'exit MyComSlave')
 
 
 # *********************************************************
@@ -116,7 +116,7 @@ class MySendSlave(Thread):
                     VBS.ConnectionErrorEvent.set()
                     break
 
-        print('exit MySendSlave')
+        print(self.getName(),'exit MySendSlave')
 
 # *********************************************************
 # THREAD 3 - Réception de messages depuis la voiture noire
@@ -140,4 +140,4 @@ class MyReceiveSlave(Thread):
         while True :
             if not VBS.Connection_ON.is_set():break
             pass
-        print('exit MyReceiveSlave')
+        print(self.getName(),'exit MyReceiveSlave')

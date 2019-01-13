@@ -128,15 +128,15 @@ class Approach(Thread):
                     VB.Hooking_ON.set()
                     VB.Approach.clear()
                 elif self.US_POS == 'touch' and not(self.FLAG_MAGNET):
-                    print('Alignment error')
+                    print(self.getName(),'Alignment error')
                 elif self.US_POS != 'touch' and self.FLAG_MAGNET:
-                    print('Distance detection error')
+                    print(self.getName(),'Distance detection error')
                 elif self.US_POS == 'close':
-                    print('Slowing down and opening solenoid')
+                    print(self.getName(),'Slowing down and opening solenoid')
                     msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
                     bus.send(msg)
                 elif self.US_POS == 'away':
-                    print('Car away, backing in progress')
+                    print(self.getName(),'Car away, backing in progress')
                     msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
 
@@ -269,10 +269,10 @@ class ErrorDetection(Thread):
 
                 mail_subject = 'Towing process'
                 mail_body = 'Error while towing - code: ' + str(self.CodeErreur)
-                print(mail_body)
+                print(self.getName(),mail_body)
 
                 if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
-                    print('Décrochage de la 2e voiture détecté')
+                    print(self.getName(),'Décrochage de la 2e voiture détecté')
                     self.CodeErreur = 0
                 else:                        
                     VB.SendMail(mail_subject, mail_body)

@@ -100,4 +100,4 @@ def SendMail(subject,body):
     msg = 'Subject: ' + subject + '\n' + body
     mail.sendmail(VB.SrcAddr,VB.DestAddr,msg)
     mail.quit()
-    print('Mail sent to ' + VB.DestAddr + 'with content: ' + body)
+    print(self.getName(),'Mail sent to ' + VB.DestAddr + 'with content: ' + body)

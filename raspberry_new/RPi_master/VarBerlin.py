@@ -22,8 +22,8 @@ elif IpBlack == '192.168.137.27': # Berlin network
 elif IpBlack == '192.168.1.20': # Grenier network
     IpPink = '192.168.1.21'
 
-print('IpBlack - ' + IpBlack)
-print('IpPink - ' + IpPink)    
+print(self.getName(),'IpBlack - ', IpBlack)
+print(self.getName(),'IpPink - ', IpPink)    
 
 #Semaphore and variable to transmit front US from 2nd car
 global US3Sem

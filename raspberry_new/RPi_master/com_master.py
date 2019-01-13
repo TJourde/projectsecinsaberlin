@@ -272,14 +272,14 @@ class MyReceive(Thread):
 
             if not data: break
 
-            print(data)
+            print(self.getName(),data)
             #except IOError as e:
              #   pass
             
             
             #split each command received if there are more of 1 
             for cmd in data.split(';'):
-                #print('val cmd : ',cmd)
+                #print(self.getName(),'val cmd : ',cmd)
                 
                 # don't try an empty command
                 if not cmd: continue 
@@ -331,19 +331,19 @@ class MyReceive(Thread):
                 # front wheels position
                 elif (header == 'POS'): 
                     self.position_cmd = int(payload)
-                    print("steering wheels position is updated to ", self.position_cmd)
+                    print(self.getName(),"steering wheels position is updated to ", self.position_cmd)
                     self.pos = 1
                     self.enable = 1
                 # hooking related commands
                 elif (header == 'HOO'):
                     if (payload == 'start'):
-                        print('Start hooking manoeuver')
+                        print(self.getName(),'Start hooking manoeuver')
                         self.enable = 0
                         VB.Connect.set()
                         VB.Approach.set()
                         self.enable = 0
                     if (payload == 'stop'):
-                        print('Stopping hooking manoeuver')
+                        print(self.getName(),'Stopping hooking manoeuver')
                         VB.Connect.clear()
                         VB.Connection_ON.clear()
                         VB.Approach.clear()
@@ -351,19 +351,19 @@ class MyReceive(Thread):
                 # towing related commands
                 elif (header == 'TOW'):
                     if (payload == 'start'):
-                        print('Starting towing mode - error detection ON')
+                        print(self.getName(),'Starting towing mode - error detection ON')
                         VB.Towing_ON.set()
                     if (payload == 'stop'):
-                        print('Stopping towing mode - error detection OFF - disconnected from pink car')
+                        print(self.getName(),'Stopping towing mode - error detection OFF - disconnected from pink car')
                         VB.Towing_ON.clear()
                         VB.Towing_OFF.set()
                         VB.Connection_ON.clear()
                         VB.Disconnect.set()
 
-                print(self.speed_cmd)
-                print(self.move)
-                print(self.turn)
-                print(self.enable)
+                #print(self.speed_cmd)
+                #print(self.move)
+                #print(self.turn)
+                #print(self.enable)
 
                 #edition des commandes de mouvement si enabled
                 if self.enable:
