@@ -81,92 +81,94 @@ class MySend(Thread):
         while True :
 
             if VB.stop_all.is_set():break
-                        
-            msg = self.bus.recv()
             
-            # --------------------------------------
-            # PART 1 - Native messages
-            # --------------------------------------
-            if msg.arbitration_id == US1:
-                # ultrason avant gauche
-                distance = int.from_bytes(msg.data[0:2], byteorder='big')
-                message = "UFL:" + str(distance) + ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # ultrason avant droit
-                distance = int.from_bytes(msg.data[2:4], byteorder='big')
-                message = "UFR:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # ultrason arriere centre
-                distance = int.from_bytes(msg.data[4:6], byteorder='big')
-                message = "URC:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif msg.arbitration_id == US2:
-                # ultrason arriere gauche
-                distance = int.from_bytes(msg.data[0:2], byteorder='big')
-                message = "URL:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # ultrason arriere droit
-                distance = int.from_bytes(msg.data[2:4], byteorder='big')
-                message = "URR:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # ultrason avant centre
-                distance = int.from_bytes(msg.data[4:6], byteorder='big')
-                message = "UFC:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif msg.arbitration_id == MS:
-                # position volant
-                angle = int.from_bytes(msg.data[0:2], byteorder='big')
-                message = "POS:" + str(angle)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # Niveau de la batterie
-                bat = int.from_bytes(msg.data[2:4], byteorder='big')
-                message = "BAT:" + str(bat)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # vitesse roue gauche
-                speed_left = int.from_bytes(msg.data[4:6], byteorder='big')
-                message = "SWL:" + str(speed_left)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # vitesse roue droite
-                speed_right= int.from_bytes(msg.data[6:8], byteorder='big')
-                message = "SWR:" + str(speed_right)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif msg.arbitration_id == OM1:
-                # Yaw
-                yaw = struct.unpack('>f',msg.data[0:4])
-                message = "YAW:" + str(yaw[0])+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # Pitch
-                pitch = struct.unpack('>f',msg.data[4:8])
-                message = "PIT:" + str(pitch[0])+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif msg.arbitration_id == OM2:
-                # Roll
-                roll = struct.unpack('>f',msg.data[0:4])
-                message = "ROL:" + str(roll[0])+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
+            try:
+                msg = self.bus.recv(0.2)
             
-            # --------------------------------------
-            # PART 2 - Towing-related messages
-            # --------------------------------------
-            # capteur magnétique
-            elif msg.arbitration_id == HALL:
-                magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
-                message = "MAG:" + str(magnetic_sensor)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
+                # --------------------------------------
+                # PART 1 - Native messages
+                # --------------------------------------
+                if msg.arbitration_id == US1:
+                    # ultrason avant gauche
+                    distance = int.from_bytes(msg.data[0:2], byteorder='big')
+                    message = "UFL:" + str(distance) + ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # ultrason avant droit
+                    distance = int.from_bytes(msg.data[2:4], byteorder='big')
+                    message = "UFR:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # ultrason arriere centre
+                    distance = int.from_bytes(msg.data[4:6], byteorder='big')
+                    message = "URC:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif msg.arbitration_id == US2:
+                    # ultrason arriere gauche
+                    distance = int.from_bytes(msg.data[0:2], byteorder='big')
+                    message = "URL:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # ultrason arriere droit
+                    distance = int.from_bytes(msg.data[2:4], byteorder='big')
+                    message = "URR:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # ultrason avant centre
+                    distance = int.from_bytes(msg.data[4:6], byteorder='big')
+                    message = "UFC:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif msg.arbitration_id == MS:
+                    # position volant
+                    angle = int.from_bytes(msg.data[0:2], byteorder='big')
+                    message = "POS:" + str(angle)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # Niveau de la batterie
+                    bat = int.from_bytes(msg.data[2:4], byteorder='big')
+                    message = "BAT:" + str(bat)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # vitesse roue gauche
+                    speed_left = int.from_bytes(msg.data[4:6], byteorder='big')
+                    message = "SWL:" + str(speed_left)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # vitesse roue droite
+                    speed_right= int.from_bytes(msg.data[6:8], byteorder='big')
+                    message = "SWR:" + str(speed_right)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif msg.arbitration_id == OM1:
+                    # Yaw
+                    yaw = struct.unpack('>f',msg.data[0:4])
+                    message = "YAW:" + str(yaw[0])+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # Pitch
+                    pitch = struct.unpack('>f',msg.data[4:8])
+                    message = "PIT:" + str(pitch[0])+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif msg.arbitration_id == OM2:
+                    # Roll
+                    roll = struct.unpack('>f',msg.data[0:4])
+                    message = "ROL:" + str(roll[0])+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                
+                # --------------------------------------
+                # PART 2 - Towing-related messages
+                # --------------------------------------
+                # capteur magnétique
+                elif msg.arbitration_id == HALL:
+                    magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
+                    message = "MAG:" + str(magnetic_sensor)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+            except: pass
         
             # connexion voiture rose
             if VB.Connection_ON.is_set():
