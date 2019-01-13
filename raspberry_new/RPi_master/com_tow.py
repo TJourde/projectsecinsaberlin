@@ -20,7 +20,7 @@ class MyComTow(Thread):
     
     def __init__(self):
         Thread.__init__(self)
-        print(self.getName(), ' MyTowCom initialized')
+        print(self.getName(), 'MyTowCom initialized')
         self.conn_tow = -1
         self.addr_tow = -1
         self.connected = False
@@ -61,7 +61,7 @@ class MyComTow(Thread):
 
                 for cmd in data.split(';'):
 
-                    #print(self.getName() + ' '+ cmd)
+                    print(self.getName(), cmd)
 
                     # look for the identifier in received msg
                     if "UFC_slave" in cmd: 
