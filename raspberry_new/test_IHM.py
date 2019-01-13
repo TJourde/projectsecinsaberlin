@@ -60,12 +60,10 @@ try:
         data = data[2:len(data)-1]
         if not data: break
         for cmd in data.split(';'):
-        	print(cmd)
+            print(cmd)
 
 except (BrokenPipeError,KeyboardInterrupt):
-	stest.close()
-	print('Exiting test_IHM program')
-	exit()
+	break
 
 stest.close()
 print('Exiting test_IHM program')

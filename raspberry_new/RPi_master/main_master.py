@@ -83,11 +83,12 @@ if __name__ == "__main__":
         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
         bus.send(msg)
 
-    while threading.active_count() != 0:
+    while _threading.active_count() != 0:
+    	print('Nb of active threads ', _threading.active_count())
         pass
         
     if addr != -1:
         sIHM.close()
         print('Socket with IHM closed')   
 
-    print("All process are shut down")
+print("All process are shut down")
