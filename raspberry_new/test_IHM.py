@@ -41,11 +41,11 @@ try:
     time.sleep(5)
 
     message = 'HOO:start;'
-    size = self.conn.send(message.encode())
+    size = stest.send(message.encode())
     if size == 0: pass
 
     while 1:
-        data = self.conn.recv(50)
+        data = stest.recv(50)
         data = str(data)
         data = data[2:len(data)-1]
         data = data.split(';')
