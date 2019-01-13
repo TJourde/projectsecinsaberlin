@@ -22,6 +22,7 @@ import VarBerlin as VB
 
 HOST = ''                # Symbolic name meaning all available interfaces
 PORT = 6666              # Arbitrary non-privileged port
+addr = -1
 
 
 if __name__ == "__main__":
@@ -74,16 +75,15 @@ if __name__ == "__main__":
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         print('Shutting down all process...')
         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
-        self.bus.send(msg)
+        bus.send(msg)
         VB.stop_all.set()
     except socket.error:
         print('Socket error with connection to IHM')
         print(socket.error)
         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
-        self.bus.send(msg)
+        bus.send(msg)
 
-
-    s.close()
+    if addr != -1: s.close()
 
     print("All process are shut down")
     
