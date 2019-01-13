@@ -56,11 +56,12 @@ class MyComTow(Thread):
                 data = stow.recv(BUFFER_SIZE)
                 data = str(data)
                 data = data[2:len(data)-1]
-                data = data.split(';')
 
                 if not data: continue
 
                 for cmd in data.split(';'):
+                    
+                    print(self.getName() + ' '+ cmd)
 
                     # look for the identifier in received msg
                     if "UFC_slave" in cmd: 
