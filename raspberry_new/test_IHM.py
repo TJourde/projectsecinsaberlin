@@ -1,0 +1,54 @@
+# Test de connexion entre voiture noire (client) et voiture rose (serveur)
+
+import socket
+import struct
+import time
+import os
+
+
+# ***************************
+# Configuration de l'adresse IP
+# ***************************
+global IpBlack
+global IpPink
+
+IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
+IpPink = IpPink[:len(IpPink)-2] #(suppress ' \n')
+try:
+    IpPink, MACAddr = IpPink.split(' ') # remove MAC address appended
+except ValueError:
+    pass
+if IpPink == '10.105.0.53': # IOT network
+    IpBlack = '10.105.0.55'
+elif IpPink == '192.168.137.12': # Berlin network
+    IpBlack = '192.168.137.27'
+elif IpPink == '192.168.1.21': # Grenier network
+    IpBlack = '192.168.1.20'
+
+print('IpBlack - ' + IpBlack)
+print('IpPink - ' + IpPink)
+
+
+# ***************************
+# Creation du socket et connexion
+# ***************************
+TCP_PORT = 6666
+BUFFER_SIZE = 24
+stest = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+stest.connect((IpPink,TCP_PORT))
+print('Conneted to black car as IHM')
+time.sleep(5)
+
+
+message = 'HOO:start;'
+size = self.conn.send(message.encode())
+if size == 0: break
+
+while 1: 
+	data = self.conn.recv(50)
+    data = str(data)
+    data = data[2:len(data)-1]
+    print(data)
+
+stest.close()
+print('Exiting test_IHM program')

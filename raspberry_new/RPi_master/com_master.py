@@ -88,7 +88,6 @@ class MySend(Thread):
             # PART 1 - Native messages
             # --------------------------------------
             if msg.arbitration_id == US1:
-                print('oui')
                 # ultrason avant gauche
                 distance = int.from_bytes(msg.data[0:2], byteorder='big')
                 message = "UFL:" + str(distance) + ";"
@@ -102,7 +101,6 @@ class MySend(Thread):
                 # ultrason arriere centre
                 distance = int.from_bytes(msg.data[4:6], byteorder='big')
                 message = "URC:" + str(distance)+ ";"
-                print(message)
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif msg.arbitration_id == US2:
@@ -172,33 +170,33 @@ class MySend(Thread):
             
             # connexion voiture rose
             if VB.Connection_ON.is_set():
-                message = "CON_PINK:on"
-                size = self.conn.send(message.encore())
+                message = "CON_PINK:on;"
+                size = self.conn.send(message.encode())
                 if size == 0: break
             else:
-                message = "CON_PINK:off"
-                size = self.conn.send(message.encore())
+                message = "CON_PINK:off;"
+                size = self.conn.send(message.encode())
                 if size == 0: break
 
             # etat voiture noire
             if VB.Approach.is_set():
-                message = "STATE:approaching"
+                message = "STATE:approaching;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif VB.Hooking_ON.is_set():
-                message = "STATE:approach_complete"
+                message = "STATE:approach_complete;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif VB.Towing_ON.is_set():
-                message = "STATE:towing"
+                message = "STATE:towing;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif VB.Towing_Error.is_set():
-                message = "STATE:towing_error"
+                message = "STATE:towing_error;"
                 size = self.conn.send(message.encode())
                 if size == 0: break             
             else:
-                message = "STATE:idle"
+                message = "STATE:idle;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
 
@@ -263,7 +261,7 @@ class MyReceive(Thread):
 
             if VB.stop_all.is_set():break
 
-            self.conn.setblocking(0)
+            #self.conn.setblocking(0)
             #try:
             data = self.conn.recv(50)
             data = str(data)
