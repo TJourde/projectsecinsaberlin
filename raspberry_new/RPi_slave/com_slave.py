@@ -1,5 +1,5 @@
 # coding: utf-8
-import threading
+from threading import *
 import time
 import can
 import os

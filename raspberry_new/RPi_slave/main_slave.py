@@ -10,6 +10,9 @@ from com_slave import *
 
 import VarBerlin_slave as VBS
 
+# COMMANDES ROUES
+NO_MOVE = 0xB1
+WHEELS_CENTER = 0xB1
 
 # *********************************************************
 # Connection to bus interface
@@ -26,7 +29,7 @@ try:
 	newcomslave.start()
 
 	time.sleep(5)
-	msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+	msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,0],extended_id=False)
 	bus.send(msg)
 
 	# ending threads
@@ -34,7 +37,7 @@ try:
 
 except KeyboardInterrupt:
     print('\nShutting down all process...')
-    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,0],extended_id=False)
     bus.send(msg)
     VBS.stop_all.set()
 
