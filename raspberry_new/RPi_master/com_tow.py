@@ -82,9 +82,10 @@ class MyComTow(Thread):
             elif VB.Disconnect.is_set():
                 VB.Connection_ON.clear()
                 VB.Connect.clear()
+                print(self.getName(),': Connection with pink shutting down')
                 stow.send('SHUT_DOWN;'.encode())
-                stow.shutdown(stow.SHUT_WR)
                 while data != 'SHUT_DOWN':
+                    print('bientot ferme')
                     data = stow.recv()
                     data = str(data)
                     data = data[2:len(data)-1]

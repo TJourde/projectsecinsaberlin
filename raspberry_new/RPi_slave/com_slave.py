@@ -144,13 +144,16 @@ class MyReceiveSlave(Thread):
             data = str(data)
             data = data[2:len(data)-1]
             data = data.split(';')
+            print(data)
 
             if not data: break
 
             if data == 'SHUT_DOWN':
+                print('SHUT_DOWN received')
                 self.conn.send('SHUT_DOWN;'.encode())
                 stow.shutdown(stow.SHUT_WR)
                 VBS.ConnectionErrorEvent.set()
+                print('break')
                 break
 
         print(self.getName(),'exit MyReceiveSlave')
