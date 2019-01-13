@@ -10,7 +10,7 @@ from com_slave import *
 
 import VarBerlin_slave as VBS
 
-# COMMANDES ROUES
+MCM = 010
 NO_MOVE = 0xB1
 WHEELS_CENTER = 0xB1
 
@@ -28,9 +28,9 @@ except OSError:
 newcomslave = MyComSlave(bus)
 newcomslave.start()
 
-time.sleep(5)
-msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,0],extended_id=False)
-bus.send(msg)
+while time.sleep(5):
+	msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,0],extended_id=False)
+	bus.send(msg)
 
 # ending threads
 newcomslave.join()
