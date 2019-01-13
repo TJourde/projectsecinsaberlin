@@ -32,19 +32,11 @@ class MyComSlave(Thread):
 
         waiting_connection = False
         addr = -1
+        stow = -1
         IpPink = VBS.IpPink
         IpBlack = VBS.IpBlack
 
         while 1:
-
-            if VBS.stop_all.is_set():
-                VBS.Connection_ON.clear()
-                newsendslave.join()
-                newreceiveslave.join()
-                if stow != -1:
-                    stow.close()
-                break
-
 
             if VBS.ConnectionErrorEvent.is_set():
                 print(self.getName(),'Connection problem encountered, closing socket')
@@ -68,6 +60,7 @@ class MyComSlave(Thread):
                         stow.listen()
                         print(self.getName(),'Pink car ready to receive connection')
                         VBS.conn_tow, addr = stow.accept()
+                        waiting_connection = False
                     except socket.error:
                         VBS.Connection_ON.clear()
                         stow.close()
@@ -75,7 +68,6 @@ class MyComSlave(Thread):
                         
                 # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
                 elif IpBlack in addr:
-                    waiting_connection = False
                     print(self.getName(),'Connected to Berlin car with address' + repr(addr))
                     VBS.Connection_ON.set()
 
@@ -86,7 +78,6 @@ class MyComSlave(Thread):
 
                 # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
                 elif IpBlack not in addr and addr != -1:
-                    waiting_connection = False
                     VBS.Connection_ON.clear()
                     print(self.getName(),'Connected to unknown device, with address ' + repr(addr))
                     print(self.getName(),'Closing communication channel')
@@ -110,7 +101,7 @@ class MySendSlave(Thread):
     def run(self):
         while True :
             msg = self.bus.recv()
-            if not VBS.Connection_ON.is_set() or VBS.stop_all.is_set(): break
+            if not VBS.Connection_ON.is_set(): break
 
             if msg.arbitration_id == US2:
                 # ultrason avant centre
@@ -146,7 +137,7 @@ class MyReceiveSlave(Thread):
         self.enable = 0
 
         while True :
-            if not VBS.Connection_ON.is_set() or VBS.stop_all.is_set():break
+            if not VBS.Connection_ON.is_set():break
 
             data = self.conn.recv(VBS.BUFFER_SIZE)
             data = str(data)
