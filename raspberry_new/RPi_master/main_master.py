@@ -72,6 +72,8 @@ if __name__ == "__main__":
         newreceive.join()
         newsend.join()
 
+        while threading.active_count() != 0:
+        	pass
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         print('\nShutting down all process...')
@@ -85,8 +87,8 @@ if __name__ == "__main__":
         bus.send(msg)
 
     if addr != -1:
-    	sIHM.close()
-    	print('Socket with IHM closed')   
+        sIHM.close()
+        print('Socket with IHM closed')   
 
     print("All process are shut down")
-    
+
