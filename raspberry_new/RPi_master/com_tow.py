@@ -29,8 +29,9 @@ class MyComTow(Thread):
         while True :
             
             if VB.stop_all.is_set() :
-                stow.close()
-                break
+                if Connection_ON.is_set():
+                    VB.Disconnect.is_set()
+                else: break
             
             # --------------------------------------
             # Fermeture du socket (si arrêt hooking/towing)
@@ -47,6 +48,8 @@ class MyComTow(Thread):
                 stow.close()
                 print(self.getName(),'Connection with pink car closed')
                 VB.Disconnect.clear()
+
+                if VB.stop_all.is_set(): break
 
             # --------------------------------------
             # Traitement des données envoyées par la voiture rose
