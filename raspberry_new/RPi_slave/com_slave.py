@@ -122,8 +122,9 @@ class MySendSlave(Thread):
 # THREAD 3 - Réception de messages depuis la voiture noire
 # *********************************************************
 class MyReceiveSlave(Thread):
-    def __init__(self,bus):
+    def __init__(self,conn,bus):
         Thread.__init__(self)
+        self.conn = conn
         self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
         self.speed_cmd = 0
         self.move = 0
@@ -139,5 +140,13 @@ class MyReceiveSlave(Thread):
 
         while True :
             if not VBS.Connection_ON.is_set():break
+
+            data = self.conn.recv(50)
+            data = str(data)
+            data = data[2:len(data)-1]
+
+            if not data:
+                VBS.ConnectionErrorEvent.set()
+
             pass
         print(self.getName(),'exit MyReceiveSlave')
