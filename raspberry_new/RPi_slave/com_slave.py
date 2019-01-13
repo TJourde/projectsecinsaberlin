@@ -148,10 +148,9 @@ class MyReceiveSlave(Thread):
 
             if not data: break
 
-            if data == 'SHUT_DOWN':
+            if 'SHUT_DOWN' in data:
                 print('SHUT_DOWN received')
                 self.conn.send('SHUT_DOWN;'.encode())
-                stow.shutdown(stow.SHUT_WR)
                 VBS.ConnectionErrorEvent.set()
                 print('break')
                 break

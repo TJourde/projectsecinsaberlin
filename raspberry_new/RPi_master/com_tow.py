@@ -40,7 +40,7 @@ class MyComTow(Thread):
                 VB.Connect.clear()
                 print(self.getName(),': Connection with pink shutting down')
                 stow.send('SHUT_DOWN;'.encode())
-                while data != 'SHUT_DOWN':
+                while 'SHUT_DOWN' not in data:
                     print('bientot ferme')
                     data = stow.recv(BUFFER_SIZE)
                     data = str(data)
@@ -49,6 +49,7 @@ class MyComTow(Thread):
                     print(data)
                 stow.close()
                 print(self.getName(),': Connection with pink car closed')
+                VB.Disconnect.clear()
 
             # --------------------------------------
             # Traitement des données envoyées par la voiture rose
