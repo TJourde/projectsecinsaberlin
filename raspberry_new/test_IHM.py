@@ -63,7 +63,7 @@ try:
             print(cmd)
 
 except (BrokenPipeError,KeyboardInterrupt):
-	break
+    print('BrokenPipeError')
 
 stest.close()
 print('Exiting test_IHM program')

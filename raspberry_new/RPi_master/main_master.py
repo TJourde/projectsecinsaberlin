@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from threading import *
+from threading import * as _threading
 import time
 import can
 import os
@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     while _threading.active_count() != 0:
     	print('Nb of active threads ', _threading.active_count())
-        pass
+    	pass
         
     if addr != -1:
         sIHM.close()
