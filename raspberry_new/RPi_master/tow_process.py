@@ -53,6 +53,7 @@ class Approach(Thread):
 
     def run(self):
 
+        trameCAN = False
         measured_distance = -1
         magnet_detected = -1
         # Compteurs et valeurs limites
@@ -74,13 +75,15 @@ class Approach(Thread):
             
             # Check si l'utilisateur demande la manoeuvre d'approche/accroche du 2e véhicule
             if VB.Approach.is_set():
-                print("approach")
 
+                trameCAN = False
+                
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
                 # --------------------------------------
                 # Données US
                 if msg.arbitration_id == US1:
+                    trameCAN = True
                     measured_distance = int.from_bytes(msg.data[4:6], byteorder='big')
                     if measured_distance <= HOOKING_DIST:
                         cpt_us_touch += 1
@@ -100,6 +103,7 @@ class Approach(Thread):
 
                 # Données capteur magnétique
                 if msg.arbitration_id == HALL:
+                    trameCAN = True
                     magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
                     if magnet_detected:
                         cpt_magnet += 1
@@ -111,27 +115,32 @@ class Approach(Thread):
                 # --------------------------------------
                 # PART 2 - Traitement des flag et envoi des commandes aux moteurs/solenoid
                 # --------------------------------------
-                if US_POS == 'touch' and FLAG_MAGNET:
-                    print(self.getName(),'Hooking effective')
-                    msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
-                    self.bus.send(msg)
-                    time.sleep(1)
-                    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
-                    self.bus.send(msg)
-                    VB.Approach.clear()
-                    VB.Hooking_ON.set()
-                elif US_POS == 'touch' and not(FLAG_MAGNET):
-                    print(self.getName(),'Alignment error')
-                elif US_POS != 'touch' and FLAG_MAGNET:
-                    print(self.getName(),'Distance detection error')
-                elif US_POS == 'close':
-                    print(self.getName(),'Slowing down and opening solenoid')
-                    msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
-                    self.bus.send(msg)
-                elif US_POS == 'away':
-                    print(self.getName(),'Car away, backing in progress')
-                    msg = can.Message(arbitration_id=MCM,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
-                    self.bus.send(msg)
+                if trameCAN:
+                    if US_POS == 'touch' and FLAG_MAGNET:
+                        print(self.getName(),'Hooking effective')
+                        msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                        self.bus.send(msg)
+                        time.sleep(1)
+                        msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                        self.bus.send(msg)
+                        VB.Approach.clear()
+                        VB.Hooking_ON.set()
+                    elif US_POS == 'touch' and not(FLAG_MAGNET):
+                        print(self.getName(),'Alignment error')
+                        msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                        self.bus.send(msg)
+                    elif US_POS != 'touch' and FLAG_MAGNET:
+                        print(self.getName(),'Distance detection error')
+                        msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                        self.bus.send(msg)
+                    elif US_POS == 'close':
+                        print(self.getName(),'Slowing down and opening solenoid')
+                        msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
+                        self.bus.send(msg)
+                    elif US_POS == 'away':
+                        print(self.getName(),'Car away, backing in progress')
+                        msg = can.Message(arbitration_id=MCM,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                        self.bus.send(msg)
 
         print(self.getName(), '****** Approach finished')
 
