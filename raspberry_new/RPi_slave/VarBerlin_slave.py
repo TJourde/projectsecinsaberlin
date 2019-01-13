@@ -6,6 +6,10 @@ import os
 global BUFFER_SIZE
 BUFFER_SIZE = 1024 # standard buffer size
 
+global stop_all
+stop_all = Event()
+stop_all.clear()
+
 # *********************************************************
 # IP addresses configuration
 # *********************************************************

@@ -1,5 +1,5 @@
 # coding: utf-8
-from threading import Thread
+import threading
 import time
 import can
 import os
@@ -37,13 +37,20 @@ class MyComSlave(Thread):
 
         while 1:
 
+            if VBS.stop_all.is_set():
+                VBS.Connection_ON.clear()
+                newsendslave.join()
+                newreceiveslave.join()
+                if stow != -1:
+                    stow.close()
+                break
+
+
             if VBS.ConnectionErrorEvent.is_set():
                 print(self.getName(),'Connection problem encountered, closing socket')
                 VBS.Connection_ON.clear()
                 newsendslave.join()
                 newreceiveslave.join()
-                del(newsendslave)
-                del(newreceiveslave)
                 stow.close()
                 stow = -1
                 addr = -1
@@ -103,7 +110,7 @@ class MySendSlave(Thread):
     def run(self):
         while True :
             msg = self.bus.recv()
-            if not VBS.Connection_ON.is_set(): break
+            if not VBS.Connection_ON.is_set() or VBS.stop_all.is_set(): break
 
             if msg.arbitration_id == US2:
                 # ultrason avant centre
@@ -139,7 +146,7 @@ class MyReceiveSlave(Thread):
         self.enable = 0
 
         while True :
-            if not VBS.Connection_ON.is_set():break
+            if not VBS.Connection_ON.is_set() or VBS.stop_all.is_set():break
 
             data = self.conn.recv(VBS.BUFFER_SIZE)
             data = str(data)

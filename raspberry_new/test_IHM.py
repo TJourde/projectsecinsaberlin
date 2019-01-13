@@ -33,7 +33,7 @@ print('IpPink - ' + IpPink)
 # Creation du socket et connexion
 # ***************************
 TCP_PORT = 6666
-BUFFER_SIZE = 24
+BUFFER_SIZE = 1024
 try:
     stest = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     stest.connect((IpBlack,TCP_PORT))
