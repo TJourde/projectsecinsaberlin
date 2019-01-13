@@ -32,7 +32,7 @@ class MyComTow(Thread):
                 print('com_tow stop_all')
                 if VB.Connection_ON.is_set():
                     print('pre-disco')
-                    VB.Disconnect.is_set()
+                    VB.Disconnect.set()
                 else: 
                     print('break')
                     break

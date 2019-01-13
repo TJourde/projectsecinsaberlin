@@ -10,10 +10,7 @@ import socket
 #importing variables linked
 import VarBerlin as VB
 
-'''
-#importing Communications Threads
-from Platooning_thread import *
-'''
+BUFFER_SIZE = 1024
 
 MCM = 0x010
 MS = 0x100
@@ -246,16 +243,17 @@ class MyReceive(Thread):
         self.enable = 0
         self.pos = 0   
 
+        self.conn.settimeout(1) # timeout for self.conn.recv
+
         while True :
 
             if VB.stop_all.is_set():break
 
-            #self.conn.setblocking(0)
             try:
-                data = self.conn.recv(50)
+                data = self.conn.recv(BUFFER_SIZE)
                 data = str(data)
                 data = data[2:len(data)-1]
-            except KeyboardInterrupt:
+            except socket.timeout:
                 continue
 
             if not data: break
