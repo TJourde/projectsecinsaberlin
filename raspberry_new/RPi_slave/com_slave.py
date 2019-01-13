@@ -141,7 +141,7 @@ class MyReceiveSlave(Thread):
         while True :
             if not VBS.Connection_ON.is_set():break
 
-            data = self.conn.recv(50)
+            data = self.conn.recv(VBS.BUFFER_SIZE)
             data = str(data)
             data = data[2:len(data)-1]
             data = data.split(';')
