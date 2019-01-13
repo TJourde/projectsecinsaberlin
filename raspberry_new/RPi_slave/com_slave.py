@@ -102,7 +102,7 @@ class MySendSlave(Thread):
     def run(self):
         while True :
             msg = self.bus.recv()
-            if not VBS.Connection_ON.is_set() or VBS.Disconnect.is_set(): break
+            if not VBS.Connection_ON.is_set(): break
 
             if msg.arbitration_id == US2:
                 # ultrason avant centre

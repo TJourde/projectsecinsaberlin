@@ -82,7 +82,7 @@ class MyComTow(Thread):
             elif VB.Disconnect.is_set():
                 VB.Connection_ON.clear()
                 VB.Connect.clear()
-                stow.send('SHUT_DOWN;')
+                stow.send('SHUT_DOWN;'.encode())
                 stow.shutdown(stow.SHUT_WR)
                 while data != 'SHUT_DOWN':
                     data = stow.recv()
