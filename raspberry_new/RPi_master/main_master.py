@@ -66,11 +66,13 @@ if __name__ == "__main__":
         newtowingerrordetect = TowingErrorDetection(bus)
         newtowingerrordetect.start()
 
+        newtowingerrordetect.join()
+        newapproach.join()
+        newtowcom.join()
         newreceive.join()
         newsend.join()
-        newtowcom.join()
-        newapproach.join()
-        newtowingerrordetect.join()
+
+    	print("All process are shut down")
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         print('\nShutting down all process...')
@@ -85,5 +87,4 @@ if __name__ == "__main__":
 
     if addr != -1: sIHM.close()
 
-    print("All process are shut down")
     

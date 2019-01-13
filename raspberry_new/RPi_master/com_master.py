@@ -218,7 +218,7 @@ class MySend(Thread):
                     size = self.conn.send(message.encode())
                     if size == 0: break
 
-        print(self.getName(), '****** MySend finished')
+        print(self.getName(), '###### MySend finished')
 
 
 # *********************************************************
@@ -390,4 +390,4 @@ class MyReceive(Thread):
                     #Send message
                     self.bus.send(msg)
         
-        print(self.getName(), '****** MyReceive finished')
+        print(self.getName(), '###### MyReceive finished')

@@ -31,8 +31,11 @@ class MyComTow(Thread):
             if VB.stop_all.is_set() :
                 print('com_tow stop_all')
                 if VB.Connection_ON.is_set():
+                    print('pre-disco')
                     VB.Disconnect.is_set()
-                else: break
+                else: 
+                    print('break')
+                    break
             
             # --------------------------------------
             # Fermeture du socket (si arrêt hooking/towing)
@@ -61,6 +64,7 @@ class MyComTow(Thread):
                 data = stow.recv(BUFFER_SIZE)
                 data = str(data)
                 data = data[2:len(data)-1]
+                print(data)
 
                 if not data: continue
 
@@ -99,7 +103,7 @@ class MyComTow(Thread):
 
 
 
-        print(self.getName(), '****** MyTowCom finished')
+        print(self.getName(), '###### MyTowCom finished')
 
 
 # *********************************************************

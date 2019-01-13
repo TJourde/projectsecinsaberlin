@@ -142,7 +142,7 @@ class Approach(Thread):
                         msg = can.Message(arbitration_id=MCM,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                         self.bus.send(msg)
 
-        print(self.getName(), '****** Approach finished')
+        print(self.getName(), '###### Approach finished')
 
 
 # ******************************
@@ -286,7 +286,7 @@ class TowingErrorDetection(Thread):
                     trameCAN = False
                     ObstacleHandler(self,FLAG_UFC,FLAG_UFL,FLAG_UFR)
 
-        print(self.getName(), '****** TowingErrorDetection finished')
+        print(self.getName(), '###### TowingErrorDetection finished')
 '''
             # --------------------------------------
             # PART 2 - Traitement des flag & envoi d'un mail en cas de panne
