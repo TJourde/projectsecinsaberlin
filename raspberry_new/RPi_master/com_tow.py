@@ -21,11 +21,9 @@ class MyComTow(Thread):
     def __init__(self):
         Thread.__init__(self)
         print(self.getName(), '****** MyTowCom initialized')
-        self.conn_tow = -1
-        self.addr_tow = -1
-        self.connected = False
 
-    def run(self):
+    def run(self):.
+
         VB.WriteUS3(False,-1)
         while True :
             

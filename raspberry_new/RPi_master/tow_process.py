@@ -24,6 +24,8 @@ OM1 = 0x101
 OM2 = 0x102
 HALL= 0x103
 
+HOOKING_DIST = 30
+
 # COMMANDES SOLENOID
 SOLENOID_UP = 0xFF
 SOLENOID_DOWN = 0x00
@@ -46,33 +48,22 @@ class Approach(Thread):
         Thread.__init__(self)
         self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
 
-        self.measured_distance = -1
-        self.magnet_detected = -1
-        # Compteurs et valeurs limites
-        self.cpt_us_close = 0
-        self.cpt_us_touch = 0
-        self.cpt_magnet = 0
-        self.nb_us_close = 3
-        self.nb_us_touch = 3
-        self.nb_magnet_detection = 3
-        # Flag US/Magnet
-        self.US_POS = 'away' # valeur: away | close | touch
-        self.FLAG_MAGNET = False
-
         print(self.getName(), '****** Approach initialized')
 
     def run(self):
 
-        self.measured_distance = -1
-        self.magnet_detected = -1
-        self.cpt_us_close = 0
-        self.cpt_us_touch = 0
-        self.cpt_magnet = 0
-        self.nb_us_close = 3
-        self.nb_us_touch = 3
-        self.nb_magnet_detection = 3
-        self.US_POS = 'away'
-        self.FLAG_MAGNET = False
+        measured_distance = -1
+        magnet_detected = -1
+        # Compteurs et valeurs limites
+        cpt_us_close = 0
+        cpt_us_touch = 0
+        cpt_magnet = 0
+        nb_us_close = 3
+        nb_us_touch = 3
+        nb_magnet_detection = 3
+        # Flag US/Magnet
+        US_POS = 'away' # valeur: away | close | touch
+        FLAG_MAGNET = False
 
         while True:
 
@@ -89,56 +80,56 @@ class Approach(Thread):
                 # --------------------------------------
                 # Données US
                 if msg.arbitration_id == US1:
-                    self.measured_distance = int.from_bytes(msg.data[4:6], byteorder='big')
-                    if self.measured_distance <= HOOKING_DIST:
-                        self.cpt_us_touch += 1
-                        # self.cpt_us_close = 0 ----> Non placé car permet de reculer et d'arriver en dessous de la HOOKING_DIST
-                        if self.cpt_us_touch == self.nb_us_touch:
-                            self.cpt_us_close = 0
-                            self.US_POS = 'touch'
-                    elif self.measured_distance > HOOKING_DIST and self.measured_distance <= HOOKING_DIST + 15:
-                        self.cpt_us_touch = 0
-                        self.cpt_us_close += 1
-                        if self.cpt_us_close == self.nb_us_close:
-                            self.US_POS = 'close'
+                    measured_distance = int.from_bytes(msg.data[4:6], byteorder='big')
+                    if measured_distance <= HOOKING_DIST:
+                        cpt_us_touch += 1
+                        # cpt_us_close = 0 ----> Non placé car permet de reculer et d'arriver en dessous de la HOOKING_DIST
+                        if cpt_us_touch == nb_us_touch:
+                            cpt_us_close = 0
+                            US_POS = 'touch'
+                    elif measured_distance > HOOKING_DIST and measured_distance <= HOOKING_DIST + 15:
+                        cpt_us_touch = 0
+                        cpt_us_close += 1
+                        if cpt_us_close == nb_us_close:
+                            US_POS = 'close'
                     else: 
-                        self.cpt_us_close = 0
-                        self.cpt_us_touch = 0
-                        self.US_POS = 'away'
+                        cpt_us_close = 0
+                        cpt_us_touch = 0
+                        US_POS = 'away'
 
                 # Données capteur magnétique
                 if msg.arbitration_id == HALL:
-                    self.magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
-                    if self.magnet_detected:
-                        self.cpt_magnet += 1
+                    magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
+                    if magnet_detected:
+                        cpt_magnet += 1
                     else:
-                        self.FLAG_MAGNET = False
-                    if self.cpt_magnet == self.nb_magnet_detection:
-                        self.FLAG_MAGNET = True
+                        FLAG_MAGNET = False
+                    if cpt_magnet == nb_magnet_detection:
+                        FLAG_MAGNET = True
 
                 # --------------------------------------
                 # PART 2 - Traitement des flag et envoi des commandes aux moteurs/solenoid
                 # --------------------------------------
-                if self.US_POS == 'touch' and self.FLAG_MAGNET:
+                if US_POS == 'touch' and FLAG_MAGNET:
                     msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
-                    bus.send(msg)
+                    self.bus.send(msg)
                     time.sleep(1)
-                    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                    self.msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
                     VB.Hooking_ON.set()
                     VB.Approach.clear()
-                elif self.US_POS == 'touch' and not(self.FLAG_MAGNET):
+                elif US_POS == 'touch' and not(FLAG_MAGNET):
                     print(self.getName(),'Alignment error')
-                elif self.US_POS != 'touch' and self.FLAG_MAGNET:
+                elif US_POS != 'touch' and FLAG_MAGNET:
                     print(self.getName(),'Distance detection error')
-                elif self.US_POS == 'close':
+                elif US_POS == 'close':
                     print(self.getName(),'Slowing down and opening solenoid')
                     msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
-                    bus.send(msg)
-                elif self.US_POS == 'away':
+                    self.bus.send(msg)
+                elif US_POS == 'away':
                     print(self.getName(),'Car away, backing in progress')
                     msg = can.Message(arbitration_id=MCM,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
-                    bus.send(msg)
+                    self.bus.send(msg)
 
 
 
@@ -151,49 +142,31 @@ class ErrorDetection(Thread):
         Thread.__init__(self)
         self.bus = bus
 
-        self.trame = False
-        # Valeurs données
-        self.distance_us = -1
-        self.distance_us3 = -1
-        self.magnet_detected = -1
-        # Compteurs
-        self.cpt_us = 0
-        self.cpt_us3 = 0
-        self.cpt_cm = 0
-        self.cpt_multi = 0
-        # Valeurs limites
-        self.limit_us = 3
-        self.limit_us3 = 3
-        self.limit_cm = 3
-        self.limit_multi = 3
-        # Flag US/Magnet
-        self.FLAG_US = False
-        self.FLAG_US3 = False
-        self.FLAG_CM = False
-        # Code d'erreur
-        self.CodeErreur = 0
-
         print(self.getName(), '****** ErrorDetection initialized')
 
     def run(self):
 
-        self.trame = False
-        self.distance_us = -1
-        self.dispo_us3 = -1
-        self.distance_us3 = -1
-        self.magnet_detected = -1
-        self.cpt_us = 0
-        self.cpt_us3 = 0
-        self.cpt_cm = 0
-        self.cpt_multi = 0
-        self.limit_us = 3
-        self.limit_us3 = 3
-        self.limit_cm = 3
-        self.limit_multi = 9
-        self.FLAG_US = False
-        self.FLAG_US3 = False
-        self.FLAG_CM = False
-        self.CodeErreur = 0
+        trame = False
+        # Valeurs données
+        distance_us = -1
+        distance_us3 = -1
+        magnet_detected = -1
+        # Compteurs
+        cpt_us = 0
+        cpt_us3 = 0
+        cpt_cm = 0
+        cpt_multi = 0
+        # Valeurs limites
+        limit_us = 3
+        limit_us3 = 3
+        limit_cm = 3
+        limit_multi = 3
+        # Flag US/Magnet
+        FLAG_US = False
+        FLAG_US3 = False
+        FLAG_CM = False
+        # Code d'erreur
+        CodeErreur = 0
 
         while True:
             
@@ -210,43 +183,43 @@ class ErrorDetection(Thread):
 
                 # Données US
                 if msg.arbitration_id == US1:
-                    self.trame = True
-                    self.distance_us = int.from_bytes(msg.data[4:6], byteorder='big')
-                    if self.distance_us > LIMIT_DIST:
-                        self.cpt_us += 1
-                    else: self.cpt_us = 0
-                    if self.cpt_us == self.limit_us:
-                        self.FLAG_US = True
+                    trame = True
+                    distance_us = int.from_bytes(msg.data[4:6], byteorder='big')
+                    if distance_us > LIMIT_DIST:
+                        cpt_us += 1
+                    else: cpt_us = 0
+                    if cpt_us == limit_us:
+                        FLAG_US = True
                         print("Error US - ", time.strftime("%X"))
 
                 # Données US3
                 if VB.US3Dispo.is_set():
                     distance_us3 = VB.ReadUS3()
-                    self.trame = True
-                    if self.distance_us3 > LIMIT_DIST:
-                        self.cpt_us3 += 1
-                    else: self.cpt_us3 = 0
-                    if self.cpt_us3 == self.limit_us3:
-                        self.FLAG_US3 = True
+                    trame = True
+                    if distance_us3 > LIMIT_DIST:
+                        cpt_us3 += 1
+                    else: cpt_us3 = 0
+                    if cpt_us3 == limit_us3:
+                        FLAG_US3 = True
                         print("Error US3 - ", time.strftime("%X"))
 
                 # Données CM
                 if msg.arbitration_id == HALL:
-                    self.trame = True
-                    self.magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
-                    if self.magnet_detected == 0:
-                        self.cpt_cm += 1
-                    else: self.cpt_cm = 0
-                    if self.cpt_cm == self.limit_cm:
-                        self.FLAG_CM = True
+                    trame = True
+                    magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
+                    if magnet_detected == 0:
+                        cpt_cm += 1
+                    else: cpt_cm = 0
+                    if cpt_cm == limit_cm:
+                        FLAG_CM = True
                         print("Error CM - ", time.strftime("%X"))
 
 
-                if self.trame and (self.FLAG_CM or self.FLAG_US or self.FLAG_US3):
-                    self.trame = False
-                    self.cpt_multi += 1
+                if trame and (FLAG_CM or FLAG_US or FLAG_US3):
+                    trame = False
+                    cpt_multi += 1
 
-                if self.cpt_multi == self.limit_multi:
+                if cpt_multi == limit_multi:
                     VB.Towing_Error.set()
 
             # --------------------------------------
@@ -258,64 +231,64 @@ class ErrorDetection(Thread):
                 self.bus.send(msg)
 
                 # Détermine code erreur et l'écrit dans VB.ErrorCode
-                if self.FLAG_US:
-                    self.CodeErreur = self.CodeErreur | VB.ErrorUSFail
-                if self.FLAG_US3:
-                    self.CodeErreur = self.CodeErreur | VB.ErrorUS3Fail
-                if self.FLAG_CM:
-                    self.CodeErreur = self.CodeErreur | VB.ErrorMagFail
+                if FLAG_US:
+                    CodeErreur = CodeErreur | VB.ErrorUSFail
+                if FLAG_US3:
+                    CodeErreur = CodeErreur | VB.ErrorUS3Fail
+                if FLAG_CM:
+                    CodeErreur = CodeErreur | VB.ErrorMagFail
 
-                WriteErrorCode(self.CodeErreur)
+                WriteErrorCode(CodeErreur)
 
                 mail_subject = 'Towing process'
-                mail_body = 'Error while towing - code: ' + str(self.CodeErreur)
+                mail_body = 'Error while towing - code: ' + str(CodeErreur)
                 print(self.getName(),mail_body)
 
-                if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
+                if FLAG_CM and FLAG_US and FLAG_US3:
                     print(self.getName(),'Décrochage de la 2e voiture détecté')
-                    self.CodeErreur = 0
+                    CodeErreur = 0
                 else:                        
                     VB.SendMail(mail_subject, mail_body)
                     break
 
 '''
                     # Détermine le message à envoyer en fonction du problème rencontré
-                    if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
-                        self.Prob = "CM && US && US3"
-                        self.Expl = "Décrochage de la 2e voiture"
-                    elif self.FLAG_CM and self.FLAG_US:
-                        self.Prob = "CM && US"
-                        self.Expl = "Décrochage de la 2e voiture + capteur US défaillant"
-                    elif self.FLAG_CM and self.FLAG_US3:
-                        self.Prob = "CM && US3"
-                        self.Expl = "Décrochage de la 2e voiture + capteur US3 (rose) défaillant"
-                    elif self.FLAG_CM:
-                        self.Prob = "CM"
-                        self.Expl = "Capteur magnétique défaillant, 2e voiture toujours accrochée"
-                    elif self.FLAG_US and self.FLAG_US3:
-                        self.Prob = "US && US3"
-                        self.Expl = "Décrochage de la 2e voiture + capteur magnétique défaillant OU barre cassée"
-                    elif self.FLAG_US:
-                        self.Prob = "US"
-                        self.Expl = "US défaillant sur la 1e voiture"
-                    elif self.FLAG_US3:
-                        self.Prob = "US3"
-                        self.Expl = "US défaillant sur la 2e voiture"
+                    if FLAG_CM and FLAG_US and FLAG_US3:
+                        Prob = "CM && US && US3"
+                        Expl = "Décrochage de la 2e voiture"
+                    elif FLAG_CM and FLAG_US:
+                        Prob = "CM && US"
+                        Expl = "Décrochage de la 2e voiture + capteur US défaillant"
+                    elif FLAG_CM and FLAG_US3:
+                        Prob = "CM && US3"
+                        Expl = "Décrochage de la 2e voiture + capteur US3 (rose) défaillant"
+                    elif FLAG_CM:
+                        Prob = "CM"
+                        Expl = "Capteur magnétique défaillant, 2e voiture toujours accrochée"
+                    elif FLAG_US and FLAG_US3:
+                        Prob = "US && US3"
+                        Expl = "Décrochage de la 2e voiture + capteur magnétique défaillant OU barre cassée"
+                    elif FLAG_US:
+                        Prob = "US"
+                        Expl = "US défaillant sur la 1e voiture"
+                    elif FLAG_US3:
+                        Prob = "US3"
+                        Expl = "US défaillant sur la 2e voiture"
 
-                    print("Code erreur: " + self.CodeErreur)
-                    print("Probleme rencontre: " + self.Prob)
+                    print("Code erreur: " + CodeErreur)
+                    print("Probleme rencontre: " + Prob)
 
 
                
                     # Ecriture dans la variable "SourceProb" utilisée pour l'envoi du message à l'appli
 
-                    if not(self.FLAG_CM and self.FLAG_US and self.FLAG_US3): # En cas de probleme not corrigible, envoie un mail et arrete le thread
+                    if not(FLAG_CM and FLAG_US and FLAG_US3): # En cas de probleme not corrigible, envoie un mail et arrete le thread
                         mail_subjet = "Unsolvable problem during towing"
-                        mail_body = "Origin of the issue : " + self.Prob + "\nPossible explanation : " + self.Expl
+                        mail_body = "Origin of the issue : " + Prob + "\nPossible explanation : " + Expl
                         os.system("echo mail_body | mail -s mail_subjet teamberlingei@gmail.com")
                         break
                     else: # Sinon, réinitialisation des variables en cas de décrochage normal pour le prochain remorquage
-                        self.CodeErreur = -1
-                        self.Prob = -1
-                        self.Expl = -1
+                        CodeErreur = -1
+                        Prob = -1
+                        Expl = -1
 '''
