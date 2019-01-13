@@ -38,7 +38,7 @@ try:
     stest = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     stest.connect((IpBlack,TCP_PORT))
     print('Conneted to black car as IHM')
-    time.sleep(2)
+    time.sleep(5)
 
     message = 'CON:start;'
     print(message)
