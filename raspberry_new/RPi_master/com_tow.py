@@ -9,7 +9,6 @@ import smtplib
 import VarBerlin as VB
 
 TCP_PORT = 9000
-BUFFER_SIZE = 1024  # Normally 1024, but we want fast response
 
 
 # *********************************************************
@@ -29,24 +28,20 @@ class MyComTow(Thread):
         while True :
             
             if VB.stop_all.is_set() :
-                print('com_tow stop_all')
                 if VB.Connection_ON.is_set():
-                    print('pre-disco')
                     VB.Disconnect.set()
                 else: 
-                    print('break')
                     break
             
             # --------------------------------------
             # Fermeture du socket (si arrêt hooking/towing)
             # --------------------------------------
             if VB.Disconnect.is_set():
-                print('Disco handler')
                 VB.Connection_ON.clear()
                 VB.Connect.clear()
                 stow.send('SHUT_DOWN;'.encode())
                 while 'SHUT_DOWN' not in data:
-                    data = stow.recv(BUFFER_SIZE)
+                    data = stow.recv(VB.BUFFER_SIZE)
                     data = str(data)
                     data = data[2:len(data)-1]
                     data = data.split(';')
@@ -61,10 +56,9 @@ class MyComTow(Thread):
             # --------------------------------------
             elif VB.Connection_ON.is_set():
 
-                data = stow.recv(BUFFER_SIZE)
+                data = stow.recv(VB.BUFFER_SIZE)
                 data = str(data)
                 data = data[2:len(data)-1]
-                print(data)
 
                 if not data: continue
 

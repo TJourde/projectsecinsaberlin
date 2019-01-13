@@ -2,6 +2,9 @@
 from threading import *
 import os
 
+global BUFFER_SIZE
+BUFFER_SIZE = 1024 # standard buffer size
+
 
 # *********************************************************
 # VARIABLE - connexion voiture rose

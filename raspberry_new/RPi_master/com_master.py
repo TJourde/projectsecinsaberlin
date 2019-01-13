@@ -10,8 +10,6 @@ import socket
 #importing variables linked
 import VarBerlin as VB
 
-BUFFER_SIZE = 1024
-
 MCM = 0x010
 MS = 0x100
 US1 = 0x000
@@ -250,7 +248,7 @@ class MyReceive(Thread):
             if VB.stop_all.is_set():break
 
             try:
-                data = self.conn.recv(BUFFER_SIZE)
+                data = self.conn.recv(VB.BUFFER_SIZE)
                 data = str(data)
                 data = data[2:len(data)-1]
             except socket.timeout:

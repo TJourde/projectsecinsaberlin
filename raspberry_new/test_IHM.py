@@ -45,7 +45,7 @@ try:
     size = stest.send(message.encode())
     if size == 0: pass
 
-    time.sleep(5)
+    time.sleep(8)
 
     message = 'HOO:start;'
     print(message)
