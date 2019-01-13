@@ -35,14 +35,14 @@ class MyComSlave(Thread):
         IpBlack = VBS.IpBlack
 
         while 1:
+
             if VBS.ConnectionErrorEvent.is_set():
-                print(self.getName(),'BrokenPipeError encountered')
+                print(self.getName(),'Connection encountered')
                 VBS.Connection_ON.clear()
                 newsendslave.join()
                 newreceiveslave.join()
                 del(newsendslave)
                 del(newreceiveslave)
-                #stow.shutdown()
                 stow.close()
                 stow = -1
                 addr = -1
@@ -76,7 +76,6 @@ class MyComSlave(Thread):
                     newsendslave = MySendSlave(VBS.conn_tow,self.bus)
                     newsendslave.start()
 
-
                 # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
                 elif IpBlack not in addr and addr != -1:
                     waiting_connection = False
@@ -103,7 +102,7 @@ class MySendSlave(Thread):
     def run(self):
         while True :
             msg = self.bus.recv()
-            if not VBS.Connection_ON.is_set(): break
+            if not VBS.Connection_ON.is_set() or VBS.Disconnect.is_set(): break
 
             if msg.arbitration_id == US2:
                 # ultrason avant centre
@@ -146,8 +145,12 @@ class MyReceiveSlave(Thread):
             data = data[2:len(data)-1]
             data = data.split(';')
 
-            if data == '' or not data:
-                VBS.ConnectionErrorEvent.set()
+            if not data: break
 
-            pass
+            if data == 'SHUT_DOWN':
+                self.conn.send('SHUT_DOWN;'.encode())
+                stow.shutdown(stow.SHUT_WR)
+                VBS.ConnectionErrorEvent.set()
+                break
+
         print(self.getName(),'exit MyReceiveSlave')

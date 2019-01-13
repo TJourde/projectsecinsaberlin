@@ -82,7 +82,13 @@ class MyComTow(Thread):
             elif VB.Disconnect.is_set():
                 VB.Connection_ON.clear()
                 VB.Connect.clear()
-                stow.shutdown(stow.SHUT_RDWR)
+                stow.send('SHUT_DOWN;')
+                stow.shutdown(stow.SHUT_WR)
+                while data != 'SHUT_DOWN':
+                    data = stow.recv()
+                    data = str(data)
+                    data = data[2:len(data)-1]
+                    data = data.split(';')
                 stow.close()
                 print(self.getName(),': Connection with pink car closed')
 

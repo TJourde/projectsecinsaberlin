@@ -32,7 +32,9 @@ print('IpPink - ' + IpPink)
 # *********************************************************
 global Connection_ON
 Connection_ON = Event()
+Connection_ON.clear()
 global conn_tow
 conn_tow = -1
 global ConnectionErrorEvent
 ConnectionErrorEvent = Event()
+ConnectionErrorEvent.clear()
