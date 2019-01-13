@@ -25,7 +25,7 @@ OM2 = 0x102
 HALL= 0x103
 
 # DISTANCES
-HOOKING_DIST = 30
+HOOKING_DIST = 33
 OBSTACLE_DIST = 15
 LIMIT_DIST = HOOKING_DIST + 5
 
@@ -36,7 +36,7 @@ SOLENOID_DOWN = 0x00
 # COMMANDES ROUES
 NO_MOVE = 0xB1
 BACKING_FAST = 0xA4
-BACKING_SLOW = 0xAA
+BACKING_SLOW = 0xAB
 WHEELS_CENTER = 0xB1
 
 
@@ -77,7 +77,7 @@ class Approach(Thread):
             if VB.Approach.is_set():
 
                 trameCAN = False
-                
+
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
                 # --------------------------------------
@@ -91,7 +91,7 @@ class Approach(Thread):
                         if cpt_us_touch == nb_us_touch:
                             cpt_us_close = 0
                             US_POS = 'touch'
-                    elif measured_distance > HOOKING_DIST and measured_distance <= HOOKING_DIST + 15:
+                    elif measured_distance > HOOKING_DIST and measured_distance <= HOOKING_DIST + 20:
                         cpt_us_touch = 0
                         cpt_us_close += 1
                         if cpt_us_close == nb_us_close:

@@ -67,6 +67,8 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         print('Shutting down all process...')
+        msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+        self.bus.send(msg)
         VB.stop_all.set()
     except socket.error:
         print('Socket error with connection to IHM')
