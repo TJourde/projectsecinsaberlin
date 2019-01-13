@@ -23,6 +23,7 @@ import VarBerlin as VB
 HOST = ''                # Symbolic name meaning all available interfaces
 PORT = 6666              # Arbitrary non-privileged port
 addr = -1
+count = 10
 
 
 if __name__ == "__main__":
@@ -83,11 +84,7 @@ if __name__ == "__main__":
         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
         bus.send(msg)
 
-		count = 10
-    while _threading.active_count() != 0:
-    	if count > _threading.active_count():
-	    	count = _threading.active_count()
-	    	print('Nb of active threads ', count)
+    while _threading.active_count() != 1:
     	pass
         
     if addr != -1:
