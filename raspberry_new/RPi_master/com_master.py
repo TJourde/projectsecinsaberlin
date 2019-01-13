@@ -262,6 +262,7 @@ class MyReceive(Thread):
             #except IOError as e:
              #   pass
             
+            print
             
             #split each command received if there are more of 1 
             for cmd in data.split(';'):

@@ -40,9 +40,18 @@ try:
     print('Conneted to black car as IHM')
     time.sleep(5)
 
-    message = 'HOO:start;'
-    size = stest.send(message.encode())
-    if size == 0: pass
+    while 1:
+        message = 'CON:start;'
+        size = stest.send(message.encode())
+        if size == 0: pass
+
+        time.sleep(15)
+
+        message = 'CON:stop;'
+        size = stest.send(message.encode())
+        if size == 0: pass
+
+        time.sleep(15)
 
     while 1:
         data = stest.recv(50)
