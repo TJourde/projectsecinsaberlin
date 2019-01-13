@@ -34,21 +34,26 @@ print('IpPink - ' + IpPink)
 # ***************************
 TCP_PORT = 6666
 BUFFER_SIZE = 24
-stest = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-stest.connect((IpPink,TCP_PORT))
-print('Conneted to black car as IHM')
-time.sleep(5)
+try:
+    stest = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    stest.connect((IpBlack,TCP_PORT))
+    print('Conneted to black car as IHM')
+    time.sleep(5)
 
+    message = 'HOO:start;'
+    size = self.conn.send(message.encode())
+    if size == 0: pass
 
-message = 'HOO:start;'
-size = self.conn.send(message.encode())
-if size == 0: break
-
-while 1: 
-	data = self.conn.recv(50)
-    data = str(data)
-    data = data[2:len(data)-1]
-    print(data)
+    while 1:
+        data = self.conn.recv(50)
+        data = str(data)
+        data = data[2:len(data)-1]
+        data = data.split(';')
+        print(data)
+except BrokenPipeError:
+	stest.close()
+	print('Exiting test_IHM program')
+	exit()
 
 stest.close()
 print('Exiting test_IHM program')
