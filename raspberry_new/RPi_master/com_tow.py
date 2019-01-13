@@ -22,7 +22,7 @@ class MyComTow(Thread):
         Thread.__init__(self)
         print(self.getName(), '****** MyTowCom initialized')
 
-    def run(self):.
+    def run(self):
 
         VB.WriteUS3(False,-1)
         while True :

@@ -340,7 +340,7 @@ class MyReceive(Thread):
                         print(self.getName(),'Start hooking manoeuver')
                         self.enable = 0
                         VB.Connect.set()
-                        #VB.Approach.set()
+                        VB.Approach.set()
                         self.enable = 0
                     if (payload == 'stop'):
                         print(self.getName(),'Stopping hooking manoeuver')
@@ -399,6 +399,4 @@ class MyReceive(Thread):
                     print(msg)
                     #Send message
                     self.bus.send(msg)
-
-#        self.conn.close()
         
