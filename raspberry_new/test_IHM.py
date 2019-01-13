@@ -38,20 +38,21 @@ try:
     stest = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     stest.connect((IpBlack,TCP_PORT))
     print('Conneted to black car as IHM')
+    time.sleep(2)
+
+    message = 'CON:start;'
+    print(message)
+    size = stest.send(message.encode())
+    if size == 0: pass
+
     time.sleep(5)
 
-    while 1:
-        message = 'CON:start;'
-        size = stest.send(message.encode())
-        if size == 0: pass
+    message = 'HOO:start;'
+    print(message)
+    size = stest.send(message.encode())
+    if size == 0: pass
 
-        time.sleep(15)
-
-        message = 'CON:stop;'
-        size = stest.send(message.encode())
-        if size == 0: pass
-
-        time.sleep(15)
+    time.sleep(1)
 
     while 1:
         data = stest.recv(50)
@@ -60,7 +61,8 @@ try:
         if not data: break
         for cmd in data.split(';'):
         	print(cmd)
-except BrokenPipeError:
+
+except (BrokenPipeError,KeyboardInterrupt):
 	stest.close()
 	print('Exiting test_IHM program')
 	exit()

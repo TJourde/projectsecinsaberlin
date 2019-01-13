@@ -17,6 +17,7 @@ OM2 = 0x102
 
 TCP_PORT = 9000
 BUFFER_SIZE = 20
+WAITING_TIME = 10
 
 # *********************************************************
 # THREAD 1 - Connection à la voiture noire
@@ -47,8 +48,8 @@ class MyComSlave(Thread):
                 stow = -1
                 addr = -1
                 VBS.conn_tow = -1
-                print(self.getName(),'Waiting 10 sec before continuing')
-                time.sleep(10)
+                print(self.getName(),'Waiting ', str(WAITING_TIME),' sec before continuing')
+                time.sleep(WAITING_TIME)
                 VBS.ConnectionErrorEvent.clear()
 
             if not VBS.Connection_ON.is_set():
@@ -85,7 +86,7 @@ class MyComSlave(Thread):
                     stow.close()
                     addr = -1
 
-        print(self.getName(),'exit MyComSlave')
+        print(self.getName(),'###### MyComSlave closed')
 
 
 # *********************************************************
@@ -115,7 +116,7 @@ class MySendSlave(Thread):
                     VBS.ConnectionErrorEvent.set()
                     break
 
-        print(self.getName(),'exit MySendSlave')
+        print(self.getName(),'###### MySendSlave closed')
 
 # *********************************************************
 # THREAD 3 - Réception de messages depuis la voiture noire
@@ -152,4 +153,4 @@ class MyReceiveSlave(Thread):
                 VBS.ConnectionErrorEvent.set()
                 break
 
-        print(self.getName(),'exit MyReceiveSlave')
+        print(self.getName(),'###### MyReceiveSlave closed')

@@ -82,7 +82,6 @@ class MyComTow(Thread):
             # --------------------------------------
             elif VB.Connect.is_set():
                 try:
-                    print('debut try')
                     stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     stow.connect((VB.IpPink,TCP_PORT))
                     print(self.getName(),'Connect to pink car with address ' + VB.IpPink)
