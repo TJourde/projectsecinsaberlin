@@ -78,6 +78,7 @@ class MySend(Thread):
         print(self.getName(), 'MySend initialized')
 
     def run(self):
+        trameCAN = False
         while True :
 
             if VB.stop_all.is_set():break
@@ -88,6 +89,7 @@ class MySend(Thread):
             # PART 1 - Native messages
             # --------------------------------------
             if msg.arbitration_id == US1:
+                trameCAN = True
                 # ultrason avant gauche
                 distance = int.from_bytes(msg.data[0:2], byteorder='big')
                 message = "UFL:" + str(distance) + ";"
@@ -104,6 +106,7 @@ class MySend(Thread):
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif msg.arbitration_id == US2:
+                trameCAN = True
                 # ultrason arriere gauche
                 distance = int.from_bytes(msg.data[0:2], byteorder='big')
                 message = "URL:" + str(distance)+ ";"
@@ -120,6 +123,7 @@ class MySend(Thread):
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif msg.arbitration_id == MS:
+                trameCAN = True
                 # position volant
                 angle = int.from_bytes(msg.data[0:2], byteorder='big')
                 message = "POS:" + str(angle)+ ";"
@@ -141,6 +145,7 @@ class MySend(Thread):
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif msg.arbitration_id == OM1:
+                trameCAN = True
                 # Yaw
                 yaw = struct.unpack('>f',msg.data[0:4])
                 message = "YAW:" + str(yaw[0])+ ";"
@@ -152,6 +157,7 @@ class MySend(Thread):
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif msg.arbitration_id == OM2:
+                trameCAN = True
                 # Roll
                 roll = struct.unpack('>f',msg.data[0:4])
                 message = "ROL:" + str(roll[0])+ ";"
@@ -163,50 +169,54 @@ class MySend(Thread):
             # --------------------------------------
             # capteur magnétique
             elif msg.arbitration_id == HALL:
+                trameCAN = True
                 magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
                 message = "MAG:" + str(magnetic_sensor)+ ";"
                 size = self.conn.send(message.encode())
                 if size == 0: break
             
-            # connexion voiture rose
-            if VB.Connection_ON.is_set():
-                message = "CON_PINK:on;"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            else:
-                message = "CON_PINK:off;"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-
-            # etat voiture noire
-            if VB.Approach.is_set():
-                message = "STATE:approaching;"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif VB.Hooking_ON.is_set():
-                message = "STATE:approach_complete;"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif VB.Towing_ON.is_set():
-                message = "STATE:towing;"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif VB.Towing_Error.is_set():
-                message = "STATE:towing_error;"
-                size = self.conn.send(message.encode())
-                if size == 0: break             
-            else:
-                message = "STATE:idle;"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-
-            # code d'erreur pendant remorquage
-            if VB.Towing_ON.is_set() or VB.Towing_Error.is_set():
-                if VB.ErrorCodeSem.acquire(False):
-                    message = "ERR:" + str(VB.ErrorCode) + ";"
-                    VB.ErrorCodeSem.release()
+            if not trameCAN:
+                # connexion voiture rose
+                if VB.Connection_ON.is_set():
+                    message = "CON_PINK:on;"
                     size = self.conn.send(message.encode())
                     if size == 0: break
+                else:
+                    message = "CON_PINK:off;"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+
+                # etat voiture noire
+                if VB.Approach.is_set():
+                    message = "STATE:approaching;"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif VB.Hooking_ON.is_set():
+                    message = "STATE:approach_complete;"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif VB.Towing_ON.is_set():
+                    message = "STATE:towing;"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif VB.Towing_Error.is_set():
+                    message = "STATE:towing_error;"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break             
+                else:
+                    message = "STATE:idle;"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+
+                # code d'erreur pendant remorquage
+                if VB.Towing_ON.is_set() or VB.Towing_Error.is_set():
+                    if VB.ErrorCodeSem.acquire(False):
+                        message = "ERR:" + str(VB.ErrorCode) + ";"
+                        VB.ErrorCodeSem.release()
+                        size = self.conn.send(message.encode())
+                        if size == 0: break
+
+            trameCAN = False
             
 '''
             # Valeurs propres au towing

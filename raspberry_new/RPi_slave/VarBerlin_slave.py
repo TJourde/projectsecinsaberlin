@@ -34,5 +34,5 @@ global Connection_ON
 Connection_ON = Event()
 global conn_tow
 conn_tow = -1
-global BrokenPipeEvent
-BrokenPipeEvent = Event()
+global ConnectionErrorEvent
+ConnectionErrorEvent = Event()

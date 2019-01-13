@@ -35,11 +35,13 @@ class MyComSlave(Thread):
         IpBlack = VBS.IpBlack
 
         while 1:
-            if VBS.BrokenPipeEvent.is_set():
+            if VBS.ConnectionErrorEvent.is_set():
                 print('BrokenPipeError encountered')
                 VBS.Connection_ON.clear()
                 newsendslave.join()
                 newreceiveslave.join()
+                del(newsendslave)
+                del(newreceiveslave)
                 #stow.shutdown()
                 stow.close()
                 stow = -1
@@ -47,7 +49,7 @@ class MyComSlave(Thread):
                 VBS.conn_tow = -1
                 print('Waiting 15 sec before continuing')
                 time.sleep(15)
-                VBS.BrokenPipeEvent.clear()
+                VBS.ConnectionErrorEvent.clear()
 
             if not VBS.Connection_ON.is_set():
                 if addr == -1 and not waiting_connection:
@@ -110,8 +112,8 @@ class MySendSlave(Thread):
                 try:
                     size = self.conn.send(message.encode())
                     if size == 0: break
-                except BrokenPipeError:
-                    VBS.BrokenPipeEvent.set()
+                except BrokenPipeError,ConnectionResetError:
+                    VBS.ConnectionErrorEvent.set()
                     break
 
         print('exit MySendSlave')

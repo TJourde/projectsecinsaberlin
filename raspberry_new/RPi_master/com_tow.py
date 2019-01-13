@@ -9,7 +9,7 @@ import smtplib
 import VarBerlin as VB
 
 TCP_PORT = 9000
-BUFFER_SIZE = 20  # Normally 1024, but we want fast response
+BUFFER_SIZE = 1024  # Normally 1024, but we want fast response
 
 
 # *********************************************************
@@ -60,7 +60,7 @@ class MyComTow(Thread):
                 if not data: continue
 
                 for cmd in data.split(';'):
-                    
+
                     print(self.getName() + ' '+ cmd)
 
                     # look for the identifier in received msg
@@ -71,7 +71,7 @@ class MyComTow(Thread):
                             VB.WriteUS3(True,payload_slave)
 
                             # send it to main application
-                            message = "UFC_slave:" + str(payload_slave) + ";"
+                            message = "**********UFC_slave:" + str(payload_slave) + ";"
                             size = stow.send(message.encode())
                             if size == 0: 
                                 print(self.getName(),': error while sending UFC_slave data to IHM')
