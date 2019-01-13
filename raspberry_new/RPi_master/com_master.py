@@ -203,7 +203,7 @@ class MySend(Thread):
                 if size == 0: break
 
             # code d'erreur pendant remorquage
-            if VB.Towing_ON.is_set() or VB.Towing_Error.is_set():
+            if VB.Towing_Error.is_set():
                 if VB.ErrorCodeSem.acquire(False):
                     message = "ERR:" + str(VB.ErrorCode) + ";"
                     VB.ErrorCodeSem.release()
@@ -340,7 +340,7 @@ class MyReceive(Thread):
                         print('Start hooking manoeuver')
                         self.enable = 0
                         VB.Connect.set()
-                        #VB.Approach.set()
+                        VB.Approach.set()
                         self.enable = 0
                     if (payload == 'stop'):
                         print('Stopping hooking manoeuver')
