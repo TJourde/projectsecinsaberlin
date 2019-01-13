@@ -15,12 +15,12 @@ try:
     IpBlack, MACAddr = IpBlack.split(' ') # remove MAC address appended
 except ValueError:
     pass
-if IpBlack == '10.105.0.53': # IOT network
-    IpPink = '10.105.0.55'
-elif IpBlack == '192.168.137.12': # Berlin network
-    IpPink = '192.168.137.27'
-elif IpBlack == '192.168.1.21': # Grenier network
-    IpPink = '192.168.1.20'
+if IpBlack == '10.105.0.55': # IOT network
+    IpPink = '10.105.0.53'
+elif IpBlack == '192.168.137.27': # Berlin network
+    IpPink = '192.168.137.12'
+elif IpBlack == '192.168.1.20': # Grenier network
+    IpPink = '192.168.1.21'
 
 print('IpBlack - ' + IpBlack)
 print('IpPink - ' + IpPink)    
