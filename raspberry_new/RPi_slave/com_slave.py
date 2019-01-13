@@ -47,8 +47,8 @@ class MyComSlave(Thread):
                 stow = -1
                 addr = -1
                 VBS.conn_tow = -1
-                print(self.getName(),'Waiting 15 sec before continuing')
-                time.sleep(15)
+                print(self.getName(),'Waiting 10 sec before continuing')
+                time.sleep(10)
                 VBS.ConnectionErrorEvent.clear()
 
             if not VBS.Connection_ON.is_set():

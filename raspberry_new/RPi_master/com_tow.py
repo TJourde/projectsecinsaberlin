@@ -42,10 +42,11 @@ class MyComTow(Thread):
                 stow.send('SHUT_DOWN;'.encode())
                 while data != 'SHUT_DOWN':
                     print('bientot ferme')
-                    data = stow.recv()
+                    data = stow.recv(BUFFER_SIZE)
                     data = str(data)
                     data = data[2:len(data)-1]
                     data = data.split(';')
+                    print(data)
                 stow.close()
                 print(self.getName(),': Connection with pink car closed')
 
