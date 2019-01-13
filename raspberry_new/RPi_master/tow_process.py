@@ -32,8 +32,8 @@ SOLENOID_DOWN = 0x00
 
 # COMMANDES ROUES
 NO_MOVE = 0xB1
-BACKING_FAST = 0xA0
-BACKING_SLOW = 0xAD
+BACKING_FAST = 0xA9
+BACKING_SLOW = 0xAE
 WHEELS_CENTER = 0xB1
 cmd_mv = 0
 cmd_pos = 0
@@ -111,6 +111,7 @@ class Approach(Thread):
                 # PART 2 - Traitement des flag et envoi des commandes aux moteurs/solenoid
                 # --------------------------------------
                 if US_POS == 'touch' and FLAG_MAGNET:
+                    print(self.getName(),'Hooking effective')
                     msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     self.bus.send(msg)
                     time.sleep(1)
