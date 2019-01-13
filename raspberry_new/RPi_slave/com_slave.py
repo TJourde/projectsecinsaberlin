@@ -71,7 +71,7 @@ class MyComSlave(Thread):
                     print(self.getName(),'Connected to Berlin car with address' + repr(addr))
                     VBS.Connection_ON.set()
 
-                    newreceiveslave = MyReceiveSlave(self.bus)
+                    newreceiveslave = MyReceiveSlave(VBS.conn_tow,self.bus)
                     newreceiveslave.start()
                     newsendslave = MySendSlave(VBS.conn_tow,self.bus)
                     newsendslave.start()
@@ -144,8 +144,9 @@ class MyReceiveSlave(Thread):
             data = self.conn.recv(50)
             data = str(data)
             data = data[2:len(data)-1]
+            data = data.split(';')
 
-            if not data:
+            if data == '' or not data:
                 VBS.ConnectionErrorEvent.set()
 
             pass
