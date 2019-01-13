@@ -112,7 +112,7 @@ class MySendSlave(Thread):
                 try:
                     size = self.conn.send(message.encode())
                     if size == 0: break
-                except BrokenPipeError,ConnectionResetError:
+                except (BrokenPipeError,ConnectionResetError):
                     VBS.ConnectionErrorEvent.set()
                     break
 

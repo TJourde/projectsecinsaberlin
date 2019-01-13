@@ -61,7 +61,7 @@ class MyComTow(Thread):
 
                 for cmd in data.split(';'):
 
-                    print(self.getName() + ' '+ cmd)
+                    #print(self.getName() + ' '+ cmd)
 
                     # look for the identifier in received msg
                     if "UFC_slave" in cmd: 
@@ -71,7 +71,7 @@ class MyComTow(Thread):
                             VB.WriteUS3(True,payload_slave)
 
                             # send it to main application
-                            message = "**********UFC_slave:" + str(payload_slave) + ";"
+                            message = "UFC_slave:" + str(payload_slave) + ";"
                             size = stow.send(message.encode())
                             if size == 0: 
                                 print(self.getName(),': error while sending UFC_slave data to IHM')
