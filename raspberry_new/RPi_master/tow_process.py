@@ -114,8 +114,8 @@ class Approach(Thread):
                     msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     self.bus.send(msg)
                     time.sleep(1)
-                    self.msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
-                    bus.send(msg)
+                    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                    self.bus.send(msg)
                     VB.Hooking_ON.set()
                     VB.Approach.clear()
                 elif US_POS == 'touch' and not(FLAG_MAGNET):
