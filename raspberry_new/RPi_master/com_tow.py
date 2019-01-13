@@ -18,8 +18,9 @@ BUFFER_SIZE = 1024  # Normally 1024, but we want fast response
 
 class MyComTow(Thread):
     
-    def __init__(self):
+    def __init__(self,conn_IHM):
         Thread.__init__(self)
+        self.conn_IHM = conn_IHM
         print(self.getName(), '****** MyTowCom initialized')
 
     def run(self):
@@ -32,20 +33,21 @@ class MyComTow(Thread):
                 break
             
             # --------------------------------------
-            # Connexion à la voiture rose
+            # Fermeture du socket (si arrêt hooking/towing)
             # --------------------------------------
-            if VB.Connect.is_set():
-                try:
-                    print('debut try')
-                    stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    stow.connect((VB.IpPink,TCP_PORT))
-                    print(self.getName(),': Connect to pink car with address ' + VB.IpPink)
-                    VB.Connect.clear()
-                    VB.Connection_ON.set()
-                except socket.error:
-                    print(self.getName(),': Socket error while attempting to connect to pink car')
-                    VB.Connection_ON.clear()
-                    VB.Connect.clear()
+            if VB.Disconnect.is_set():
+                VB.Connection_ON.clear()
+                VB.Connect.clear()
+                print(self.getName(),': Connection with pink shutting down')
+                stow.send('SHUT_DOWN;'.encode())
+                while data != 'SHUT_DOWN':
+                    print('bientot ferme')
+                    data = stow.recv()
+                    data = str(data)
+                    data = data[2:len(data)-1]
+                    data = data.split(';')
+                stow.close()
+                print(self.getName(),': Connection with pink car closed')
 
             # --------------------------------------
             # Traitement des données envoyées par la voiture rose
@@ -71,27 +73,28 @@ class MyComTow(Thread):
 
                             # send it to main application
                             message = "UFC_slave:" + str(payload_slave) + ";"
-                            size = stow.send(message.encode())
+                            size = self.conn_IHM.send(message.encode())
                             if size == 0: 
                                 print(self.getName(),': Error while sending UFC_slave data to IHM')
                                 break
 
             # --------------------------------------
-            # Fermeture du socket (si arrêt hooking/towing)
+            # Connexion à la voiture rose
             # --------------------------------------
-            elif VB.Disconnect.is_set():
-                VB.Connection_ON.clear()
-                VB.Connect.clear()
-                print(self.getName(),': Connection with pink shutting down')
-                stow.send('SHUT_DOWN;'.encode())
-                while data != 'SHUT_DOWN':
-                    print('bientot ferme')
-                    data = stow.recv()
-                    data = str(data)
-                    data = data[2:len(data)-1]
-                    data = data.split(';')
-                stow.close()
-                print(self.getName(),': Connection with pink car closed')
+            elif VB.Connect.is_set():
+                try:
+                    print('debut try')
+                    stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    stow.connect((VB.IpPink,TCP_PORT))
+                    print(self.getName(),': Connect to pink car with address ' + VB.IpPink)
+                    VB.Connect.clear()
+                    VB.Connection_ON.set()
+                except socket.error:
+                    print(self.getName(),': Socket error while attempting to connect to pink car')
+                    VB.Connection_ON.clear()
+                    VB.Connect.clear()
+
+
 
         print(self.getName(), '****** MyTowCom finished')
 
