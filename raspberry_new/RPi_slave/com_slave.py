@@ -37,7 +37,7 @@ class MyComSlave(Thread):
         while 1:
 
             if VBS.ConnectionErrorEvent.is_set():
-                print(self.getName(),'Connection encountered')
+                print(self.getName(),'Connection problem encountered, closing socket')
                 VBS.Connection_ON.clear()
                 newsendslave.join()
                 newreceiveslave.join()
@@ -144,15 +144,12 @@ class MyReceiveSlave(Thread):
             data = str(data)
             data = data[2:len(data)-1]
             data = data.split(';')
-            print(data)
 
             if not data: break
 
             if 'SHUT_DOWN' in data:
-                print('SHUT_DOWN received')
                 self.conn.send('SHUT_DOWN;'.encode())
                 VBS.ConnectionErrorEvent.set()
-                print('break')
                 break
 
         print(self.getName(),'exit MyReceiveSlave')

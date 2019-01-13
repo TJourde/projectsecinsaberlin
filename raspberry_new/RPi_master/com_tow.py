@@ -38,17 +38,14 @@ class MyComTow(Thread):
             if VB.Disconnect.is_set():
                 VB.Connection_ON.clear()
                 VB.Connect.clear()
-                print(self.getName(),': Connection with pink shutting down')
                 stow.send('SHUT_DOWN;'.encode())
                 while 'SHUT_DOWN' not in data:
-                    print('bientot ferme')
                     data = stow.recv(BUFFER_SIZE)
                     data = str(data)
                     data = data[2:len(data)-1]
                     data = data.split(';')
-                    print(data)
                 stow.close()
-                print(self.getName(),': Connection with pink car closed')
+                print(self.getName(),'Connection with pink car closed')
                 VB.Disconnect.clear()
 
             # --------------------------------------
@@ -77,7 +74,7 @@ class MyComTow(Thread):
                             message = "UFC_slave:" + str(payload_slave) + ";"
                             size = self.conn_IHM.send(message.encode())
                             if size == 0: 
-                                print(self.getName(),': Error while sending UFC_slave data to IHM')
+                                print(self.getName(),'Error while sending UFC_slave data to IHM')
                                 break
 
             # --------------------------------------
@@ -88,11 +85,11 @@ class MyComTow(Thread):
                     print('debut try')
                     stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     stow.connect((VB.IpPink,TCP_PORT))
-                    print(self.getName(),': Connect to pink car with address ' + VB.IpPink)
+                    print(self.getName(),'Connect to pink car with address ' + VB.IpPink)
                     VB.Connect.clear()
                     VB.Connection_ON.set()
                 except socket.error:
-                    print(self.getName(),': Socket error while attempting to connect to pink car')
+                    print(self.getName(),'Socket error while attempting to connect to pink car')
                     VB.Connection_ON.clear()
                     VB.Connect.clear()
 
