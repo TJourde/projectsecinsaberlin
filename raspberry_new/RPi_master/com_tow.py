@@ -29,7 +29,7 @@ class MyComTow(Thread):
         while True :
             
             if VB.stop_all.is_set() :
-                if Connection_ON.is_set():
+                if VB.Connection_ON.is_set():
                     VB.Disconnect.is_set()
                 else: break
             
