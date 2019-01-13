@@ -266,11 +266,18 @@ class MyReceive(Thread):
             data = self.conn.recv(50)
             data = str(data)
             data = data[2:len(data)-1]
+
+            if not data:
+                print('no data')
+                continue
+            if data == '':
+                print('data == ""')
+                continue
+
             print(data)
             #except IOError as e:
              #   pass
             
-            if not data: continue
             
             #split each command received if there are more of 1 
             for cmd in data.split(';'):

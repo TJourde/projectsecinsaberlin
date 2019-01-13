@@ -49,6 +49,7 @@ try:
         data = str(data)
         data = data[2:len(data)-1]
         data = data.split(';')
+        if not data: continue
         print(data)
 except BrokenPipeError:
 	stest.close()

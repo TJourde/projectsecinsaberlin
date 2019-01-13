@@ -54,19 +54,22 @@ class MyComTow(Thread):
             elif VB.Connection_ON.is_set():
 
                 data = stow.recv(BUFFER_SIZE)
+                data = str(data)
+                data = data[2:len(data)-1]
+                data = data.split(';')
 
-                if not data:
+                if not data: continue
+'''
                     print(self.getName(),': No data: lost connection with second car')
                     VB.WriteUS3(False,-1)
                     VB.Connection_ON.clear()
                     VB.Towing_Error.set()
                     VB.WriteErrorCode(VB.ErrorLostConnection)
+'''
 
                 # look for the identifier in received msg
                 if "UFC_slave" in data.decode("utf-8"): 
-                        data = str(data)
-                        #data = data[2:len(data)-1]
-                        data = data.split(';')
+
                         header_slave, payload_slave = data.split(':')
 
                         VB.WriteUS3(True,payload_slave)
