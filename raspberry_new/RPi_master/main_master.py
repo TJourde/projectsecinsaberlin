@@ -72,16 +72,6 @@ if __name__ == "__main__":
         newreceive.join()
         newsend.join()
 
-        while threading.active_count() != 0:
-            pass
-            
-        if addr != -1:
-            sIHM.close()
-            print('Socket with IHM closed')   
-
-        print("All process are shut down")
-
-
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         print('\nShutting down all process...')
         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
@@ -93,5 +83,11 @@ if __name__ == "__main__":
         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
         bus.send(msg)
 
+    while threading.active_count() != 0:
+        pass
+        
+    if addr != -1:
+        sIHM.close()
+        print('Socket with IHM closed')   
 
-
+    print("All process are shut down")
