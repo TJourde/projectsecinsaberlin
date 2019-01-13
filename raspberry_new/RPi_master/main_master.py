@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from threading import * as _threading
+import threading as _threading
 import time
 import can
 import os
@@ -83,8 +83,11 @@ if __name__ == "__main__":
         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
         bus.send(msg)
 
+		count = 10
     while _threading.active_count() != 0:
-    	print('Nb of active threads ', _threading.active_count())
+    	if count > _threading.active_count():
+	    	count = _threading.active_count()
+	    	print('Nb of active threads ', count)
     	pass
         
     if addr != -1:
