@@ -29,6 +29,7 @@ class MyComTow(Thread):
         while True :
             
             if VB.stop_all.is_set() :
+                print('com_tow stop_all')
                 if VB.Connection_ON.is_set():
                     VB.Disconnect.is_set()
                 else: break
@@ -37,6 +38,7 @@ class MyComTow(Thread):
             # Fermeture du socket (si arrêt hooking/towing)
             # --------------------------------------
             if VB.Disconnect.is_set():
+                print('Disco handler')
                 VB.Connection_ON.clear()
                 VB.Connect.clear()
                 stow.send('SHUT_DOWN;'.encode())

@@ -251,16 +251,16 @@ class MyReceive(Thread):
             if VB.stop_all.is_set():break
 
             #self.conn.setblocking(0)
-            #try:
-            data = self.conn.recv(50)
-            data = str(data)
-            data = data[2:len(data)-1]
+            try:
+                data = self.conn.recv(50)
+                data = str(data)
+                data = data[2:len(data)-1]
+            except KeyboardInterrupt:
+                continue
 
             if not data: break
 
             print(self.getName(),data)
-            #except IOError as e:
-             #   pass
             
             print
             
