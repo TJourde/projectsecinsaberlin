@@ -23,8 +23,8 @@ elif IpPink == '192.168.137.12': # Berlin network
 elif IpPink == '192.168.1.21': # Grenier network
     IpBlack = '192.168.1.20'
 
-print(self.getName(),'IpBlack - ' + IpBlack)
-print(self.getName(),'IpPink - ' + IpPink)
+print('IpBlack - ' + IpBlack)
+print('IpPink - ' + IpPink)
 
 
 # *********************************************************
