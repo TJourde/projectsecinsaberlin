@@ -19,8 +19,6 @@ from tow_process import *
 #importing variables linked
 import VarBerlin as VB
 
-global IpBlack
-global IpPink
 
 HOST = ''                # Symbolic name meaning all available interfaces
 PORT = 6666              # Arbitrary non-privileged port
@@ -37,21 +35,21 @@ if __name__ == "__main__":
 
     try:
         bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
+        print('Connected to bus can')
     except OSError:
         print('Cannot find PiCAN board.')
         exit()
-    alldone = False
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((HOST, PORT))
-        s.listen(1)
-        conn, addr = s.accept()
+        sIHM = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sIHM.bind((HOST, PORT))
+        sIHM.listen(1)
+        conn_IHM, addr = s.accept()
         print('Connected with ' + repr(addr))
 
         # starting HMI Communications Threads
-        newreceive = MyReceive(conn, bus)
+        newreceive = MyReceive(conn_IHM, bus)
         newreceive.start()
-        newsend = MySend(conn, bus)
+        newsend = MySend(conn_IHM, bus)
         newsend.start()
 
         # starting communication with pink car
@@ -65,23 +63,22 @@ if __name__ == "__main__":
         # launching error detection thread (starting procedure only if VB.TowingActive == True)
         newdetect = ErrorDetection(bus)
         newdetect.start()
-        alldone = True
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         print('Shutting down all process...')
         VB.stop_all.set()
     except socket.error:
-        print('Socket error')
+        print('Socket error with connection to IHM')
         print(socket.error)
 
-    if alldone:
-        newreceive.join()
-        newsend.join()
-        newtowcom.join()
-        newapproach.join()
-        newdetect.join()
 
-        conn.close()
+    newreceive.join()
+    newsend.join()
+    newtowcom.join()
+    newapproach.join()
+    newdetect.join()
+
+    s.close()
 
     print("All process are shut down")
     

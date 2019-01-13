@@ -181,19 +181,19 @@ class MySend(Thread):
                 if size == 0: break
 
             # etat voiture noire
-            if VB.TryApproach.is_set():
+            if VB.Approach.is_set():
                 message = "STATE:approaching"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            elif VB.ApproachComplete.is_set():
+            elif VB.Hooking_ON.is_set():
                 message = "STATE:approach_complete"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            elif VB.TowingActive.is_set():
+            elif VB.Towing_ON.is_set():
                 message = "STATE:towing"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            elif VB.TowingError.is_set():
+            elif VB.Towing_Error.is_set():
                 message = "STATE:towing_error"
                 size = self.conn.send(message.encode())
                 if size == 0: break             
@@ -203,8 +203,8 @@ class MySend(Thread):
                 if size == 0: break
 
             # code d'erreur pendant remorquage
-            if VB.TowingActive.is_set() or VB.TowingError.is_set():
-                if VB.ErrorCodeSem.acquire(False)
+            if VB.Towing_ON.is_set() or VB.Towing_Error.is_set():
+                if VB.ErrorCodeSem.acquire(False):
                     message = "ERR:" + str(VB.ErrorCode) + ";"
                     VB.ErrorCodeSem.release()
                     size = self.conn.send(message.encode())
@@ -263,10 +263,9 @@ class MyReceive(Thread):
 
             if VB.stop_all.is_set():break
 
-            data=""
             self.conn.setblocking(0)
             try:
-                data = self.conn.recv(1024)
+                data = self.conn.recv(50)
                 data = str(data)
                 data = data[2:len(data)-1]
             except IOError as e:
@@ -335,56 +334,28 @@ class MyReceive(Thread):
                 elif (header == 'HOO'):
                     if (payload == 'start'):
                         print('Start hooking manoeuver')
-                        VB.TryConnect.set()
-                        # VB.TryApproach.set()
+                        self.enable = 0
+                        VB.Connect.set()
+                        #VB.Approach.set()
                         self.enable = 0
                     if (payload == 'stop'):
                         print('Stopping hooking manoeuver')
-                        VB.TryConnect.clear()
-                        VB.ConnectedWIthPink.clear()
-                        VB.TryApproach.clear()
+                        VB.Connect.clear()
+                        VB.Connection_ON.clear()
+                        VB.Approach.clear()
+                        VB.Disconnect.set()
                 # towing related commands
                 elif (header == 'TOW'):
                     if (payload == 'start'):
                         print('Starting towing mode - error detection ON')
-                        VB.TowingActive.set()
+                        VB.Towing_ON.set()
                     if (payload == 'stop'):
                         print('Stopping towing mode - error detection OFF - disconnected from pink car')
-                        VB.TowingActive.clear()
+                        VB.Towing_ON.clear()
+                        VB.Towing_OFF.set()
+                        VB.Connection_ON.clear()
+                        VB.Disconnect.set()
 
-
-
-'''
-                elif (header == 'TOW'):
-                    if (payload == 'request'):
-                        print("Starting connection & approach")
-                        VB.TryConnect.set() # initiate connection
-                        VB.TryApproach.set() # start approaching the 2nd car
-                        self.enable = 0
-                    if (payload == 'on'):
-                        print("Starting towing mode")
-                        VB.TowingActive.set() # start error detection
-                        self.enable = 1
-                    if (payload == 'off'):
-                        print("Stopping towing mode")
-                        VB.TryConnect.clear() # closing communication with 2nd car
-                        VB.ConnectComplete.clear()
-                        VB.TryApproach.clear()
-                        VB.ApproachComplete.clear()
-                        VB.TowingActive.clear() # stop error detection
-                        VB.TowingError.clear()
-                elif (header == 'HOO'):
-                    if (payload == 'request'):
-                        print("Starting connection & approach")
-                        VB.TryConnect.set() # initiate connection
-                        VB.TryApproach.set() # start approaching the 2nd car
-                        self.enable = 0
-
-
-                # In case of an error detection while towing
-                if VB.CodeSem.acquire() and VB.TowingActive.is_set() and VB.SourceProb != -1:
-                    enable = 0
-'''
                 print(self.speed_cmd)
                 print(self.move)
                 print(self.turn)

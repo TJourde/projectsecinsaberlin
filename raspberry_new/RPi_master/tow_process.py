@@ -81,7 +81,7 @@ class Approach(Thread):
             msg = self.bus.recv()
             
             # Check si l'utilisateur demande la manoeuvre d'approche/accroche du 2e véhicule
-            if VB.TryApproach.is_set():
+            if VB.Approach.is_set():
                 print("approach")
 
                 # --------------------------------------
@@ -125,8 +125,8 @@ class Approach(Thread):
                     time.sleep(1)
                     msg = can.Message(arbitration_id=FROM_PI,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
-                    VB.ApproachComplete.set()
-                    VB.TryApproach.clear()
+                    VB.Hooking_ON.set()
+                    VB.Approach.clear()
                 elif self.US_POS == 'touch' and not(self.FLAG_MAGNET):
                     print('Alignment error')
                 elif self.US_POS != 'touch' and self.FLAG_MAGNET:
@@ -202,7 +202,7 @@ class ErrorDetection(Thread):
             msg = self.bus.recv()
             
             # Check si l'utilisateur demande l'activation du remorquage (donc du mode détection d'erreurs)
-            if VB.TowingActive.is_set():
+            if VB.Towing_ON.is_set():
 
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
@@ -242,45 +242,41 @@ class ErrorDetection(Thread):
                         print("Error CM - ", time.strftime("%X"))
 
 
-                # --------------------------------------
-                # PART 2 - Traitement des flag
-                # --------------------------------------
                 if self.trame and (self.FLAG_CM or self.FLAG_US or self.FLAG_US3):
                     self.trame = False
                     self.cpt_multi += 1
 
                 if self.cpt_multi == self.limit_multi:
+                    VB.Towing_Error.set()
 
-                    # Arret de la voiture
-                    VB.TowingActive.clear()
-                    VB.TowingError.set()
-                    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
-                    self.bus.send(msg)
+            # --------------------------------------
+            # PART 2 - Traitement des flag & envoi d'un mail en cas de panne
+            # --------------------------------------
+            if VB.Towing_Error.is_set():
+                VB.Towing_ON.clear()
+                msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
+                self.bus.send(msg)
 
-                    # Détermine code erreur et l'écrit dans VB.ErrorCode
-                    if self.FLAG_US:
-                        self.CodeErreur = self.CodeErreur | VB.ErrorUSFail
-                    if self.FLAG_US3:
-                        self.CodeErreur = self.CodeErreur | VB.ErrorUS3Fail
-                    if self.FLAG_CM:
-                        self.CodeErreur = self.CodeErreur | VB.ErrorMagFail
+                # Détermine code erreur et l'écrit dans VB.ErrorCode
+                if self.FLAG_US:
+                    self.CodeErreur = self.CodeErreur | VB.ErrorUSFail
+                if self.FLAG_US3:
+                    self.CodeErreur = self.CodeErreur | VB.ErrorUS3Fail
+                if self.FLAG_CM:
+                    self.CodeErreur = self.CodeErreur | VB.ErrorMagFail
 
-                    WriteErrorCode(self.CodeErreur)
+                WriteErrorCode(self.CodeErreur)
 
-                    # --------------------------------------
-                    # PART 3 - Modification des variables à envoyer à l'application et envoi d'un mail d'alerte en cas de panne
-                    # --------------------------------------
+                mail_subject = 'Towing process'
+                mail_body = 'Error while towing - code: ' + str(self.CodeErreur)
+                print(mail_body)
 
-                    mail_subject = 'Towing process'
-                    mail_body = 'Error while towing - code: ' + str(self.CodeErreur)
-                    print(mail_body)
-
-                    if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
-                        print('Décrochage de la 2e voiture détecté')
-                        self.CodeErreur = 0
-                    else:                        
-                        VB.SendMail(mail_subject, mail_body)
-                        break
+                if self.FLAG_CM and self.FLAG_US and self.FLAG_US3:
+                    print('Décrochage de la 2e voiture détecté')
+                    self.CodeErreur = 0
+                else:                        
+                    VB.SendMail(mail_subject, mail_body)
+                    break
 
 '''
                     # Détermine le message à envoyer en fonction du problème rencontré

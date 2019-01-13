@@ -8,7 +8,7 @@ import smtplib
 #importing variables linked
 import VarBerlin as VB
 
-TCP_PORT = 9052
+TCP_PORT = 9000
 BUFFER_SIZE = 20  # Normally 1024, but we want fast response
 
 
@@ -20,7 +20,7 @@ class MyComTow(Thread):
     
     def __init__(self):
         Thread.__init__(self)
-        print(self.getName(), 'MyTowCom initialized')
+        print(self.getName(), ' - MyTowCom initialized')
         self.conn_tow = -1
         self.addr_tow = -1
         self.connected = False
@@ -29,45 +29,43 @@ class MyComTow(Thread):
         VB.WriteUS3(False,-1)
         while True :
             
-            if VB.stop_all.is_set():
+            if VB.stop_all.is_set() :
+                stow.close()
                 break
-                s.close()
             
             # --------------------------------------
-            # PART 1 - Essai de connexion à la voiture rose
+            # PART 1 - Connexion à la voiture rose
             # --------------------------------------
-
-            if VB.TryConnect.is_set():
+            if VB.Connect.is_set():
                 try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.connect((VB.IpPink,TCP_PORT))
-                    print('Connect to pink car with address ' + VB.IpPink)
-                    VB.ConnectedWithPink.set()
-                    VB.TryConnect.clear()
+                    stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    stow.connect((VB.IpPink,TCP_PORT))
+                    print(self.getName(),': Connect to pink car with address ' + VB.IpPink)
+                    VB.Connect.clear()
+                    VB.Connection_ON.set()
                 except socket.error:
-                    print('Socket error while attempting to connect to pink car')
-                    VB.ConnectedWithPink.clear()
-                    VB.TryConnect.clear()
+                    print(self.getName(),': Socket error while attempting to connect to pink car')
+                    VB.Connection_ON.clear()
+                    VB.Connect.clear()
 
             # --------------------------------------
             # PART 2 - Traitement des données envoyées par la voiture rose
             # --------------------------------------
+            elif VB.Connection_ON.is_set():
 
-            # Réception des données et écriture dans variable US3
-            elif VB.ConnectedWithPink.is_set():
+                data = stow.recv(BUFFER_SIZE)
 
-                data = s.recv(BUFFER_SIZE)
                 if not data:
-                    print("No data: lost connection with second car")
+                    print(self.getName(),': No data: lost connection with second car')
                     VB.WriteUS3(False,-1)
-                    VB.ConnectedWithPink.clear()
-                    VB.TowingError.set()
+                    VB.Connection_ON.clear()
+                    VB.Towing_Error.set()
                     VB.WriteErrorCode(VB.ErrorLostConnection)
 
                 # look for the identifier in received msg
                 if "UFC_slave" in data.decode("utf-8"): 
                         data = str(data)
-                        data = data[2:len(data)-1]
+                        #data = data[2:len(data)-1]
                         data = data.split(';')
                         header_slave, payload_slave = data.split(':')
 
@@ -75,11 +73,20 @@ class MyComTow(Thread):
 
                         # send it to main application
                         message = "UFC_slave:" + str(payload_slave) + ";"
-                        size = s.send(message.encode())
+                        size = stow.send(message.encode())
                         if size == 0: 
-                            break
                             print(self.getName(),': error while sending UFC_slave data to IHM')
+                            break
 
+            # --------------------------------------
+            # Fermeture du socket si arrêt hooking/towing
+            # --------------------------------------
+            elif VB.Disconnect.is_set():
+                stow.close()
+                print(self.getName(),': Connection with pink car close')
+                VB.Connection_ON.clear()
+                VB.Connect.clear()
+        print('Exit :' + self.getName())
 
 
 # *********************************************************
@@ -87,9 +94,9 @@ class MyComTow(Thread):
 # *********************************************************
 def SendMail(subject,body):
     mail = smtplib.STMP('smtp.gmail.com',587)
-    s.starttls()
-    s.ehlo()
-    s.login('teamberlingei','teamberlingei2018')
+    mail.starttls()
+    mail.ehlo()
+    mail.login('teamberlingei','teamberlingei2018')
 
     msg = 'Subject: ' + subject + '\n' + body
     mail.sendmail(VB.SrcAddr,VB.DestAddr,msg)

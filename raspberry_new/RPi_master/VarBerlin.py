@@ -6,21 +6,24 @@ import os
 # *********************************************************
 # VARIABLE - connexion voiture rose
 # *********************************************************
-#IP of the towed vehicle
 global IpBlack
 global IpPink
 
-# Looking for IP address to "know" which network is used
-IpBlack = os.popen('hostname -I').read() # get chain with '[@IP] \n'
-IpBlack = IpBlack[:len(IpBlack)-2] # (suppress ' \n')
+IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
+IpPink = IpPink[:len(IpPink)-2] #(suppress ' \n')
+try:
+    IpPink, MACAddr = IpPink.split(' ') # remove MAC address appended
+except ValueError:
+    pass
+if IpPink == '10.105.0.53': # IOT network
+    IpBlack = '10.105.0.55'
+elif IpPink == '192.168.137.12': # Berlin network
+    IpBlack = '192.168.137.27'
+elif IpPink == '192.168.1.21': # Grenier network
+    IpBlack = '192.168.1.20'
 
-# Only correct with the two cars black and pink
-if IpBlack == '10.105.0.55': # IOT network
-    IpPink = '10.105.0.53'
-elif IpBlack == '192.168.137.27': # Berlin network
-    IpPink = '192.168.137.12'
-elif IpBlack == '192.168.1.20': # Grenier network
-    IpPink = '192.168.1.21'    
+print('IpBlack - ' + IpBlack)
+print('IpPink - ' + IpPink)    
 
 #Semaphore and variable to transmit front US from 2nd car
 global US3Sem
@@ -30,6 +33,7 @@ US3Dispo = Event()
 US3Dispo.clear()
 global US3
 US3 = -1
+
 
 # *********************************************************
 # VARIABLE - communication par mail
@@ -67,26 +71,32 @@ global stop_all
 stop_all = Event()
 
 #Event for connection to pink car
-global TryConnect
-TryConnect = Event()
-TryConnect.clear()
-global ConnectedWithPink
-ConnectedWithPink = Event()
-ConnectedWithPink.clear()
+global Connect
+Connect = Event()
+Connect.clear()
+global Connection_ON
+Connection_ON = Event()
+Connection_ON.clear()
+global Disconnect
+Disconnect = Event()
+Disconnect.clear()
 #Events for approaching and hooking
-global TryApproach
-TryApproach = Event()
-TryApproach.clear()
-global ApproachComplete
-ApproachComplete = Event()
-ApproachComplete.clear()
+global Approach
+Approach = Event()
+Approach.clear()
+global Hooking_ON
+Hooking_ON = Event()
+Hooking_ON.clear()
 #Events for towing
-global TowingActive
-TowingActive = Event()
-TowingActive.clear()
-global TowingError
-TowingError = Event()
-TowingError.clear()
+global Towing_ON
+Towing_ON = Event()
+Towing_ON.clear()
+global Towing_OFF
+Towing_OFF = Event()
+Towing_OFF.clear()
+global Towing_Error
+Towing_Error = Event()
+Towing_Error.clear()
 
 
 
@@ -94,7 +104,7 @@ TowingError.clear()
 # FUNCTION 1 - Ecrit la valeur en argument dans la variable "US3" (définie au-dessus)
 # *********************************************************
 def WriteUS3(dispo, value):
-    US3Sem.acquire(True):
+    US3Sem.acquire(True)
     US3 = value
     US3Sem.release() # release the semaphore because no longer needed
     US3Dispo.is_set()
@@ -116,6 +126,6 @@ def ReadUS3():
 # FUNCTION 3 - Ecrit la valeur en argument dans la variable "ErrorCode" (définie au-dessus) avec blocage 
 # *********************************************************
 def WriteErrorCode(value):
-    ErrorCodeSem.acquire(True):
+    ErrorCodeSem.acquire(True)
     ErrorCode = ErrorCode | value
     ErrorCodeSem.release()

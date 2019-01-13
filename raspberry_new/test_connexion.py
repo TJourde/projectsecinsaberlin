@@ -25,6 +25,7 @@ elif IpBlack == '192.168.1.21': # Grenier network
 print('IpBlack - ' + IpBlack)
 print('IpPink - ' + IpPink)
 
+
 # ***************************
 # Creation du socket et connexion
 # ***************************

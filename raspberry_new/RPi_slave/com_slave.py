@@ -45,8 +45,8 @@ class MyComSlave(Thread):
                 stow = -1
                 addr = -1
                 VBS.conn_tow = -1
-                print('Waiting 10 sec before continuing')
-                time.sleep(10)
+                print('Waiting 15 sec before continuing')
+                time.sleep(15)
                 VBS.BrokenPipeEvent.clear()
 
             if not VBS.Connection_ON.is_set():
