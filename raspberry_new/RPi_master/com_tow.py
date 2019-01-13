@@ -20,7 +20,7 @@ class MyComTow(Thread):
     
     def __init__(self):
         Thread.__init__(self)
-        print(self.getName(), ' - MyTowCom initialized')
+        print(self.getName(), ' MyTowCom initialized')
         self.conn_tow = -1
         self.addr_tow = -1
         self.connected = False
@@ -86,7 +86,7 @@ class MyComTow(Thread):
                 print(self.getName(),': Connection with pink car close')
                 VB.Connection_ON.clear()
                 VB.Connect.clear()
-        print('Exit :' + self.getName())
+        print(self.getName(), ' exit')
 
 
 # *********************************************************

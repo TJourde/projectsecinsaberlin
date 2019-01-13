@@ -171,7 +171,7 @@ class MySend(Thread):
                 if size == 0: break
             
             # connexion voiture rose
-            if VB.ConnectedWIthPink.is_set():
+            if VB.Connection_ON.is_set():
                 message = "CON_PINK:on"
                 size = self.conn.send(message.encore())
                 if size == 0: break
@@ -264,14 +264,15 @@ class MyReceive(Thread):
             if VB.stop_all.is_set():break
 
             self.conn.setblocking(0)
-            try:
-                data = self.conn.recv(50)
-                data = str(data)
-                data = data[2:len(data)-1]
-            except IOError as e:
-                pass
+            #try:
+            data = self.conn.recv(50)
+            data = str(data)
+            data = data[2:len(data)-1]
+            print(data)
+            #except IOError as e:
+             #   pass
             
-            #if not data: continue
+            if not data: continue
             
             #split each command received if there are more of 1 
             for cmd in data.split(';'):

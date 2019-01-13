@@ -43,7 +43,7 @@ if __name__ == "__main__":
         sIHM = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sIHM.bind((HOST, PORT))
         sIHM.listen(1)
-        conn_IHM, addr = s.accept()
+        conn_IHM, addr = sIHM.accept()
         print('Connected with ' + repr(addr))
 
         # starting HMI Communications Threads
