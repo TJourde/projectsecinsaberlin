@@ -59,7 +59,7 @@ class Approach(Thread):
         self.US_POS = 'away' # valeur: away | close | touch
         self.FLAG_MAGNET = False
 
-        print(self.getName(), 'Approach initialized')
+        print(self.getName(), '****** Approach initialized')
 
     def run(self):
 
@@ -120,10 +120,10 @@ class Approach(Thread):
                 # PART 2 - Traitement des flag et envoi des commandes aux moteurs/solenoid
                 # --------------------------------------
                 if self.US_POS == 'touch' and self.FLAG_MAGNET:
-                    msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                    msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
                     time.sleep(1)
-                    msg = can.Message(arbitration_id=FROM_PI,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
                     VB.Hooking_ON.set()
                     VB.Approach.clear()
@@ -133,11 +133,11 @@ class Approach(Thread):
                     print(self.getName(),'Distance detection error')
                 elif self.US_POS == 'close':
                     print(self.getName(),'Slowing down and opening solenoid')
-                    msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
+                    msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
                     bus.send(msg)
                 elif self.US_POS == 'away':
                     print(self.getName(),'Car away, backing in progress')
-                    msg = can.Message(arbitration_id=FROM_PI,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                    msg = can.Message(arbitration_id=MCM,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     bus.send(msg)
 
 
@@ -173,7 +173,7 @@ class ErrorDetection(Thread):
         # Code d'erreur
         self.CodeErreur = 0
 
-        print(self.getName(), 'ErrorDetection initialized')
+        print(self.getName(), '****** ErrorDetection initialized')
 
     def run(self):
 

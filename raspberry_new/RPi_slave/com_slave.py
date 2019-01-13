@@ -25,7 +25,7 @@ class MyComSlave(Thread):
     def __init__(self,bus):
         Thread.__init__(self)
         self.bus = bus
-        print(self.getName(), 'MyComSlave initialized')
+        print(self.getName(), '****** MyComSlave initialized')
 
     def run(self):
 
@@ -98,7 +98,7 @@ class MySendSlave(Thread):
         Thread.__init__(self)
         self.bus = bus
         self.conn = conn
-        print(self.getName(), 'MySend initialized')
+        print(self.getName(), '****** MySend initialized')
 
     def run(self):
         while True :
@@ -129,7 +129,7 @@ class MyReceiveSlave(Thread):
         self.move = 0
         self.turn = 0
         self.enable = 0
-        print(self.getName(), 'MyReceive initialized')
+        print(self.getName(), '****** MyReceive initialized')
 
     def run(self):
         self.speed_cmd = 0
