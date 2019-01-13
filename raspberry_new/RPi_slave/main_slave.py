@@ -10,7 +10,7 @@ from com_slave import *
 
 import VarBerlin_slave as VBS
 
-MCM = 010
+MCM = 0x010
 NO_MOVE = 0xB1
 WHEELS_CENTER = 0xB1
 
@@ -24,13 +24,13 @@ except OSError:
     print('Cannot find PiCAN board.')
     exit()
 
-# starting communication with black car
-newcomslave = MyComSlave(bus)
-newcomslave.start()
-
 while time.sleep(5):
 	msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,0],extended_id=False)
 	bus.send(msg)
+
+# starting communication with black car
+newcomslave = MyComSlave(bus)
+newcomslave.start()
 
 # ending threads
 newcomslave.join()
