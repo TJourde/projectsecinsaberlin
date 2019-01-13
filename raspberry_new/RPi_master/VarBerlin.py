@@ -26,13 +26,13 @@ print('IpBlack - ', IpBlack)
 print('IpPink - ', IpPink)    
 
 #Semaphore and variable to transmit front US from 2nd car
-global US3Sem
-US3Sem = BoundedSemaphore(1)
-global US3Dispo
-US3Dispo = Event()
-US3Dispo.clear()
-global US3
-US3 = -1
+global UFC_slaveSem
+UFC_slaveSem = BoundedSemaphore(1)
+global UFC_slaveDispo
+UFC_slaveDispo = Event()
+UFC_slaveDispo.clear()
+global UFC_slave
+UFC_slave = -1
 
 
 # *********************************************************
@@ -51,16 +51,22 @@ DestAddr = 'teamberlingei@gmail.com'
 global ErrorCodeSem
 ErrorCodeSem = BoundedSemaphore(1)
 global ErrorCode
-ErrorCode = 0000
+ErrorCode = 0
 
-global ErrorUSFail
-ErrorUSFail = 0b0001
-global ErrorUS3Fail
-ErrorUS3Fail = 0b0010
-global ErrorMagFail
-ErrorMag = 0b0100
+global CodeErrorURC
+CodeErrorURC = 1
+global CodeErrorURFC_slave
+CodeErrorURFC_slave = 2
+global CodeErrorMAG
+CodeErrorMAG = 4
+global CodeObstacleUFC
+CodeObstacleUFC = 8
+global CodeObstacleUFL
+CodeObstacleUFL = 16
+global CodeObstacleUFR
+CodeObstacleUFR = 32
 global ErrorLostConnection
-ErrorLostConnection = 0b1000
+ErrorLostConnection = 64
 
 
 # *********************************************************
@@ -97,27 +103,30 @@ Towing_OFF.clear()
 global Towing_Error
 Towing_Error = Event()
 Towing_Error.clear()
+global Obstacle_Detected
+Obstacle_Detected = Event()
+Obstacle_Detected.clear()
 
 
 
 # *********************************************************
-# FUNCTION 1 - Ecrit la valeur en argument dans la variable "US3" (définie au-dessus)
+# FUNCTION 1 - Ecrit la valeur en argument dans la variable "UFC_slave" (définie au-dessus)
 # *********************************************************
-def WriteUS3(dispo, value):
-    US3Sem.acquire(True)
-    US3 = value
-    US3Sem.release() # release the semaphore because no longer needed
-    US3Dispo.is_set()
+def WriteUFC_slave(dispo, value):
+    UFC_slaveSem.acquire(True)
+    UFC_slave = value
+    UFC_slaveSem.release() # release the semaphore because no longer needed
+    UFC_slaveDispo.is_set()
 
 
 # *********************************************************
-# FUNCTION 2 - Retourne la valeur contenue dans US3 (suppose qu'une valeur est dispo)
+# FUNCTION 2 - Retourne la valeur contenue dans UFC_slave (suppose qu'une valeur est dispo)
 # *********************************************************
-def ReadUS3():
-    if US3Sem.acquire(False):
-        USpink = US3
-        US3Sem.release()
-        US3Dispo.clear()
+def ReadUFC_slave():
+    if UFC_slaveSem.acquire(False):
+        USpink = UFC_slave
+        UFC_slaveSem.release()
+        UFC_slaveDispo.clear()
         return USpink
     return -1
 

@@ -159,9 +159,9 @@ class MySend(Thread):
                     size = self.conn.send(message.encode())
                     if size == 0: break
                 
-                # --------------------------------------
-                # PART 2 - Towing-related messages
-                # --------------------------------------
+            # --------------------------------------
+            # PART 2 - Towing-related messages
+            # --------------------------------------
                 # capteur magnétique
                 elif msg.arbitration_id == HALL:
                     magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
@@ -175,6 +175,14 @@ class MySend(Thread):
                 message = "CON_PINK:on;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
+
+                # UFC_slave data
+                if VB.UFC_slaveDispo.is_set():
+                    if VB.UFC_slaveSem.acquire(False):
+                        message = "UFC_slave:" + str(VB.UFC_slave)
+                        VB.UFC_slaveSem.release()
+                        size = self.conn.send(message.encode())
+                        if size == 0: break
             else:
                 message = "CON_PINK:off;"
                 size = self.conn.send(message.encode())
@@ -203,36 +211,14 @@ class MySend(Thread):
                 if size == 0: break
 
             # code d'erreur pendant remorquage
-            if VB.Towing_Error.is_set():
+            if VB.Towing_ON.is_set() or VB.Towing_Error.is_set():
                 if VB.ErrorCodeSem.acquire(False):
                     message = "ERR:" + str(VB.ErrorCode) + ";"
                     VB.ErrorCodeSem.release()
                     size = self.conn.send(message.encode())
                     if size == 0: break
 
-            
-'''
-            # Valeurs propres au towing
-            if not(VB.ConnectComplete.is_set() and VB.ApproachComplete.is_set() and VB.TowingActive.is_set()):
-                message = "STATE:Idle"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            if VB.ConnectComplete.is_set():
-                message = "STATE:ConnectComplete"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            if VB.ApproachComplete.is_set():
-                message = "STATE:Hooking;"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            if VB.TowingError.is_set():
-                if VB.CodeSem.acquire(false):
-                    message = "ERR:" + VB.CodeErreur
-                    size = self.conn.send(message.encode())
-                    VB.CodeSem.release()
-                if size == 0: break
-'''
-
+        print(self.getName(), '****** MySend finished')
 
 
 # *********************************************************
@@ -334,30 +320,33 @@ class MyReceive(Thread):
                     print(self.getName(),"steering wheels position is updated to ", self.position_cmd)
                     self.pos = 1
                     self.enable = 1
+                # pink connection related commands
+                elif (header == 'CON'):
+                    if (payload == 'start'):
+                        print(self.getName(),'Start connecting pink car')
+                        VB.Connect.set()
+                    if (payload == 'stop'):
+                        print(self.getName(),'Stop connecting pink car')
+                        VB.Disconnect.set()
                 # hooking related commands
                 elif (header == 'HOO'):
                     if (payload == 'start'):
                         print(self.getName(),'Start hooking manoeuver')
-                        self.enable = 0
-                        VB.Connect.set()
                         VB.Approach.set()
                         self.enable = 0
                     if (payload == 'stop'):
-                        print(self.getName(),'Stopping hooking manoeuver')
-                        VB.Connect.clear()
-                        VB.Connection_ON.clear()
+                        print(self.getName(),'Stop hooking manoeuver')
                         VB.Approach.clear()
                         VB.Disconnect.set()
                 # towing related commands
                 elif (header == 'TOW'):
                     if (payload == 'start'):
-                        print(self.getName(),'Starting towing mode - error detection ON')
+                        print(self.getName(),'Start towing mode - error detection ON')
                         VB.Towing_ON.set()
                     if (payload == 'stop'):
-                        print(self.getName(),'Stopping towing mode - error detection OFF - disconnected from pink car')
+                        print(self.getName(),'Stop towing mode - error detection OFF - disconnected from pink car')
                         VB.Towing_ON.clear()
                         VB.Towing_OFF.set()
-                        VB.Connection_ON.clear()
                         VB.Disconnect.set()
 
                 #print(self.speed_cmd)
@@ -400,3 +389,4 @@ class MyReceive(Thread):
                     #Send message
                     self.bus.send(msg)
         
+        print(self.getName(), '****** MyReceive finished')

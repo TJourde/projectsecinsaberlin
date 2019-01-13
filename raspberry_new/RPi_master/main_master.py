@@ -62,8 +62,8 @@ if __name__ == "__main__":
         newapproach.start()
 
         # launching error detection thread (starting procedure only if VB.TowingActive == True)
-        newdetect = ErrorDetection(bus)
-        newdetect.start()
+        newtowingerrordetect = TowingErrorDetection(bus)
+        newtowingerrordetect.start()
 
     except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
         print('Shutting down all process...')
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     newsend.join()
     newtowcom.join()
     newapproach.join()
-    newdetect.join()
+    newtowingerrordetect.join()
 
     s.close()
 

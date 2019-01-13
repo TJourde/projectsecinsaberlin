@@ -24,7 +24,10 @@ OM1 = 0x101
 OM2 = 0x102
 HALL= 0x103
 
+# DISTANCES
 HOOKING_DIST = 30
+OBSTACLE_DIST = 15
+LIMIT_DIST = HOOKING_DIST + 5
 
 # COMMANDES SOLENOID
 SOLENOID_UP = 0xFF
@@ -32,11 +35,9 @@ SOLENOID_DOWN = 0x00
 
 # COMMANDES ROUES
 NO_MOVE = 0xB1
-BACKING_FAST = 0xA9
-BACKING_SLOW = 0xAE
+BACKING_FAST = 0xA4
+BACKING_SLOW = 0xAA
 WHEELS_CENTER = 0xB1
-cmd_mv = 0
-cmd_pos = 0
 
 
 # ******************************
@@ -117,8 +118,8 @@ class Approach(Thread):
                     time.sleep(1)
                     msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     self.bus.send(msg)
-                    VB.Hooking_ON.set()
                     VB.Approach.clear()
+                    VB.Hooking_ON.set()
                 elif US_POS == 'touch' and not(FLAG_MAGNET):
                     print(self.getName(),'Alignment error')
                 elif US_POS != 'touch' and FLAG_MAGNET:
@@ -132,12 +133,13 @@ class Approach(Thread):
                     msg = can.Message(arbitration_id=MCM,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                     self.bus.send(msg)
 
+        print(self.getName(), '****** Approach finished')
 
 
 # ******************************
 # THREAD 5 - Détection d'erreur pendant le remorquage
 # ******************************
-class ErrorDetection(Thread):
+class TowingErrorDetection(Thread):
 
     def __init__(self, bus):
         Thread.__init__(self)
@@ -147,25 +149,37 @@ class ErrorDetection(Thread):
 
     def run(self):
 
-        trame = False
+        trameCAN = False
         # Valeurs données
-        distance_us = -1
-        distance_us3 = -1
+        distance_URC = -1
+        distance_UFC_slave = -1
         magnet_detected = -1
+        distance_UFC = -1
+        distance_UFL = -1
+        distance_UFR = -1
         # Compteurs
-        cpt_us = 0
-        cpt_us3 = 0
-        cpt_cm = 0
-        cpt_multi = 0
+        compteur_URC = 0
+        compteur_UFC_slave = 0
+        compteur_MAG = 0
+        compteur_multi = 0
+        compteur_UFC = 0
+        compteur_UFL = 0
+        compteur_UFR = 0
         # Valeurs limites
-        limit_us = 3
-        limit_us3 = 3
-        limit_cm = 3
+        limit_URC = 3
+        limit_UFC_slave = 3
+        limit_MAG = 3
         limit_multi = 3
+        limit_UFC = 3
+        limit_UFL = 3
+        limit_UFR = 3
         # Flag US/Magnet
-        FLAG_US = False
-        FLAG_US3 = False
-        FLAG_CM = False
+        FLAG_URC = False
+        FLAG_UFC_slave = False
+        FLAG_MAG = False
+        FLAG_UFC = False
+        FLAG_UFL = False
+        FLAG_UFR = False
         # Code d'erreur
         CodeErreur = 0
 
@@ -182,47 +196,89 @@ class ErrorDetection(Thread):
                 # PART 1 - Traitement des données et levée des flag
                 # --------------------------------------
 
-                # Données US
                 if msg.arbitration_id == US1:
-                    trame = True
-                    distance_us = int.from_bytes(msg.data[4:6], byteorder='big')
-                    if distance_us > LIMIT_DIST:
-                        cpt_us += 1
-                    else: cpt_us = 0
-                    if cpt_us == limit_us:
-                        FLAG_US = True
-                        print("Error US - ", time.strftime("%X"))
+                    trameCAN = True
+                    distance_UFL = int.from_bytes(msg.data[0:2], byteorder='big')
+                    distance_UFR = int.from_bytes(msg.data[2:4], byteorder='big')
+                    distance_URC = int.from_bytes(msg.data[4:6], byteorder='big')
 
-                # Données US3
-                if VB.US3Dispo.is_set():
-                    distance_us3 = VB.ReadUS3()
-                    trame = True
-                    if distance_us3 > LIMIT_DIST:
-                        cpt_us3 += 1
-                    else: cpt_us3 = 0
-                    if cpt_us3 == limit_us3:
-                        FLAG_US3 = True
-                        print("Error US3 - ", time.strftime("%X"))
+                    # UFL data
+                    if distance_UFL < OBSTACLE_DIST:
+                        compteur_UFL += 1
+                    else: compteur_UFL = 0
+                    if compteur_UFL == limit_UFL:
+                        FLAG_UFL
+                        print(self.getName(),'Error UFL - ', time.strftime("%X"))
+                    # UFR data
+                    if distance_UFR < OBSTACLE_DIST:
+                        compteur_UFR += 1
+                    else: compteur_UFR = 0
+                    if compteur_UFR == limit_UFR:
+                        FLAG_UFR
+                        print(self.getName(),'Error UFR - ', time.strftime("%X"))
+                    # URC data
+                    if distance_URC > LIMIT_DIST:
+                        compteur_URC += 1
+                    else: compteur_URC = 0
+                    if compteur_URC == limit_URC:
+                        FLAG_URC = True
+                        print(self.getName(),'Error URC - ', time.strftime("%X"))
 
-                # Données CM
+
+                if msg.arbitration_id == US2:
+                    trameCAN = True
+                    distance_UFC = int.from_bytes(msg.data[4:6], byteorder='big')
+
+                    # UFC data
+                    if distance_UFC < OBSTACLE_DIST:
+                        compteur_UFC += 1
+                    else: compteur_UFC = 0
+                    if compteur_UFC == limit_UFC:
+                        FLAG_UFC
+                        print(self.getName(),'Error UFC - ', time.strftime("%X"))
+
+
                 if msg.arbitration_id == HALL:
-                    trame = True
+                    trameCAN = True
                     magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
+
+                    # MAG data
                     if magnet_detected == 0:
-                        cpt_cm += 1
-                    else: cpt_cm = 0
-                    if cpt_cm == limit_cm:
-                        FLAG_CM = True
-                        print("Error CM - ", time.strftime("%X"))
+                        compteur_MAG += 1
+                    else: compteur_MAG = 0
+                    if compteur_MAG == limit_MAG:
+                        FLAG_MAG = True
+                        print(self.getName(),'Error MAG - ', time.strftime("%X"))
 
 
-                if trame and (FLAG_CM or FLAG_US or FLAG_US3):
-                    trame = False
-                    cpt_multi += 1
+                if VB.UFC_slaveDispo.is_set():
+                    trameCAN = True
+                    distance_UFC_slave = VB.ReadUFC_slave()
 
-                if cpt_multi == limit_multi:
-                    VB.Towing_Error.set()
+                    # UFC_slave data
+                    if distance_UFC_slave > LIMIT_DIST:
+                        compteur_UFC_slave += 1
+                    else: compteur_UFC_slave = 0
+                    if compteur_UFC_slave == limit_UFC_slave:
+                        FLAG_UFC_slave = True
+                        print("Error UFC_slave - ", time.strftime("%X"))
 
+
+                # --------------------------------------
+                # PART 2 - Appel des handler
+                # --------------------------------------
+                if trameCAN and (FLAG_MAG or FLAG_URC or FLAG_UFC_slave):
+                    trameCAN = False
+                    compteur_multi += 1
+                    if compteur_multi == limit_multi:
+                        TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG)
+
+                if trameCAN and (FLAG_UFC or FLAG_UFL or FLAG_UFR):
+                    trameCAN = False
+                    ObstacleHandler(self,FLAG_UFC,FLAG_UFL,FLAG_UFR)
+
+        print(self.getName(), '****** TowingErrorDetection finished')
+'''
             # --------------------------------------
             # PART 2 - Traitement des flag & envoi d'un mail en cas de panne
             # --------------------------------------
@@ -232,12 +288,12 @@ class ErrorDetection(Thread):
                 self.bus.send(msg)
 
                 # Détermine code erreur et l'écrit dans VB.ErrorCode
-                if FLAG_US:
-                    CodeErreur = CodeErreur | VB.ErrorUSFail
-                if FLAG_US3:
+                if FLAG_URC:
+                    CodeErreur = CodeErreur | VB.CodeErrorURC
+                if FLAG_UFC_slave:
                     CodeErreur = CodeErreur | VB.ErrorUS3Fail
                 if FLAG_CM:
-                    CodeErreur = CodeErreur | VB.ErrorMagFail
+                    CodeErreur = CodeErreur | VB.CodeErrorMAG
 
                 WriteErrorCode(CodeErreur)
 
@@ -245,34 +301,34 @@ class ErrorDetection(Thread):
                 mail_body = 'Error while towing - code: ' + str(CodeErreur)
                 print(self.getName(),mail_body)
 
-                if FLAG_CM and FLAG_US and FLAG_US3:
+                if FLAG_CM and FLAG_URC and FLAG_UFC_slave:
                     print(self.getName(),'Décrochage de la 2e voiture détecté')
                     CodeErreur = 0
                 else:                        
                     VB.SendMail(mail_subject, mail_body)
                     break
 
-'''
+
                     # Détermine le message à envoyer en fonction du problème rencontré
-                    if FLAG_CM and FLAG_US and FLAG_US3:
+                    if FLAG_CM and FLAG_US and FLAG_UFC_slave:
                         Prob = "CM && US && US3"
                         Expl = "Décrochage de la 2e voiture"
                     elif FLAG_CM and FLAG_US:
                         Prob = "CM && US"
                         Expl = "Décrochage de la 2e voiture + capteur US défaillant"
-                    elif FLAG_CM and FLAG_US3:
+                    elif FLAG_CM and FLAG_UFC_slave:
                         Prob = "CM && US3"
                         Expl = "Décrochage de la 2e voiture + capteur US3 (rose) défaillant"
                     elif FLAG_CM:
                         Prob = "CM"
                         Expl = "Capteur magnétique défaillant, 2e voiture toujours accrochée"
-                    elif FLAG_US and FLAG_US3:
+                    elif FLAG_US and FLAG_UFC_slave:
                         Prob = "US && US3"
                         Expl = "Décrochage de la 2e voiture + capteur magnétique défaillant OU barre cassée"
                     elif FLAG_US:
                         Prob = "US"
                         Expl = "US défaillant sur la 1e voiture"
-                    elif FLAG_US3:
+                    elif FLAG_UFC_slave:
                         Prob = "US3"
                         Expl = "US défaillant sur la 2e voiture"
 
@@ -283,7 +339,7 @@ class ErrorDetection(Thread):
                
                     # Ecriture dans la variable "SourceProb" utilisée pour l'envoi du message à l'appli
 
-                    if not(FLAG_CM and FLAG_US and FLAG_US3): # En cas de probleme not corrigible, envoie un mail et arrete le thread
+                    if not(FLAG_CM and FLAG_US and FLAG_UFC_slave): # En cas de probleme not corrigible, envoie un mail et arrete le thread
                         mail_subjet = "Unsolvable problem during towing"
                         mail_body = "Origin of the issue : " + Prob + "\nPossible explanation : " + Expl
                         os.system("echo mail_body | mail -s mail_subjet teamberlingei@gmail.com")
@@ -293,3 +349,40 @@ class ErrorDetection(Thread):
                         Prob = -1
                         Expl = -1
 '''
+
+
+# ******************************
+# FUNCTION - Handler d'erreur pendant remorquage
+# ******************************
+def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
+    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
+    self.bus.send(msg)
+    print(self.getName(),'Error while towing')
+    VB.Towing_ON.clear()
+    VB.Towing_Error.set()
+    Code_erreur = VB.CodeErrorURC * int(FLAG_URC == True) + VB.CodeErrorURFC_slave * int(FLAG_UFC_slave == True) + VB.CodeErrorMAG * int(FLAG_MAG == True)
+    VB.WriteErrorCode(Code_erreur)
+    print(self.getName(),'Exit towing with code ', str(bin(Code_erreur)))
+    if FLAG_URC and FLAG_UFC_slave and FLAG_MAG:
+        print(self.getName(),'Décrochage détecté')
+        VB.Hooking_ON.clear()
+    else:
+        mail_subject = 'Towing process'
+        mail_body = 'Error while towing - code: ' + str(bin(Code_erreur))
+        VB.SendMail(mail_subject, mail_body)
+
+
+
+# ******************************
+# FUNCTION - Handler de détection d'obstacle
+# ******************************
+def ObstacleHandler(self,FLAG_UFC,FLAG_UFL,FLAG_UFR):
+    msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
+    self.bus.send(msg)
+    print(self.getName(),'Obstacle detected')
+    VB.Towing_ON.clear()
+    VB.Towing_Error.set()
+    Code_erreur = VB.CodeObstacleUFC * int(FLAG_UFC == True) + VB.CodeObstacleUFL * int(FLAG_UFL == True) + VB.CodeObstacleUFR * int(FLAG_UFR == True)
+    VB.WriteErrorCode(Code_erreur)
+    print(self.getName(),'Exit towing with code ', str(bin(Code_erreur)))
+

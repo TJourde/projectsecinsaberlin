@@ -24,7 +24,7 @@ class MyComTow(Thread):
 
     def run(self):
 
-        VB.WriteUS3(False,-1)
+        VB.WriteUFC_slave(False,-1)
         while True :
             
             if VB.stop_all.is_set() :
@@ -32,7 +32,7 @@ class MyComTow(Thread):
                 break
             
             # --------------------------------------
-            # PART 1 - Connexion à la voiture rose
+            # Connexion à la voiture rose
             # --------------------------------------
             if VB.Connect.is_set():
                 try:
@@ -47,7 +47,7 @@ class MyComTow(Thread):
                     VB.Connect.clear()
 
             # --------------------------------------
-            # PART 2 - Traitement des données envoyées par la voiture rose
+            # Traitement des données envoyées par la voiture rose
             # --------------------------------------
             elif VB.Connection_ON.is_set():
 
@@ -66,24 +66,25 @@ class MyComTow(Thread):
 
                             header_slave, payload_slave = cmd.split(':')
 
-                            VB.WriteUS3(True,payload_slave)
+                            VB.WriteUFC_slave(True,payload_slave)
 
                             # send it to main application
                             message = "UFC_slave:" + str(payload_slave) + ";"
                             size = stow.send(message.encode())
                             if size == 0: 
-                                print(self.getName(),': error while sending UFC_slave data to IHM')
+                                print(self.getName(),': Error while sending UFC_slave data to IHM')
                                 break
 
             # --------------------------------------
-            # Fermeture du socket si arrêt hooking/towing
+            # Fermeture du socket (si arrêt hooking/towing)
             # --------------------------------------
             elif VB.Disconnect.is_set():
-                stow.close()
-                print(self.getName(),': Connection with pink car close')
                 VB.Connection_ON.clear()
                 VB.Connect.clear()
-        print(self.getName(), ' exit')
+                stow.close()
+                print(self.getName(),': Connection with pink car close')
+
+        print(self.getName(), '****** MyTowCom finished')
 
 
 # *********************************************************
