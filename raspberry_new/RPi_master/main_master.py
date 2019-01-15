@@ -35,6 +35,8 @@ if __name__ == "__main__":
     os.system("sudo /sbin/ip link set can0 up type can bitrate 400000")
     time.sleep(0.1)
 
+    VBS.SendMail('Initialisation RPi_master','Tout bon')
+
     try:
         bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
         print('Connected to bus can')
