@@ -15,12 +15,12 @@ global IpPink
 
 IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
 IpPink = IpPink[:len(IpPink)-2] #(suppress ' \n')
-'''
+
 try:
     IpPink, MACAddr = IpPink.split(' ') # remove MAC address appended
 except ValueError:
     pass
-'''
+
 if '10.105.0.53' in IpPink: #IOT Network
 	IpPink = '10.105.0.53'
 	IpBlack = '10.105.0.55'

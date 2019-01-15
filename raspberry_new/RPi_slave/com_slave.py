@@ -31,7 +31,7 @@ class MyComSlave(Thread):
     def run(self):
 
         waiting_connection = False
-        addr = -1
+        addr = ''
         stow = -1
         IpPink = VBS.IpPink
         IpBlack = VBS.IpBlack
@@ -45,14 +45,16 @@ class MyComSlave(Thread):
                 newreceiveslave.join()
                 stow.close()
                 stow = -1
-                addr = -1
+                addr = ''
                 VBS.conn_tow = -1
+                waiting_connection = False
                 print(self.getName(),'Waiting ', str(WAITING_TIME),' sec before continuing')
                 time.sleep(WAITING_TIME)
+                Print(self.getName(), 'End of waiting time')
                 VBS.ConnectionErrorEvent.clear()
 
             if not VBS.Connection_ON.is_set():
-                if addr == -1 and not waiting_connection:
+                if addr == '' and not waiting_connection:
                     waiting_connection = True
                     try:
                         stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,6 +67,7 @@ class MyComSlave(Thread):
                         VBS.Connection_ON.clear()
                         stow.close()
                         print(self.getName(),'Socket error while receiving connection')
+                        break
                         
                 # Check si l'adresse connectée est bien celle de la voiture noire, si oui commence l'envoi des données
                 elif IpBlack in addr:
@@ -77,7 +80,7 @@ class MyComSlave(Thread):
                     newsendslave.start()
 
                 # Si quelqu'un autre que la RPi noire se connecte, le déclare, clôt la connection et se met en attente d'une nouvelle
-                elif IpBlack not in addr and addr != -1:
+                elif IpBlack not in addr and addr != '':
                     VBS.Connection_ON.clear()
                     print(self.getName(),'Connected to unknown device, with address ' + repr(addr))
                     print(self.getName(),'Closing communication channel')

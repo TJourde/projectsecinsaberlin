@@ -14,12 +14,12 @@ global IpPink
 
 IpBlack = os.popen('hostname -I').read() #get chain with '[@IP] \n'
 IpBlack = IpBlack[:len(IpBlack)-2] #(suppress ' \n')
-'''
+
 try:
     IpBlack, MACAddr = IpBlack.split(' ') # remove MAC address appended
 except ValueError:
     pass
-'''
+
 if '10.105.0.55' in IpBlack: # IOT network
     IpBlack = '10.105.0.55'
     IpPink = '10.105.0.53'
