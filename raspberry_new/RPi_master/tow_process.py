@@ -36,9 +36,9 @@ SOLENOID_DOWN = 0x00
 
 # COMMANDES ROUES
 NO_MOVE = 0xB1
-FORWARD_SLOW = 0xB5 
+FORWARD_SLOW = 0xB7
 BACKWARD_FAST = 0xA6
-BACKWARD_SLOW = 0xAC
+BACKWARD_SLOW = 0xAB
 WHEELS_CENTER = 0xB1
 
 
@@ -123,7 +123,7 @@ class Approach(Thread):
                         print(self.getName(),'Hooking effective')
                         msg = can.Message(arbitration_id=MCM,data=[BACKWARD_SLOW,BACKWARD_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                         self.bus.send(msg)
-                        time.sleep(0.5)
+                        time.sleep(0.3)
                         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                         self.bus.send(msg)
                         VB.Approach.clear()
