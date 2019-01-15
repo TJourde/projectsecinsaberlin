@@ -43,6 +43,7 @@ class MyComSlave(Thread):
                 VBS.Connection_ON.clear()
                 newsendslave.join()
                 newreceiveslave.join()
+                stow.shutdown()
                 stow.close()
                 stow = -1
                 addr = ''
@@ -50,15 +51,16 @@ class MyComSlave(Thread):
                 waiting_connection = False
                 print(self.getName(),'Waiting ', str(WAITING_TIME),' sec before continuing')
                 time.sleep(WAITING_TIME)
-                Print(self.getName(), 'End of waiting time')
                 VBS.ConnectionErrorEvent.clear()
 
             if not VBS.Connection_ON.is_set():
                 if addr == '' and not waiting_connection:
                     waiting_connection = True
-                    try:
+                    try:                        
                         stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        print('avantbind')
                         stow.bind((IpPink,TCP_PORT))
+                        print('apresbind')
                         stow.listen()
                         print(self.getName(),'Pink car ready to receive connection')
                         VBS.conn_tow, addr = stow.accept()
