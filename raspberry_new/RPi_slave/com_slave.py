@@ -43,7 +43,7 @@ class MyComSlave(Thread):
                 VBS.Connection_ON.clear()
                 newsendslave.join()
                 newreceiveslave.join()
-                stow.shutdown()
+                stow.shutdown(socket.SHUT_RDWR)
                 stow.close()
                 addr = ''
                 VBS.conn_tow = -1
