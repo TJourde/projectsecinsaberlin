@@ -15,16 +15,21 @@ global IpPink
 
 IpPink = os.popen('hostname -I').read() #get chain with '[@IP] \n'
 IpPink = IpPink[:len(IpPink)-2] #(suppress ' \n')
+'''
 try:
     IpPink, MACAddr = IpPink.split(' ') # remove MAC address appended
 except ValueError:
     pass
-if IpPink == '10.105.0.53': # IOT network
-    IpBlack = '10.105.0.55'
-elif IpPink == '192.168.137.12': # Berlin network
-    IpBlack = '192.168.137.27'
-elif IpPink == '192.168.1.21': # Grenier network
-    IpBlack = '192.168.1.20'
+'''
+if '10.105.0.53' in IpPink: #IOT Network
+	IpPink = '10.105.0.53'
+	IpBlack = '10.105.0.55'
+if '192.168.137.12' in IpPink:  # Berlin network
+	IpPink = '192.168.137.12'
+	IpBlack = '192.168.137.27'
+elif '192.168.1.21' in IpPink: # Grenier network
+	IpPink = '192.168.1.21'
+	IpBlack = '192.168.1.20'
 
 print('IpBlack - ' + IpBlack)
 print('IpPink - ' + IpPink)

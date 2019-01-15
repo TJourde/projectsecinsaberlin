@@ -26,8 +26,9 @@ HALL= 0x103
 
 # DISTANCES
 HOOKING_DIST = 33
-OBSTACLE_DIST = 15
+SLOWING_DIST = HOOKING_DIST + 20 # car will slow down approach if under this distance
 LIMIT_DIST = HOOKING_DIST + 5
+OBSTACLE_DIST = 15
 
 # COMMANDES SOLENOID
 SOLENOID_UP = 0xFF
@@ -35,8 +36,9 @@ SOLENOID_DOWN = 0x00
 
 # COMMANDES ROUES
 NO_MOVE = 0xB1
-BACKING_FAST = 0xA4
-BACKING_SLOW = 0xAB
+FORWARD_SLOW = 0xB5 
+BACKWARD_FAST = 0xA6
+BACKWARD_SLOW = 0xAC
 WHEELS_CENTER = 0xB1
 
 
@@ -47,36 +49,37 @@ class Approach(Thread):
     
     def __init__(self, bus):
         Thread.__init__(self)
-        self.bus  = can.interface.Bus(channel='can0', bustype='socketcan_native')
+        self.bus  = bus
 
         print(self.getName(), '****** Approach initialized')
 
     def run(self):
 
         trameCAN = False
-        measured_distance = -1
+        # Données
+        distance_URC = -1
         magnet_detected = -1
-        # Compteurs et valeurs limites
-        cpt_us_close = 0
-        cpt_us_touch = 0
-        cpt_magnet = 0
-        nb_us_close = 3
-        nb_us_touch = 3
-        nb_magnet_detection = 3
-        # Flag US/Magnet
-        US_POS = 'away' # valeur: away | close | touch
+        # Compteur
+        compteur_close = 0
+        compteur_touch = 0
+        compteur_magnet = 0
+        # Valeurs limite
+        limit_close = 3
+        limit_touch = 3
+        limit_magnet = 3
+        # Flag
+        POSITION = 'away' # valeur: away | close | touch
         FLAG_MAGNET = False
 
         while True:
 
             if VB.stop_all.is_set():break
             
-            msg = self.bus.recv()
-            
             # Check si l'utilisateur demande la manoeuvre d'approche/accroche du 2e véhicule
-            if VB.Approach.is_set():
+            if VB.Approach.is_set() or VB.Hooking_close.is_set():
 
                 trameCAN = False
+                msg = self.bus.recv()
 
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
@@ -84,62 +87,67 @@ class Approach(Thread):
                 # Données US
                 if msg.arbitration_id == US1:
                     trameCAN = True
-                    measured_distance = int.from_bytes(msg.data[4:6], byteorder='big')
-                    if measured_distance <= HOOKING_DIST:
-                        cpt_us_touch += 1
-                        # cpt_us_close = 0 ----> Non placé car permet de reculer et d'arriver en dessous de la HOOKING_DIST
-                        if cpt_us_touch == nb_us_touch:
-                            cpt_us_close = 0
-                            US_POS = 'touch'
-                    elif measured_distance > HOOKING_DIST and measured_distance <= HOOKING_DIST + 20:
-                        cpt_us_touch = 0
-                        cpt_us_close += 1
-                        if cpt_us_close == nb_us_close:
-                            US_POS = 'close'
+                    distance_URC = int.from_bytes(msg.data[4:6], byteorder='big')
+                    if distance_URC <= HOOKING_DIST:
+                        compteur_touch += 1
+                        # compteur_close = 0 ----> Non placé car permet de reculer et d'arriver en dessous de la HOOKING_DIST
+                        if compteur_touch == limit_touch:
+                            compteur_close = 0
+                            POSITION = 'touch'
+                    elif distance_URC > HOOKING_DIST and distance_URC <= SLOWING_DIST:
+                        compteur_touch = 0
+                        compteur_close += 1
+                        if compteur_close == limit_close:
+                            POSITION = 'close'
                     else: 
-                        cpt_us_close = 0
-                        cpt_us_touch = 0
-                        US_POS = 'away'
+                        compteur_close = 0
+                        compteur_touch = 0
+                        POSITION = 'away'
 
                 # Données capteur magnétique
                 if msg.arbitration_id == HALL:
                     trameCAN = True
                     magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
                     if magnet_detected:
-                        cpt_magnet += 1
+                        compteur_magnet += 1
                     else:
                         FLAG_MAGNET = False
-                    if cpt_magnet == nb_magnet_detection:
+                    if compteur_magnet == limit_magnet:
                         FLAG_MAGNET = True
 
                 # --------------------------------------
                 # PART 2 - Traitement des flag et envoi des commandes aux moteurs/solenoid
                 # --------------------------------------
                 if trameCAN:
-                    if US_POS == 'touch' and FLAG_MAGNET:
+                    if POSITION == 'touch' and FLAG_MAGNET:
                         print(self.getName(),'Hooking effective')
-                        msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                        msg = can.Message(arbitration_id=MCM,data=[BACKWARD_SLOW,BACKWARD_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                         self.bus.send(msg)
-                        time.sleep(1)
+                        time.sleep(0.5)
                         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                         self.bus.send(msg)
                         VB.Approach.clear()
+                        VB.Hooking_close.clear()
                         VB.Hooking_ON.set()
-                    elif US_POS == 'touch' and not(FLAG_MAGNET):
+                    elif POSITION == 'touch' and not(FLAG_MAGNET):
                         print(self.getName(),'Alignment error')
                         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                         self.bus.send(msg)
-                    elif US_POS != 'touch' and FLAG_MAGNET:
+                        VB.Approach.clear()
+                        VB.Hooking_close.set()
+                    elif POSITION != 'touch' and FLAG_MAGNET:
                         print(self.getName(),'Distance detection error')
                         msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                         self.bus.send(msg)
-                    elif US_POS == 'close':
+                        VB.Approach.clear()
+                        VB.Hooking_close.set()
+                    elif POSITION == 'close':
                         print(self.getName(),'Slowing down and opening solenoid')
-                        msg = can.Message(arbitration_id=MCM,data=[BACKING_SLOW,BACKING_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
+                        msg = can.Message(arbitration_id=MCM,data=[BACKWARD_SLOW,BACKWARD_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
                         self.bus.send(msg)
-                    elif US_POS == 'away':
+                    elif POSITION == 'away':
                         print(self.getName(),'Car away, backing in progress')
-                        msg = can.Message(arbitration_id=MCM,data=[BACKING_FAST,BACKING_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+                        msg = can.Message(arbitration_id=MCM,data=[BACKWARD_FAST,BACKWARD_FAST,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
                         self.bus.send(msg)
 
         print(self.getName(), '###### Approach finished')
@@ -179,9 +187,9 @@ class TowingErrorDetection(Thread):
         limit_UFC_slave = 3
         limit_MAG = 3
         limit_multi = 3
-        limit_UFC = 3
-        limit_UFL = 3
-        limit_UFR = 3
+        limit_UFC = 6
+        limit_UFL = 6
+        limit_UFR = 6
         # Flag US/Magnet
         FLAG_URC = False
         FLAG_UFC_slave = False
@@ -195,8 +203,20 @@ class TowingErrorDetection(Thread):
         while True:
             
             if VB.stop_all.is_set():break
-            
+
             msg = self.bus.recv()
+
+            if VB.Towing_OFF.is_set():
+                print('Unhooking procedure initialized')
+                VB.Towing_ON.clear()
+                
+                msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
+                self.bus.send(msg)
+                time.sleep(1)
+                msg = can.Message(arbitration_id=MCM,data=[FORWARD_SLOW,FORWARD_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
+                self.bus.send(msg)
+
+
             
             # Check si l'utilisateur demande l'activation du remorquage (donc du mode détection d'erreurs)
             if VB.Towing_ON.is_set():
@@ -270,7 +290,7 @@ class TowingErrorDetection(Thread):
                     else: compteur_UFC_slave = 0
                     if compteur_UFC_slave == limit_UFC_slave:
                         FLAG_UFC_slave = True
-                        print("Error UFC_slave - ", time.strftime("%X"))
+                        print(self.getName(),"Error UFC_slave - ", time.strftime("%X"))
 
 
                 # --------------------------------------

@@ -61,7 +61,7 @@ HALL = 0x103
 '''
 
 # *********************************************************
-# THREAD 1 - Récupération des données du CAN ou interne à la RPi, envoi à l'application
+# THREAD - Récupération des données du CAN ou interne à la RPi, envoi à l'application
 # *********************************************************
 
 class MySend(Thread):
@@ -217,7 +217,7 @@ class MySend(Thread):
 
 
 # *********************************************************
-# THREAD 2 - Réception des données de l'application, envoi des commandes sur le CAN + modification variables internes
+# THREAD - Réception des données de l'application, envoi des commandes sur le CAN + modification variables internes
 # *********************************************************
 
 class MyReceive(Thread):
@@ -342,7 +342,6 @@ class MyReceive(Thread):
                         VB.Towing_ON.set()
                     if (payload == 'stop'):
                         print(self.getName(),'Stop towing mode - error detection OFF - disconnected from pink car')
-                        VB.Towing_ON.clear()
                         VB.Towing_OFF.set()
                         VB.Disconnect.set()
 

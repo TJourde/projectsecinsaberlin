@@ -14,15 +14,20 @@ global IpPink
 
 IpBlack = os.popen('hostname -I').read() #get chain with '[@IP] \n'
 IpBlack = IpBlack[:len(IpBlack)-2] #(suppress ' \n')
+'''
 try:
     IpBlack, MACAddr = IpBlack.split(' ') # remove MAC address appended
 except ValueError:
     pass
-if IpBlack == '10.105.0.55': # IOT network
+'''
+if '10.105.0.55' in IpBlack: # IOT network
+    IpBlack = '10.105.0.55'
     IpPink = '10.105.0.53'
-elif IpBlack == '192.168.137.27': # Berlin network
+elif '192.168.137.27' in IpBlack: # Berlin network
+    IpBlack = '192.168.137.27'
     IpPink = '192.168.137.12'
-elif IpBlack == '192.168.1.20': # Grenier network
+elif '192.168.1.20' in IpBlack: # Grenier network
+    IpBlack = '192.168.1.20'
     IpPink = '192.168.1.21'
 
 print('IpBlack - ', IpBlack)
@@ -93,6 +98,9 @@ Disconnect.clear()
 global Approach
 Approach = Event()
 Approach.clear()
+global Hooking_close
+Hooking_close = Event()
+Hooking_close.clear()
 global Hooking_ON
 Hooking_ON = Event()
 Hooking_ON.clear()
