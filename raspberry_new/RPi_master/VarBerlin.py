@@ -146,7 +146,7 @@ def ReadUFC_slave():
 # FUNCTION 3 - Ecrit la valeur en argument dans la variable "ErrorCode" (définie au-dessus) avec blocage 
 # *********************************************************
 def WriteErrorCode(value):
-	global ErrorCode
+    global ErrorCode
     ErrorCodeSem.acquire(True)
     ErrorCode = ErrorCode | value
     ErrorCodeSem.release()

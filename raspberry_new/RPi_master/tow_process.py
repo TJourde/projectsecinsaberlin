@@ -166,7 +166,8 @@ class TowingErrorDetection(Thread):
 
     def run(self):
 
-        trameCAN = False
+        trameCAN_tow = False
+        trameCAN_obs = False
         # Valeurs données
         distance_URC = -1
         distance_UFC_slave = -1
@@ -186,7 +187,7 @@ class TowingErrorDetection(Thread):
         limit_URC = 3
         limit_UFC_slave = 3
         limit_MAG = 3
-        limit_multi = 3
+        limit_multi = 15
         limit_UFC = 6
         limit_UFL = 6
         limit_UFR = 6
@@ -235,7 +236,8 @@ class TowingErrorDetection(Thread):
                 # PART 1 - Traitement des données et levée des flag
                 # --------------------------------------
                 if msg.arbitration_id == US1:
-                    trameCAN = True
+                    trameCAN_tow = True
+                    trameCAN_obs = True
                     distance_UFL = int.from_bytes(msg.data[0:2], byteorder='big')
                     distance_UFR = int.from_bytes(msg.data[2:4], byteorder='big')
                     distance_URC = int.from_bytes(msg.data[4:6], byteorder='big')
@@ -264,7 +266,7 @@ class TowingErrorDetection(Thread):
 
 
                 if msg.arbitration_id == US2:
-                    trameCAN = True
+                    trameCAN_obs = True
                     distance_UFC = int.from_bytes(msg.data[4:6], byteorder='big')
 
                     # UFC data
@@ -277,7 +279,7 @@ class TowingErrorDetection(Thread):
 
 
                 if msg.arbitration_id == HALL:
-                    trameCAN = True
+                    trameCAN_tow = True
                     magnet_detected = int.from_bytes(msg.data[0:1], byteorder='big')
 
                     # MAG data
@@ -290,7 +292,7 @@ class TowingErrorDetection(Thread):
 
 
                 if VB.UFC_slaveDispo.is_set():
-                    trameCAN = True
+                    trameCAN_tow = True
                     distance_UFC_slave = VB.ReadUFC_slave()
 
                     # UFC_slave data
@@ -305,14 +307,14 @@ class TowingErrorDetection(Thread):
                 # --------------------------------------
                 # PART 2 - Appel des handler
                 # --------------------------------------
-                if trameCAN and (FLAG_MAG or FLAG_URC or FLAG_UFC_slave):
-                    trameCAN = False
+                if trameCAN_tow and (FLAG_MAG or FLAG_URC or FLAG_UFC_slave):
+                    trameCAN_tow = False
                     compteur_multi += 1
                     if compteur_multi == limit_multi:
                         TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG)
 
-                if trameCAN and (FLAG_UFC or FLAG_UFL or FLAG_UFR):
-                    trameCAN = False
+                if trameCAN_obs and (FLAG_UFC or FLAG_UFL or FLAG_UFR):
+                    trameCAN_obs = False
                     ObstacleHandler(self,FLAG_UFC,FLAG_UFL,FLAG_UFR)
 
         print(self.getName(), '###### TowingErrorDetection finished')

@@ -104,12 +104,12 @@ class MyComTow(Thread):
 # FONCTION - envoie un mail avec comme contenu les arguments de la fonctions
 # *********************************************************
 def SendMail(subject,body):
-    mail = smtplib.STMP('smtp.gmail.com',587)
+    mail = smtplib.SMTP('smtp.gmail.com',587)
     mail.starttls()
     mail.ehlo()
-    mail.login('teamberlingei','teamberlingei2018')
+    mail.login('teamberlingei','teamberlin2018')
 
     msg = 'Subject: ' + subject + '\n' + body
     mail.sendmail(VB.SrcAddr,VB.DestAddr,msg)
     mail.quit()
-    print(self.getName(),'Mail sent to ' + VB.DestAddr + 'with content: ' + body)
+    print('Mail sent to ' + VB.DestAddr + 'with content: ' + body)
