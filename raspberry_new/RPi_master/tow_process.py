@@ -10,6 +10,8 @@ import socket
 # importing local threads
 import VarBerlin as VB
 
+import com_tow as CT
+
 
 # ******************************
 # Variables locales
@@ -405,12 +407,12 @@ def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
     print(self.getName(),'Exit towing with code ', str(bin(Code_erreur)))
     VB.WriteErrorCode(Code_erreur)
     if FLAG_URC and FLAG_UFC_slave and FLAG_MAG:
-        print(self.getName(),'Décrochage détecté')
+        print(self.getName(),'Unhooking detected')
         VB.Hooking_ON.clear()
     else:
         mail_subject = 'Towing process'
         mail_body = 'Error while towing - code: ' + str(bin(Code_erreur))
-        VB.SendMail(mail_subject, mail_body)
+        CT.SendMail(mail_subject, mail_body)
 
 
 
