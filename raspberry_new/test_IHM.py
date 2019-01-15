@@ -48,7 +48,7 @@ try:
         if not data: break
 
         for cmd in data.split(';'):
-            print(cmd)
+            #print(cmd)
 
             if etape == 3 and 'STATE:towing_error' in cmd:
                 print('Towing error')

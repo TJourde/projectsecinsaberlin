@@ -393,6 +393,7 @@ class TowingErrorDetection(Thread):
 # FUNCTION - Handler d'erreur pendant remorquage
 # ******************************
 def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
+    Code_erreur = 0
     msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
     self.bus.send(msg)
     print(self.getName(),'Error while towing')
@@ -415,6 +416,7 @@ def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
 # FUNCTION - Handler de détection d'obstacle
 # ******************************
 def ObstacleHandler(self,FLAG_UFC,FLAG_UFL,FLAG_UFR):
+    Code_erreur = 0
     msg = can.Message(arbitration_id=MCM,data=[NO_MOVE, NO_MOVE, 0, WHEELS_CENTER, 0, 0, 0, SOLENOID_DOWN], extended_id=False)
     self.bus.send(msg)
     print(self.getName(),'Obstacle detected')
