@@ -33,6 +33,7 @@ print('IpPink - ' + IpPink)
 # ***************************
 TCP_PORT = 6666
 BUFFER_SIZE = 1024
+etape = 0
 
 try:
     stest = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,7 +42,7 @@ try:
     time.sleep(5)
 
     while 1:
-        data = stest.recv(50)
+        data = stest.recv(BUFFER_SIZE)
         data = str(data)
         data = data[2:len(data)-1]
         if not data: break
@@ -49,41 +50,45 @@ try:
         for cmd in data.split(';'):
             print(cmd)
 
-            if 'STATE:idle' in cmd:
-                message = 'CON:start;'
-                print(message)
-                size = stest.send(message.encode())
-                if size == 0: pass
-                time.sleep(2)
+            if etape == 3 and 'STATE:towing_error' in cmd:
+                print('Towing error')
+                break
 
-            if 'CON_PINK:on' in cmd:
-                message = 'HOO:start;'
-                print(message)
-                size = stest.send(message.encode())
-                if size == 0: pass
-                time.sleep(2)
-
-            if 'STATE:hookin_uneffective' in cmd:
-                print('Please verify hooking')
-                time.sleep(2)
-
-            if 'STATE:hooking_effective' in cmd:
-                message = 'TOW:start;'
-                print(message)
-                size = stest.send(message.encode())
-                if size == 0: pass
-                time.sleep(2)
-
-            if 'STATE:towing' in cmd:
+            if etape == 3 and 'STATE:towing' in cmd:
                 time.sleep(2)
                 message = 'TOW:stop;'
                 print(message)
                 size = stest.send(message.encode())
                 if size == 0: pass
 
-            if 'STATE:towing_error' in cmd:
-                print('Towing error')
-                break
+            if etape == 2 and 'STATE:hooking_effective' in cmd:
+                etape = 3
+                message = 'TOW:start;'
+                print(message)
+                size = stest.send(message.encode())
+                if size == 0: pass
+                time.sleep(2)
+
+            if etape == 2 and 'STATE:hookin_uneffective' in cmd:
+                print('Please verify hooking')
+                time.sleep(2)
+
+            if etape == 1 and 'CON_PINK:on' in cmd:
+                etape = 2
+                message = 'HOO:start;'
+                print(message)
+                size = stest.send(message.encode())
+                if size == 0: pass
+                time.sleep(2)
+
+            if etape == 0 and 'STATE:idle' in cmd:
+                etape = 1
+                message = 'CON:start;'
+                print(message)
+                size = stest.send(message.encode())
+                if size == 0: pass
+                time.sleep(2)
+
 
 except (BrokenPipeError,KeyboardInterrupt):
     print('BrokenPipeError')
