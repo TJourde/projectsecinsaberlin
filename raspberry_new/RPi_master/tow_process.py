@@ -400,8 +400,8 @@ def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
     VB.Towing_ON.clear()
     VB.Towing_Error.set()
     Code_erreur = VB.CodeErrorURC * int(FLAG_URC == True) + VB.CodeErrorURFC_slave * int(FLAG_UFC_slave == True) + VB.CodeErrorMAG * int(FLAG_MAG == True)
-    VB.WriteErrorCode(Code_erreur)
     print(self.getName(),'Exit towing with code ', str(bin(Code_erreur)))
+    VB.WriteErrorCode(Code_erreur)
     if FLAG_URC and FLAG_UFC_slave and FLAG_MAG:
         print(self.getName(),'Décrochage détecté')
         VB.Hooking_ON.clear()
