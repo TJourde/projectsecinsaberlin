@@ -45,7 +45,6 @@ class MyComSlave(Thread):
                 newreceiveslave.join()
                 stow.shutdown()
                 stow.close()
-                stow = -1
                 addr = ''
                 VBS.conn_tow = -1
                 waiting_connection = False
@@ -56,8 +55,10 @@ class MyComSlave(Thread):
             if not VBS.Connection_ON.is_set():
                 if addr == '' and not waiting_connection:
                     waiting_connection = True
-                    try:                        
+                    try:
                         stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        print('setopt')
+                        stow.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
                         print('avantbind')
                         stow.bind((IpPink,TCP_PORT))
                         print('apresbind')
