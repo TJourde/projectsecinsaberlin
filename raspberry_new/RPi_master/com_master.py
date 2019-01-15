@@ -188,8 +188,12 @@ class MySend(Thread):
                 message = "STATE:approaching;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
+            elif VB.Hooking_close.is_set():
+                message = "STATE:hooking_uneffective;"
+                size = self.conn.send(message.encode())
+                if size == 0: break                
             elif VB.Hooking_ON.is_set():
-                message = "STATE:approach_complete;"
+                message = "STATE:hooking_effective;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
             elif VB.Towing_ON.is_set():
@@ -343,7 +347,6 @@ class MyReceive(Thread):
                     if (payload == 'stop'):
                         print(self.getName(),'Stop towing mode - error detection OFF - disconnected from pink car')
                         VB.Towing_OFF.set()
-                        VB.Disconnect.set()
 
                 #print(self.speed_cmd)
                 #print(self.move)

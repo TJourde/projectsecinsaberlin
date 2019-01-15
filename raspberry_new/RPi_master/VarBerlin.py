@@ -33,7 +33,7 @@ elif '192.168.1.20' in IpBlack: # Grenier network
 print('IpBlack - ', IpBlack)
 print('IpPink - ', IpPink)    
 
-#Semaphore and variable to transmit front US from 2nd car
+#Semaphore and variable to receive and transmit front US from 2nd car
 global UFC_slaveSem
 UFC_slaveSem = BoundedSemaphore(1)
 global UFC_slaveDispo

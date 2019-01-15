@@ -24,7 +24,7 @@ except OSError:
     print('Cannot find PiCAN board.')
     exit()
 
-while time.sleep(5):
+while time.sleep(2):
 	msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,0],extended_id=False)
 	bus.send(msg)
 

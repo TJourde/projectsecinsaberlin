@@ -38,6 +38,7 @@ class MyComSlave(Thread):
 
         while 1:
 
+            # Procédure de déconnexion en cas d'erreur/demande de déconnexion
             if VBS.ConnectionErrorEvent.is_set():
                 print(self.getName(),'Connection problem encountered, closing socket')
                 VBS.Connection_ON.clear()
@@ -52,16 +53,16 @@ class MyComSlave(Thread):
                 time.sleep(WAITING_TIME)
                 VBS.ConnectionErrorEvent.clear()
 
+            # Entre dans cette fonction tant que la voiture noire n'est pas connectée
             if not VBS.Connection_ON.is_set():
+
+                # Check si la voiture rose attend déjà une connexion
                 if addr == '' and not waiting_connection:
                     waiting_connection = True
                     try:
                         stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        print('setopt')
-                        stow.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
-                        print('avantbind')
+                        stow.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                         stow.bind((IpPink,TCP_PORT))
-                        print('apresbind')
                         stow.listen()
                         print(self.getName(),'Pink car ready to receive connection')
                         VBS.conn_tow, addr = stow.accept()

@@ -207,24 +207,33 @@ class TowingErrorDetection(Thread):
             msg = self.bus.recv()
 
             if VB.Towing_OFF.is_set():
-                print('Unhooking procedure initialized')
+                print(self.getName(),'Unhooking procedure initialized')
                 VB.Towing_ON.clear()
+                VB.Hooking_ON.clear()
+                VB.Disconnect.set()
                 
                 msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
                 self.bus.send(msg)
                 time.sleep(1)
                 msg = can.Message(arbitration_id=MCM,data=[FORWARD_SLOW,FORWARD_SLOW,0,WHEELS_CENTER,0,0,0,SOLENOID_UP],extended_id=False)
                 self.bus.send(msg)
-
-
             
+            # Si le towing est demandé mais que la voiture rose n'est pas connectée
+            if VB.Towing_ON.is_set() and not VB.Connect_ON.is_set():
+                print(self.getName(),'Not connected to pink car, cancelling towing procedure')
+                VB.Towing_ON.clear()
+
+            # Si le towing est demandé mais que la voiture rose n'est pas accrochée
+            if VB.Towing_ON.is_set() and not VB.Hooking_ON.is_set():
+                print(self.getName(),'Not hooked to pink car, cancelling towing procedure')
+                VB.Towing_ON.clear()
+
             # Check si l'utilisateur demande l'activation du remorquage (donc du mode détection d'erreurs)
-            if VB.Towing_ON.is_set():
+            if VB.Connect_ON.is_set() and VB.Hooking_ON.is_set() and VB.Towing_ON.is_set() :
 
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
                 # --------------------------------------
-
                 if msg.arbitration_id == US1:
                     trameCAN = True
                     distance_UFL = int.from_bytes(msg.data[0:2], byteorder='big')
