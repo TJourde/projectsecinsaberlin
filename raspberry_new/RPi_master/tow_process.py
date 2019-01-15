@@ -219,7 +219,7 @@ class TowingErrorDetection(Thread):
                 self.bus.send(msg)
             
             # Si le towing est demandé mais que la voiture rose n'est pas connectée
-            if VB.Towing_ON.is_set() and not VB.Connect_ON.is_set():
+            if VB.Towing_ON.is_set() and not VB.Connection_ON.is_set():
                 print(self.getName(),'Not connected to pink car, cancelling towing procedure')
                 VB.Towing_ON.clear()
 
@@ -229,7 +229,7 @@ class TowingErrorDetection(Thread):
                 VB.Towing_ON.clear()
 
             # Check si l'utilisateur demande l'activation du remorquage (donc du mode détection d'erreurs)
-            if VB.Connect_ON.is_set() and VB.Hooking_ON.is_set() and VB.Towing_ON.is_set() :
+            if VB.Connection_ON.is_set() and VB.Hooking_ON.is_set() and VB.Towing_ON.is_set() :
 
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
