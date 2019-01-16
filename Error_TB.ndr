@@ -1,0 +1,113 @@
+p 745.0 50.0 car_working 1 n
+t 135.0 75.0 codeM_ok n 0 w n {} ne
+p 200.0 135.0 Sendi_dataM 1 n
+p 195.0 550.0 Send_dataUS2 1 n
+t 135.0 190.0 wait_M s 0 w n {} ne
+p 65.0 135.0 ExecutionM_code 0 n
+p 65.0 545.0 ExecutUS2_code 0 n
+t 130.0 610.0 waitUS2 s 0 w n {} ne
+t 135.0 490.0 codeUS2 n 0 w n {} ne
+t 135.0 285.0 codeUS1 n 0 w n {} ne
+p 70.0 345.0 ExecutionUS1_code 0 n
+p 200.0 340.0 Send_dataUS1 1 n
+t 135.0 400.0 wait_US1 s 0 w n {} ne
+p 460.0 340.0 US1_problem 0 n
+t 745.0 330.0 US1_2 0 0 n
+t 675.0 335.0 M_2 0 0 w
+t 820.0 330.0 US2_2 0 0 e
+t 325.0 135.0 M_baddata n 0 w n {} ne
+t 325.0 340.0 US1_baddata n 0 w n {} ne
+t 325.0 550.0 US2_baddata n 0 w n {} ne
+t 640.0 135.0 M_1 0 0 e
+t 745.0 130.0 US1_1 0 0 e
+p 745.0 245.0 Error1 0 e
+t 835.0 130.0 US2_1 0 0 e
+p 745.0 440.0 Error2 0 e
+t 675.0 535.0 M_3 0 0 w
+t 820.0 535.0 US2_3 0 0 e
+t 745.0 535.0 US1_3 0 0 n
+t 915.0 265.0 wait1 6 6 n
+t 915.0 480.0 wait2 6 6 n
+t 915.0 665.0 fail 0 0 n
+p 1040.0 480.0 StopCar2 0 n
+p 1030.0 265.0 StopCar1 0 n
+t 1135.0 265.0 msg1 1 1 n
+t 1135.0 480.0 msg2 1 1 n
+t 1140.0 665.0 msg3 1 1 n
+p 1035.0 665.0 StopCar3 0 n
+t 325.0 610.0 US2Lost s 0 w n {} ne
+t 325.0 395.0 US1Lost s 0 w n {} ne
+p 470.0 550.0 US2_problem 0 n
+p 750.0 640.0 Error3 0 w
+p 420.0 135.0 M_problem 0 n
+p 1385.0 470.0 TowProblemFound 0 e
+p 1215.0 425.0 TwoSensorsFail 0 n
+p 1220.0 665.0 AllSensorsFail 0 e
+p 1215.0 260.0 OneSensorFail 0 n
+e msg2 TwoSensorsFail 1 n
+e msg1 OneSensorFail 1 n
+e msg3 AllSensorsFail 1 n
+e US2_problem 0.9446927067 135.0740538 US2_3 0.5743541914 126.5622377 3 s
+e US1_problem 0.01511203342 126.5701387 US1_3 0.3428238372 116.211015 3 n
+e M_problem M_3 3 n
+e US1Lost US1_problem 3 sw
+e Send_dataUS1 US1Lost 1 n
+e US2Lost US2_problem 3 sw
+e Send_dataUS2 US2Lost 1 n
+e Send_dataUS2 US2_baddata ?1 n
+e msg1 TowProblemFound 1 n
+e msg2 TowProblemFound 1 n
+e msg3 TowProblemFound 1 n
+e StopCar3 msg3 1 n
+e fail StopCar3 1 n
+e StopCar2 msg2 1 n
+e wait2 StopCar2 1 n
+e StopCar1 msg1 1 n
+e wait1 StopCar1 1 n
+e Sendi_dataM codeM_ok 1 n
+e codeM_ok ExecutionM_code 1 n
+e ExecutionM_code wait_M 1 n
+e wait_M Sendi_dataM 1 n
+e M_baddata M_problem 1 n
+e US1_baddata US1_problem 1 n
+e US2_baddata US2_problem 1 n
+e Send_dataUS1 US1_baddata ?1 n
+e wait_US1 Send_dataUS1 1 n
+e ExecutionUS1_code wait_US1 1 n
+e codeUS1 ExecutionUS1_code 1 n
+e Send_dataUS1 codeUS1 1 n
+e waitUS2 Send_dataUS2 1 n
+e ExecutUS2_code waitUS2 1 n
+e codeUS2 ExecutUS2_code 1 n
+e Send_dataUS2 codeUS2 1 n
+e car_working M_1 1 n
+e car_working US1_1 1 n
+e car_working US2_1 1 n
+e M_1 Error1 1 n
+e US1_1 Error1 1 n
+e US2_1 Error1 1 n
+e M_problem M_1 3 n
+e US1_problem US1_1 3 sw
+e US2_problem US2_1 3 w
+e Error1 wait1 1 n
+e Sendi_dataM M_baddata ?1 n
+e M_problem M_2 3 n
+e Error1 M_2 1 n
+e US1_problem 0.8627813764 110.6345334 US1_2 0.5909311843 133.1465358 3 e
+e Error1 US1_2 1 n
+e Error1 US2_2 1 n
+e US2_problem US2_2 3 e
+e M_2 Error2 1 n
+e US1_2 Error2 1 n
+e US2_2 Error2 1 n
+e Error2 M_3 1 n
+e Error2 US1_3 1 n
+e Error2 US2_3 1 n
+e M_3 Error3 1 n
+e US1_3 Error3 1 n
+e US2_3 Error3 1 n
+e Error2 wait2 1 n
+e Error3 fail 1 n
+h Error_TB
+
+
