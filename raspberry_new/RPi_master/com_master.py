@@ -202,7 +202,6 @@ class MySend(Thread):
                 if size == 0: break
             elif VB.Towing_Error.is_set():
                 message = "STATE:towing_error;"
-                print(message)
                 size = self.conn.send(message.encode())
                 if size == 0: break             
             else:
@@ -348,6 +347,9 @@ class MyReceive(Thread):
                     if (payload == 'stop'):
                         print(self.getName(),'Stop towing mode - error detection OFF - disconnected from pink car')
                         VB.Towing_OFF.set()
+
+                if VB.Towing_Error.is_set():
+                	self.enable = 0
 
                 #print(self.speed_cmd)
                 #print(self.move)

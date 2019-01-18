@@ -90,7 +90,6 @@ class Approach(Thread):
                 if msg.arbitration_id == US1:
                     trameCAN = True
                     distance_URC = int.from_bytes(msg.data[4:6], byteorder='big')
-                    print(self.getName(),'distance URC ', distance_URC)
                     if distance_URC <= HOOKING_DIST:
                         compteur_touch += 1
                         # compteur_close = 0 ----> Non placé car permet de reculer et d'arriver en dessous de la HOOKING_DIST
