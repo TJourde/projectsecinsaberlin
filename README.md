@@ -27,6 +27,7 @@ There is also the documentation on the technical aspects of the cars in the docu
 2. Launch the connection to the Pink car
 3. Start the hooking
 4. Start the towing
+5. Control the AutowCar with the buttons on the GUI
 
 ### Monitoring
 You can stop the operation at anytime.
