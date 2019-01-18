@@ -202,6 +202,7 @@ class MySend(Thread):
                 if size == 0: break
             elif VB.Towing_Error.is_set():
                 message = "STATE:towing_error;"
+                print(message)
                 size = self.conn.send(message.encode())
                 if size == 0: break             
             else:
@@ -210,7 +211,7 @@ class MySend(Thread):
                 if size == 0: break
 
             # code d'erreur pendant remorquage
-            if VB.Towing_ON.is_set() or VB.Towing_Error.is_set():
+            if VB.Towing_Error.is_set():
                 if VB.ErrorCodeSem.acquire(False):
                     message = "ERR:" + str(VB.ErrorCode) + ";"
                     VB.ErrorCodeSem.release()

@@ -49,52 +49,56 @@ class MyComTow(Thread):
                 print(self.getName(),'Connection with pink car closed')
                 VB.Disconnect.clear()
 
-                if VB.stop_all.is_set(): break
+            if VB.stop_all.is_set(): break
 
-            # --------------------------------------
-            # Traitement des données envoyées par la voiture rose
-            # --------------------------------------
-            elif VB.Connection_ON.is_set():
+            try:
+	            # --------------------------------------
+	            # Traitement des données envoyées par la voiture rose
+	            # --------------------------------------
+	            elif VB.Connection_ON.is_set():
 
-                data = stow.recv(VB.BUFFER_SIZE)
-                data = str(data)
-                data = data[2:len(data)-1]
+	                data = stow.recv(VB.BUFFER_SIZE)
+	                data = str(data)
+	                data = data[2:len(data)-1]
 
-                if not data: continue
+	                if not data: continue
 
-                for cmd in data.split(';'):
+	                for cmd in data.split(';'):
 
-                    #print(self.getName(), cmd)
+	                    #print(self.getName(), cmd)
 
-                    # look for the identifier in received msg
-                    if "UFC_slave" in cmd: 
+	                    # look for the identifier in received msg
+	                    if "UFC_slave" in cmd: 
 
-                            header_slave, payload_slave = cmd.split(':')
+	                            header_slave, payload_slave = cmd.split(':')
 
-                            VB.WriteUFC_slave(True,payload_slave)
+	                            VB.WriteUFC_slave(True,payload_slave)
 
-                            # send it to main application
-                            message = "UFC_slave:" + str(payload_slave) + ";"
-                            size = self.conn_IHM.send(message.encode())
-                            if size == 0: 
-                                print(self.getName(),'Error while sending UFC_slave data to IHM')
-                                break
+	                            # send it to main application
+	                            message = "UFC_slave:" + str(payload_slave) + ";"
+	                            size = self.conn_IHM.send(message.encode())
+	                            if size == 0: 
+	                                print(self.getName(),'Error while sending UFC_slave data to IHM')
+	                                break
 
-            # --------------------------------------
-            # Connexion à la voiture rose
-            # --------------------------------------
-            elif VB.Connect.is_set():
-                try:
-                    stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    stow.connect((VB.IpPink,TCP_PORT))
-                    print(self.getName(),'Connect to pink car with address ' + VB.IpPink)
-                    VB.Connect.clear()
-                    VB.Connection_ON.set()
-                except socket.error:
-                    print(self.getName(),'Socket error while attempting to connect to pink car')
-                    VB.Connection_ON.clear()
-                    VB.Connect.clear()
-
+	            # --------------------------------------
+	            # Connexion à la voiture rose
+	            # --------------------------------------
+	            elif VB.Connect.is_set():
+	                try:
+	                    stow = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	                    stow.connect((VB.IpPink,TCP_PORT))
+	                    print(self.getName(),'Connect to pink car with address ' + VB.IpPink)
+	                    VB.Connect.clear()
+	                    VB.Connection_ON.set()
+	                except socket.error:
+	                    print(self.getName(),'Socket error while attempting to connect to pink car')
+	                    VB.Connection_ON.clear()
+	                    VB.Connect.clear()
+	        except:
+	        	VB.Connection_ON.clear()
+	        	Code_erreur = VB.ErrorLostConnection
+	        	VB.WriteErrorCode(Code_erreur)
 
 
         print(self.getName(), '###### MyTowCom finished')
@@ -110,6 +114,6 @@ def SendMail(subject,body):
     mail.login('teamberlingei','teamberlin2018')
 
     msg = 'Subject: ' + subject + '\n' + body
-    mail.sendmail(VB.SrcAddr,VB.DestAddr,msg)
+    # mail.sendmail(VB.SrcAddr,VB.DestAddr,msg)
     mail.quit()
     print('Mail sent to ' + VB.DestAddr + 'with content: ' + body)

@@ -187,9 +187,9 @@ class TowingErrorDetection(Thread):
         compteur_UFL = 0
         compteur_UFR = 0
         # Valeurs limites
-        limit_URC = 3
-        limit_UFC_slave = 3
-        limit_MAG = 3
+        limit_URC = 10
+        limit_UFC_slave = 5
+        limit_MAG = 10
         limit_multi = 15
         limit_UFC = 6
         limit_UFL = 6
@@ -227,13 +227,9 @@ class TowingErrorDetection(Thread):
                 print(self.getName(),'Not connected to pink car, cancelling towing procedure')
                 VB.Towing_ON.clear()
 
-            # Si le towing est demandé mais que la voiture rose n'est pas accrochée
-            if VB.Towing_ON.is_set() and not VB.Hooking_ON.is_set():
-                print(self.getName(),'Not hooked to pink car, cancelling towing procedure')
-                VB.Towing_ON.clear()
-
             # Check si l'utilisateur demande l'activation du remorquage (donc du mode détection d'erreurs)
-            if VB.Connection_ON.is_set() and VB.Hooking_ON.is_set() and VB.Towing_ON.is_set() :
+            if VB.Connection_ON.is_set() and VB.Towing_ON.is_set() :
+            	VB.Hooking_ON.clear()
 
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
@@ -413,7 +409,7 @@ def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
     else:
         mail_subject = 'Towing process'
         mail_body = 'Error while towing - code: ' + str(bin(Code_erreur))
-        # CT.SendMail(mail_subject, mail_body)
+        CT.SendMail(mail_subject, mail_body)
 
 
 
