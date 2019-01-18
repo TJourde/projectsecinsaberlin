@@ -28,9 +28,9 @@ HALL= 0x103
 
 # DISTANCES
 HOOKING_DIST = 33
-SLOWING_DIST = HOOKING_DIST + 20 # car will slow down approach if under this distance
+SLOWING_DIST = HOOKING_DIST + 30 # car will slow down approach if under this distance
 LIMIT_DIST = HOOKING_DIST + 5
-OBSTACLE_DIST = 15
+OBSTACLE_DIST = 30
 
 # COMMANDES SOLENOID
 SOLENOID_UP = 0xFF
@@ -90,6 +90,7 @@ class Approach(Thread):
                 if msg.arbitration_id == US1:
                     trameCAN = True
                     distance_URC = int.from_bytes(msg.data[4:6], byteorder='big')
+                    print(self.getName(),'distance URC ', distance_URC)
                     if distance_URC <= HOOKING_DIST:
                         compteur_touch += 1
                         # compteur_close = 0 ----> Non placé car permet de reculer et d'arriver en dessous de la HOOKING_DIST
@@ -412,7 +413,7 @@ def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
     else:
         mail_subject = 'Towing process'
         mail_body = 'Error while towing - code: ' + str(bin(Code_erreur))
-        CT.SendMail(mail_subject, mail_body)
+        # CT.SendMail(mail_subject, mail_body)
 
 
 
