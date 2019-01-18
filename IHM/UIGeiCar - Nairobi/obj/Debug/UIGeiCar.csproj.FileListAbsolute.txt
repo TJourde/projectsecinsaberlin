@@ -7,3 +7,4 @@ C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.csproj.
 C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.csproj.CoreCompileInputs.cache
 C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.exe
 C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.pdb
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.csprojAssemblyReference.cache
