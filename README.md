@@ -44,11 +44,14 @@ Feature description : For the hooking to take place, we place the tow car in fro
 During the hooking errors are also addressed through a different thread
 
 ## Towing
-
+Description: The towing process manages the approach, the processing of data received from the second car, the instructions sent to the motor and solenoid and the detection of errors during towing. 
 
 ## Errors detection
+Detects errors during towing and hooking
 
-## Error correction
+## Errors correction
+Corrects the errors if possible
+
 
 
 
