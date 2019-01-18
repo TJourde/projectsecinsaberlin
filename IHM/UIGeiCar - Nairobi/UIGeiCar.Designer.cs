@@ -1,4 +1,4 @@
-﻿namespace UIGeiCar___Nairobi
+﻿namespace UIGeiCar___Berlin
 {
     partial class UIGeiCar
     {
@@ -45,6 +45,8 @@
             this.bstopMOV = new System.Windows.Forms.Button();
             this.eBAT = new System.Windows.Forms.Label();
             this.infoLayout = new System.Windows.Forms.Panel();
+            this.danger = new System.Windows.Forms.PictureBox();
+            this.connected = new System.Windows.Forms.PictureBox();
             this.mag_value = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
@@ -59,15 +61,20 @@
             this.magnetic = new System.Windows.Forms.Label();
             this.frontUS = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.labelConnect = new System.Windows.Forms.Label();
+            this.BCarsConnection = new System.Windows.Forms.Button();
+            this.BTowing = new System.Windows.Forms.Button();
             this.back_imm = new System.Windows.Forms.PictureBox();
             this.front_imm = new System.Windows.Forms.PictureBox();
             this.mag_imm = new System.Windows.Forms.PictureBox();
-            this.BmodePlatooning = new System.Windows.Forms.Button();
-            this.towing = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
-            this.Info_error = new System.Windows.Forms.Label();
+            this.BHooking = new System.Windows.Forms.Button();
+            this.bFront = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.SpdBar)).BeginInit();
             this.infoLayout.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.danger)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.connected)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -88,7 +95,7 @@
             // lBAT
             // 
             this.lBAT.AutoSize = true;
-            this.lBAT.Location = new System.Drawing.Point(32, 62);
+            this.lBAT.Location = new System.Drawing.Point(3, 8);
             this.lBAT.Name = "lBAT";
             this.lBAT.Size = new System.Drawing.Size(28, 13);
             this.lBAT.TabIndex = 10;
@@ -97,7 +104,7 @@
             // lUSLC
             // 
             this.lUSLC.AutoSize = true;
-            this.lUSLC.Location = new System.Drawing.Point(198, 35);
+            this.lUSLC.Location = new System.Drawing.Point(160, 27);
             this.lUSLC.Name = "lUSLC";
             this.lUSLC.Size = new System.Drawing.Size(46, 13);
             this.lUSLC.TabIndex = 24;
@@ -106,7 +113,7 @@
             // lUSRC
             // 
             this.lUSRC.AutoSize = true;
-            this.lUSRC.Location = new System.Drawing.Point(13, 133);
+            this.lUSRC.Location = new System.Drawing.Point(13, 153);
             this.lUSRC.Name = "lUSRC";
             this.lUSRC.Size = new System.Drawing.Size(49, 13);
             this.lUSRC.TabIndex = 30;
@@ -143,7 +150,7 @@
             // bforward
             // 
             this.bforward.Enabled = false;
-            this.bforward.Location = new System.Drawing.Point(406, 95);
+            this.bforward.Location = new System.Drawing.Point(406, 66);
             this.bforward.Name = "bforward";
             this.bforward.Size = new System.Drawing.Size(75, 23);
             this.bforward.TabIndex = 3;
@@ -154,7 +161,7 @@
             // bright
             // 
             this.bright.Enabled = false;
-            this.bright.Location = new System.Drawing.Point(487, 124);
+            this.bright.Location = new System.Drawing.Point(487, 97);
             this.bright.Name = "bright";
             this.bright.Size = new System.Drawing.Size(75, 23);
             this.bright.TabIndex = 4;
@@ -165,7 +172,7 @@
             // bleft
             // 
             this.bleft.Enabled = false;
-            this.bleft.Location = new System.Drawing.Point(325, 124);
+            this.bleft.Location = new System.Drawing.Point(325, 97);
             this.bleft.Name = "bleft";
             this.bleft.Size = new System.Drawing.Size(75, 23);
             this.bleft.TabIndex = 5;
@@ -176,7 +183,7 @@
             // bbackward
             // 
             this.bbackward.Enabled = false;
-            this.bbackward.Location = new System.Drawing.Point(406, 124);
+            this.bbackward.Location = new System.Drawing.Point(406, 97);
             this.bbackward.Name = "bbackward";
             this.bbackward.Size = new System.Drawing.Size(75, 23);
             this.bbackward.TabIndex = 6;
@@ -187,7 +194,7 @@
             // bstopSTE
             // 
             this.bstopSTE.Enabled = false;
-            this.bstopSTE.Location = new System.Drawing.Point(325, 153);
+            this.bstopSTE.Location = new System.Drawing.Point(325, 126);
             this.bstopSTE.Name = "bstopSTE";
             this.bstopSTE.Size = new System.Drawing.Size(104, 23);
             this.bstopSTE.TabIndex = 7;
@@ -198,7 +205,7 @@
             // bstopMOV
             // 
             this.bstopMOV.Enabled = false;
-            this.bstopMOV.Location = new System.Drawing.Point(458, 153);
+            this.bstopMOV.Location = new System.Drawing.Point(458, 126);
             this.bstopMOV.Name = "bstopMOV";
             this.bstopMOV.Size = new System.Drawing.Size(104, 23);
             this.bstopMOV.TabIndex = 8;
@@ -209,7 +216,7 @@
             // eBAT
             // 
             this.eBAT.AutoSize = true;
-            this.eBAT.Location = new System.Drawing.Point(67, 63);
+            this.eBAT.Location = new System.Drawing.Point(37, 8);
             this.eBAT.Name = "eBAT";
             this.eBAT.Size = new System.Drawing.Size(13, 13);
             this.eBAT.TabIndex = 45;
@@ -217,6 +224,10 @@
             // 
             // infoLayout
             // 
+            this.infoLayout.Controls.Add(this.label5);
+            this.infoLayout.Controls.Add(this.bFront);
+            this.infoLayout.Controls.Add(this.danger);
+            this.infoLayout.Controls.Add(this.connected);
             this.infoLayout.Controls.Add(this.mag_value);
             this.infoLayout.Controls.Add(this.label3);
             this.infoLayout.Controls.Add(this.pictureBox3);
@@ -226,15 +237,36 @@
             this.infoLayout.Controls.Add(this.eUSFC);
             this.infoLayout.Controls.Add(this.eUSRC);
             this.infoLayout.Controls.Add(this.lUSRC);
-            this.infoLayout.Location = new System.Drawing.Point(18, 53);
+            this.infoLayout.Controls.Add(this.lBAT);
+            this.infoLayout.Controls.Add(this.eBAT);
+            this.infoLayout.Location = new System.Drawing.Point(18, 44);
             this.infoLayout.Name = "infoLayout";
-            this.infoLayout.Size = new System.Drawing.Size(253, 191);
+            this.infoLayout.Size = new System.Drawing.Size(281, 209);
             this.infoLayout.TabIndex = 58;
+            // 
+            // danger
+            // 
+            this.danger.Location = new System.Drawing.Point(93, 142);
+            this.danger.Name = "danger";
+            this.danger.Size = new System.Drawing.Size(73, 37);
+            this.danger.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.danger.TabIndex = 74;
+            this.danger.TabStop = false;
+            // 
+            // connected
+            // 
+            this.connected.Image = global::UIGeiCar___Berlin.Properties.Resources.led_rouge;
+            this.connected.Location = new System.Drawing.Point(203, 152);
+            this.connected.Name = "connected";
+            this.connected.Size = new System.Drawing.Size(30, 27);
+            this.connected.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.connected.TabIndex = 73;
+            this.connected.TabStop = false;
             // 
             // mag_value
             // 
             this.mag_value.AutoSize = true;
-            this.mag_value.Location = new System.Drawing.Point(59, 155);
+            this.mag_value.Location = new System.Drawing.Point(59, 175);
             this.mag_value.Name = "mag_value";
             this.mag_value.Size = new System.Drawing.Size(13, 13);
             this.mag_value.TabIndex = 60;
@@ -243,7 +275,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(14, 152);
+            this.label3.Location = new System.Drawing.Point(14, 172);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(28, 13);
             this.label3.TabIndex = 59;
@@ -251,7 +283,7 @@
             // 
             // pictureBox3
             // 
-            this.pictureBox3.Image = global::UIGeiCar___Nairobi.Properties.Resources.barre_ok;
+            this.pictureBox3.Image = global::UIGeiCar___Berlin.Properties.Resources.barre_ok;
             this.pictureBox3.Location = new System.Drawing.Point(89, 69);
             this.pictureBox3.Name = "pictureBox3";
             this.pictureBox3.Size = new System.Drawing.Size(77, 41);
@@ -261,8 +293,8 @@
             // 
             // pictureBox2
             // 
-            this.pictureBox2.Image = global::UIGeiCar___Nairobi.Properties.Resources.voiture_rose_tran;
-            this.pictureBox2.Location = new System.Drawing.Point(190, 71);
+            this.pictureBox2.Image = global::UIGeiCar___Berlin.Properties.Resources.voiture_rose_tran;
+            this.pictureBox2.Location = new System.Drawing.Point(190, 49);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(54, 99);
             this.pictureBox2.TabIndex = 57;
@@ -271,7 +303,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(11, 31);
+            this.pictureBox1.Location = new System.Drawing.Point(11, 49);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(54, 99);
             this.pictureBox1.TabIndex = 44;
@@ -280,7 +312,7 @@
             // eUSFC
             // 
             this.eUSFC.AutoSize = true;
-            this.eUSFC.Location = new System.Drawing.Point(210, 53);
+            this.eUSFC.Location = new System.Drawing.Point(212, 27);
             this.eUSFC.Name = "eUSFC";
             this.eUSFC.Size = new System.Drawing.Size(13, 13);
             this.eUSFC.TabIndex = 56;
@@ -289,7 +321,7 @@
             // eUSRC
             // 
             this.eUSRC.AutoSize = true;
-            this.eUSRC.Location = new System.Drawing.Point(59, 133);
+            this.eUSRC.Location = new System.Drawing.Point(59, 153);
             this.eUSRC.Name = "eUSRC";
             this.eUSRC.Size = new System.Drawing.Size(13, 13);
             this.eUSRC.TabIndex = 54;
@@ -306,7 +338,7 @@
             // 
             // kbCtrl
             // 
-            this.kbCtrl.Location = new System.Drawing.Point(387, 193);
+            this.kbCtrl.Location = new System.Drawing.Point(387, 155);
             this.kbCtrl.Name = "kbCtrl";
             this.kbCtrl.Size = new System.Drawing.Size(112, 23);
             this.kbCtrl.TabIndex = 60;
@@ -320,11 +352,11 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(203, 257);
+            this.label1.Location = new System.Drawing.Point(367, 257);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(101, 26);
+            this.label1.Size = new System.Drawing.Size(104, 26);
             this.label1.TabIndex = 61;
-            this.label1.Text = "TOWING";
+            this.label1.Text = "Detection";
             // 
             // bdisconnect
             // 
@@ -343,7 +375,7 @@
             // magnetic
             // 
             this.magnetic.AutoSize = true;
-            this.magnetic.Location = new System.Drawing.Point(484, 253);
+            this.magnetic.Location = new System.Drawing.Point(488, 204);
             this.magnetic.Name = "magnetic";
             this.magnetic.Size = new System.Drawing.Size(85, 13);
             this.magnetic.TabIndex = 64;
@@ -352,7 +384,7 @@
             // frontUS
             // 
             this.frontUS.AutoSize = true;
-            this.frontUS.Location = new System.Drawing.Point(418, 253);
+            this.frontUS.Location = new System.Drawing.Point(506, 257);
             this.frontUS.Name = "frontUS";
             this.frontUS.Size = new System.Drawing.Size(49, 13);
             this.frontUS.TabIndex = 66;
@@ -361,16 +393,63 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(351, 253);
+            this.label2.Location = new System.Drawing.Point(504, 304);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(52, 13);
             this.label2.TabIndex = 68;
             this.label2.Text = "back US ";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 17.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(228, 256);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(103, 29);
+            this.label4.TabIndex = 71;
+            this.label4.Text = "Hooking";
+            // 
+            // labelConnect
+            // 
+            this.labelConnect.AutoSize = true;
+            this.labelConnect.Font = new System.Drawing.Font("Microsoft Sans Serif", 17.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelConnect.Location = new System.Drawing.Point(15, 257);
+            this.labelConnect.Name = "labelConnect";
+            this.labelConnect.Size = new System.Drawing.Size(186, 29);
+            this.labelConnect.TabIndex = 74;
+            this.labelConnect.Text = "Cars connection";
+            // 
+            // BCarsConnection
+            // 
+            this.BCarsConnection.AutoSize = true;
+            this.BCarsConnection.BackgroundImage = global::UIGeiCar___Berlin.Properties.Resources.OFF;
+            this.BCarsConnection.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.BCarsConnection.Location = new System.Drawing.Point(61, 287);
+            this.BCarsConnection.Margin = new System.Windows.Forms.Padding(2);
+            this.BCarsConnection.Name = "BCarsConnection";
+            this.BCarsConnection.Size = new System.Drawing.Size(73, 30);
+            this.BCarsConnection.TabIndex = 73;
+            this.BCarsConnection.UseVisualStyleBackColor = true;
+            this.BCarsConnection.Click += new System.EventHandler(this.bCarsConnection_Click);
+            // 
+            // BTowing
+            // 
+            this.BTowing.AutoSize = true;
+            this.BTowing.BackgroundImage = global::UIGeiCar___Berlin.Properties.Resources.OFF;
+            this.BTowing.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.BTowing.Enabled = false;
+            this.BTowing.Location = new System.Drawing.Point(372, 287);
+            this.BTowing.Margin = new System.Windows.Forms.Padding(2);
+            this.BTowing.Name = "BTowing";
+            this.BTowing.Size = new System.Drawing.Size(73, 30);
+            this.BTowing.TabIndex = 70;
+            this.BTowing.UseVisualStyleBackColor = true;
+            this.BTowing.Click += new System.EventHandler(this.Towing_Click);
+            // 
             // back_imm
             // 
-            this.back_imm.Image = global::UIGeiCar___Nairobi.Properties.Resources.led_vert;
-            this.back_imm.Location = new System.Drawing.Point(354, 270);
+            this.back_imm.Image = global::UIGeiCar___Berlin.Properties.Resources.led_grey;
+            this.back_imm.Location = new System.Drawing.Point(516, 321);
             this.back_imm.Name = "back_imm";
             this.back_imm.Size = new System.Drawing.Size(28, 28);
             this.back_imm.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -379,8 +458,8 @@
             // 
             // front_imm
             // 
-            this.front_imm.Image = global::UIGeiCar___Nairobi.Properties.Resources.led_vert;
-            this.front_imm.Location = new System.Drawing.Point(421, 270);
+            this.front_imm.Image = global::UIGeiCar___Berlin.Properties.Resources.led_grey;
+            this.front_imm.Location = new System.Drawing.Point(516, 273);
             this.front_imm.Name = "front_imm";
             this.front_imm.Size = new System.Drawing.Size(28, 28);
             this.front_imm.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -389,69 +468,54 @@
             // 
             // mag_imm
             // 
-            this.mag_imm.Image = global::UIGeiCar___Nairobi.Properties.Resources.led_vert;
-            this.mag_imm.Location = new System.Drawing.Point(506, 270);
+            this.mag_imm.Image = global::UIGeiCar___Berlin.Properties.Resources.led_grey;
+            this.mag_imm.Location = new System.Drawing.Point(516, 220);
             this.mag_imm.Name = "mag_imm";
             this.mag_imm.Size = new System.Drawing.Size(28, 28);
             this.mag_imm.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.mag_imm.TabIndex = 65;
             this.mag_imm.TabStop = false;
             // 
-            // BmodePlatooning
+            // BHooking
             // 
-            this.BmodePlatooning.AutoSize = true;
-            this.BmodePlatooning.BackgroundImage = global::UIGeiCar___Nairobi.Properties.Resources.OFF;
-            this.BmodePlatooning.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.BmodePlatooning.Location = new System.Drawing.Point(22, 285);
-            this.BmodePlatooning.Margin = new System.Windows.Forms.Padding(2);
-            this.BmodePlatooning.Name = "BmodePlatooning";
-            this.BmodePlatooning.Size = new System.Drawing.Size(131, 45);
-            this.BmodePlatooning.TabIndex = 62;
-            this.BmodePlatooning.UseVisualStyleBackColor = true;
-            this.BmodePlatooning.Click += new System.EventHandler(this.BmodePlatooning_Click);
+            this.BHooking.AutoSize = true;
+            this.BHooking.BackgroundImage = global::UIGeiCar___Berlin.Properties.Resources.OFF;
+            this.BHooking.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.BHooking.Location = new System.Drawing.Point(243, 287);
+            this.BHooking.Margin = new System.Windows.Forms.Padding(2);
+            this.BHooking.Name = "BHooking";
+            this.BHooking.Size = new System.Drawing.Size(73, 30);
+            this.BHooking.TabIndex = 62;
+            this.BHooking.UseVisualStyleBackColor = true;
+            this.BHooking.Click += new System.EventHandler(this.BHooking_Click);
             // 
-            // towing
+            // bFront
             // 
-            this.towing.AutoSize = true;
-            this.towing.BackgroundImage = global::UIGeiCar___Nairobi.Properties.Resources.OFF;
-            this.towing.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.towing.Location = new System.Drawing.Point(188, 285);
-            this.towing.Margin = new System.Windows.Forms.Padding(2);
-            this.towing.Name = "towing";
-            this.towing.Size = new System.Drawing.Size(134, 45);
-            this.towing.TabIndex = 70;
-            this.towing.UseVisualStyleBackColor = true;
-            //            this.towing.Click += new System.EventHandler(this.Start_hook_Click);
-            this.towing.Click += new System.EventHandler(this.Towing_Click);
+            this.bFront.AutoSize = true;
+            this.bFront.Location = new System.Drawing.Point(49, 27);
+            this.bFront.Name = "bFront";
+            this.bFront.Size = new System.Drawing.Size(13, 13);
+            this.bFront.TabIndex = 76;
+            this.bFront.Text = "0";
             // 
-            // label4
+            // label5
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 17.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(13, 254);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(154, 29);
-            this.label4.TabIndex = 71;
-            this.label4.Text = "Start hooking";
-            // 
-            // Info_error
-            // 
-            this.Info_error.AutoSize = true;
-            this.Info_error.Location = new System.Drawing.Point(347, 317);
-            this.Info_error.Name = "Info_error";
-            this.Info_error.Size = new System.Drawing.Size(35, 13);
-            this.Info_error.TabIndex = 72;
-            this.Info_error.Text = "label5";
-//            this.Info_error.Click += new System.EventHandler(this.Info_error_Click);
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 27);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(46, 13);
+            this.label5.TabIndex = 77;
+            this.label5.Text = "front US";
             // 
             // UIGeiCar
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(578, 353);
-            this.Controls.Add(this.Info_error);
+            this.Controls.Add(this.labelConnect);
+            this.Controls.Add(this.BCarsConnection);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.towing);
+            this.Controls.Add(this.BTowing);
             this.Controls.Add(this.back_imm);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.front_imm);
@@ -459,12 +523,10 @@
             this.Controls.Add(this.mag_imm);
             this.Controls.Add(this.magnetic);
             this.Controls.Add(this.bdisconnect);
-            this.Controls.Add(this.BmodePlatooning);
+            this.Controls.Add(this.BHooking);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.kbCtrl);
             this.Controls.Add(this.eSPD);
-            this.Controls.Add(this.eBAT);
-            this.Controls.Add(this.lBAT);
             this.Controls.Add(this.lblSpeed);
             this.Controls.Add(this.bstopMOV);
             this.Controls.Add(this.bstopSTE);
@@ -485,6 +547,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.SpdBar)).EndInit();
             this.infoLayout.ResumeLayout(false);
             this.infoLayout.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.danger)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.connected)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -519,7 +583,7 @@
         private System.Windows.Forms.Label eSPD;
         private System.Windows.Forms.Button kbCtrl;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button BmodePlatooning;
+        private System.Windows.Forms.Button BHooking;
         private System.Windows.Forms.Button bdisconnect;
         private System.Windows.Forms.Label magnetic;
         private System.Windows.Forms.PictureBox mag_imm;
@@ -531,8 +595,13 @@
         private System.Windows.Forms.PictureBox pictureBox3;
         private System.Windows.Forms.Label mag_value;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button towing;
+        private System.Windows.Forms.Button BTowing;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label Info_error;
+        private System.Windows.Forms.PictureBox connected;
+        private System.Windows.Forms.Label labelConnect;
+        private System.Windows.Forms.Button BCarsConnection;
+        private System.Windows.Forms.PictureBox danger;
+        private System.Windows.Forms.Label bFront;
+        private System.Windows.Forms.Label label5;
     }
 }

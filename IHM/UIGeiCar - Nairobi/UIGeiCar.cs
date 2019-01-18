@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Sockets;
 
-namespace UIGeiCar___Nairobi
+namespace UIGeiCar___Berlin
 {
     public partial class UIGeiCar : Form
     {
@@ -18,14 +18,17 @@ namespace UIGeiCar___Nairobi
         Boolean bConnected = false;
         Boolean platooning_mode = false; //hooking 
         Boolean waiting_mode = false;
+        Boolean cars_connected = false;
         //Boolean 
 
         public UIGeiCar()
         {
             InitializeComponent();
             pictureBox3.Visible = false;
+            connected.Image = Properties.Resources.led_rouge;
+            BHooking.Enabled = false;
+            BTowing.Enabled = false;
         }
-
 
         private void Bconnect_Click(object sender, EventArgs e)
         {
@@ -76,6 +79,9 @@ namespace UIGeiCar___Nairobi
         {
 
             int cmpt = 0;
+            int Mask_URC = 1;
+            int Mask_UFC_slave = 2;
+            int Mask_MAG = 4;
             if (bConnected)
             {
                 while (clientSocket.Connected)
@@ -91,60 +97,97 @@ namespace UIGeiCar___Nairobi
                         String[] elt = msg.Split(':');
                         switch (elt[0])
                         {
-                            
+                            // error msgs on the screen
                             case "ERR":
                                 //Display_label_off();
-                                if (elt[1].Contains('a'))
-                                {
+                                if (Mask_MAG == (Mask_MAG & int.Parse(elt[1])))
+                                { 
                                     //eWARNING_obstacle.Visible = true;
                                     mag_imm.Image = Properties.Resources.led_rouge;
-                                    Info_error.Text = "Magnetic Fail";
+                                   // Info_error.Text = "Error code: Magnetic Fail";
                                 }
-                                if (elt[1].Contains('b'))
+                                if (Mask_URC == (Mask_URC & int.Parse(elt[1])))
                                 {
                                     front_imm.Image = Properties.Resources.led_rouge;
-                                    Info_error.Text = "US slave Fail";
+                                   // Info_error.Text = "Error code: US slave Fail";
                                 }
-                                if (elt[1].Contains('c'))
+                                if (Mask_UFC_slave == (Mask_UFC_slave & int.Parse(elt[1])))
                                 {
                                     back_imm.Image = Properties.Resources.led_rouge;
-                                    Info_error.Text = "US master Fail";
+                                   // Info_error.Text = "Error code: US master Fail";
                                 }
-                                if (elt[1].Contains('a') && elt[1].Contains('b') && elt[1].Contains('c'))
+                                if ((Mask_MAG == (Mask_MAG & int.Parse(elt[1]))) && (Mask_URC == (Mask_URC & int.Parse(elt[1]))) && (Mask_UFC_slave == (Mask_UFC_slave & int.Parse(elt[1]))))
                                 {
                                     pictureBox3.Image = Properties.Resources.barre_no;
-                                    Info_error.Text = "All Sensors Fail";
+                                 
                                 }
                                 else
                                 {
                                     pictureBox3.Image = Properties.Resources.barre_what;
                                 }
                                 break;
+                            case "TOWSTATE":
+                                BTowing.BackgroundImage = Properties.Resources.ON;
+                                pictureBox3.Visible = true;
+                                break;
+                            case "MAG":
+                                mag_value.Text = elt[1];
+                                break;
+                            case "UFC":
+                                bFront.Text = elt[1];
+                                break;
+                            case "UFC_slave":
+                                eUSFC.Text = elt[1];
+                                break;
+                            case "URC":
+                                eUSRC.Text = elt[1];
+                                break;
+                            case "BAT":
+                                eBAT.Text = elt[1];
+                                break;
+                            case "CON_PINK":
+                                if (elt[1] == "on")
+                                {
+                                    connected.Image = Properties.Resources.led_vert;
+                                    cars_connected = true;
+                                    BHooking.Enabled = true;
+                                    BCarsConnection.BackgroundImage = Properties.Resources.ON;
+                        
+                                }
+                                else if (elt[1] == "off")
+                                {
+                                    connected.Image = Properties.Resources.led_rouge;
+                                    cars_connected = false;
+                                    BHooking.Enabled = false;
+                                    BCarsConnection.BackgroundImage = Properties.Resources.OFF;
+                                }
+                                break;
+                            case "STATE":
+                                if(elt[1] == "approching")
+                                {
+                                    BHooking.BackgroundImage = Properties.Resources.wait;
+                                }
+                                if (elt[1]=="hooking_effective")
+                                {
+                                    BHooking.BackgroundImage = Properties.Resources.ON;
+                                    BTowing.Enabled = true;
+                                    mag_imm.Image = Properties.Resources.led_vert;
+                                    front_imm.Image = Properties.Resources.led_vert;
+                                    back_imm.Image = Properties.Resources.led_vert;
+                                    danger.Image = null; 
+                                }
+                                else if(elt[1] == "hooking_uneffective")
+                                {
+                                    danger.Image = Properties.Resources.attention;
+                                }
+                                if(elt[1] == "towing_error")
+                                {
+                                    BTowing.BackgroundImage = Properties.Resources.OFF;
+                                }
+                                break;                                  
                             default:
                                 cmpt = (cmpt + 1) % 100;
                                 break;
-                        }
-                        if (cmpt == 0)
-                        {
-                            switch (elt[0])
-                            {
-                                case "TOWSTATE": 
-                                    towing.BackgroundImage = Properties.Resources.ON;
-                                    pictureBox3.Visible = true;
-                                    break;
-                                case "MAG":
-                                    mag_value.Text = elt[1];
-                                    break;
-                                case "UFC_slave":
-                                    eUSFC.Text = elt[1];
-                                    break;
-                                case "URC":
-                                    eUSRC.Text = elt[1];
-                                    break;
-                                case "BAT":
-                                    eBAT.Text = elt[1];
-                                    break;
-                            }
                         }
                     }
                 }
@@ -285,31 +328,33 @@ namespace UIGeiCar___Nairobi
             }
         }
 
-        private void BmodePlatooning_Click(object sender, EventArgs e) //bmodeplatooning -> start_hooking 
+        private void BHooking_Click(object sender, EventArgs e) //BHooking -> start_hooking 
         {
             if (bConnected) 
             {
+
                 if (platooning_mode == false && waiting_mode == false)
                 {
-                   /* byte[] bytes = Encoding.ASCII.GetBytes("HOO:" + "on;"); // PLA = HOO
-                    BmodePlatooning.BackgroundImage = Properties.Resources.wait;
-                    nwStream.Write(bytes, 0, bytes.Length);
-                    platooning_mode = false;
-                    waiting_mode = true;*/
-
-                    byte[] bytes = Encoding.ASCII.GetBytes("HOO:" + "request;");
-                    BmodePlatooning.BackgroundImage = Properties.Resources.wait;
+                    /* byte[] bytes = Encoding.ASCII.GetBytes("HOO:" + "on;"); // PLA = HOO
+                     BHooking.Image = Properties.Resources.wait;
+                     nwStream.Write(bytes, 0, bytes.Length);
+                     platooning_mode = false;
+                     waiting_mode = true;*/
+                    
+                    byte[] bytes = Encoding.ASCII.GetBytes("HOO:" + "start;");
+                    BHooking.BackgroundImage = Properties.Resources.wait;
                     nwStream.Write(bytes, 0, bytes.Length);
                     platooning_mode = false;
                     waiting_mode = true;
+                    BTowing.Enabled = true;
 
                 }
                 else
                 {
                     if (platooning_mode == true || waiting_mode == true)
                     {
-                        byte[] bytes = Encoding.ASCII.GetBytes("PLA:" + "off;");
-                        BmodePlatooning.BackgroundImage = Properties.Resources.OFF;
+                        byte[] bytes = Encoding.ASCII.GetBytes("HOO:" + "stop;");
+                        BHooking.BackgroundImage = Properties.Resources.OFF;
                         nwStream.Write(bytes, 0, bytes.Length);
                         platooning_mode = false;
                         waiting_mode = false;
@@ -344,7 +389,7 @@ namespace UIGeiCar___Nairobi
             if (waiting_mode == true)
             {
                 byte[] bytes = Encoding.ASCII.GetBytes("PLA:" + "yes;");
-                BmodePlatooning.BackgroundImage = Properties.Resources.ON;
+                BHooking.Image = Properties.Resources.ON;
                 nwStream.Write(bytes, 0, bytes.Length);
                 waiting_mode = false;
                 platooning_mode = true;
@@ -363,7 +408,7 @@ namespace UIGeiCar___Nairobi
             if (waiting_mode == true)
             {
                 byte[] bytes = Encoding.ASCII.GetBytes("PLA:" + "no;");
-                BmodePlatooning.BackgroundImage = Properties.Resources.wait;
+                BHooking.Image = Properties.Resources.wait;
                 nwStream.Write(bytes, 0, bytes.Length);
                 waiting_mode = true;
                 platooning_mode = false;
@@ -401,7 +446,7 @@ namespace UIGeiCar___Nairobi
         private void Lost_car_process()
         {
             byte[] bytes = Encoding.ASCII.GetBytes("PLA:" + "off;");
-            BmodePlatooning.BackgroundImage = Properties.Resources.OFF;
+            BHooking.BackgroundImage = Properties.Resources.OFF;
             nwStream.Write(bytes, 0, bytes.Length);
             platooning_mode = false;
             waiting_mode = false;
@@ -412,30 +457,47 @@ namespace UIGeiCar___Nairobi
         {
             if (bConnected)
             {
-                byte[] bytes = Encoding.ASCII.GetBytes("TOW:" + "request;"); 
-                towing.BackgroundImage = Properties.Resources.wait;
+                byte[] bytes = Encoding.ASCII.GetBytes("TOW:" + "start;"); 
+                BTowing.BackgroundImage = Properties.Resources.ON;
                 nwStream.Write(bytes, 0, bytes.Length);
             }
         }
 
-       /* private void Info_error_Click(object sender, EventArgs e)
+        private void bCarsConnection_Click(object sender, EventArgs e)
         {
-          
+            if (cars_connected == false)
+            {
+                byte[] bytes = Encoding.ASCII.GetBytes("CON:" + "start;");
+                BCarsConnection.BackgroundImage = Properties.Resources.wait;
+                nwStream.Write(bytes, 0, bytes.Length);
+            }
+            else
+            {
+                byte[] bytes = Encoding.ASCII.GetBytes("CON:" + "stop;");
+                BCarsConnection.BackgroundImage = Properties.Resources.wait;
+                nwStream.Write(bytes, 0, bytes.Length);
+            }
         }
+        
 
-          private void IUSLC_Click(object sender, EventArgs e) //?? US sensor of the 2 car 
-          {
+        /* private void Info_error_Click(object sender, EventArgs e)
+         {
 
-          }
+         }
 
-          private void InfoLayout_Paint(object sender, PaintEventArgs e)
-          {
+           private void IUSLC_Click(object sender, EventArgs e) //?? US sensor of the 2 car 
+           {
 
-          }
+           }
 
-          private void UIGeiCar_Load(object sender, EventArgs e)
-          {
+           private void InfoLayout_Paint(object sender, PaintEventArgs e)
+           {
 
-          } */
+           }
+
+           private void UIGeiCar_Load(object sender, EventArgs e)
+           {
+
+           } */
     }
 }
