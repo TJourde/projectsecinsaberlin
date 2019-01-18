@@ -188,7 +188,7 @@ class TowingErrorDetection(Thread):
         compteur_UFR = 0
         # Valeurs limites
         limit_URC = 10
-        limit_UFC_slave = 5
+        limit_UFC_slave = 7
         limit_MAG = 10
         limit_multi = 15
         limit_UFC = 6
@@ -229,7 +229,7 @@ class TowingErrorDetection(Thread):
 
             # Check si l'utilisateur demande l'activation du remorquage (donc du mode détection d'erreurs)
             if VB.Connection_ON.is_set() and VB.Towing_ON.is_set() :
-            	VB.Hooking_ON.clear()
+                VB.Hooking_ON.clear()
 
                 # --------------------------------------
                 # PART 1 - Traitement des données et levée des flag
