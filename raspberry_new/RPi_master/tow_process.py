@@ -187,7 +187,7 @@ class TowingErrorDetection(Thread):
         compteur_UFR = 0
         # Valeurs limites
         limit_URC = 10
-        limit_UFC_slave = 7
+        limit_UFC_slave = 4
         limit_MAG = 10
         limit_multi = 15
         limit_UFC = 6
