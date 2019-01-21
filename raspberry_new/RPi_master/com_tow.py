@@ -114,6 +114,6 @@ def SendMail(subject,body):
     mail.login('teamberlingei','teamberlin2018')
 
     msg = 'Subject: ' + subject + '\n' + body
-    # mail.sendmail(VB.SrcAddr,VB.DestAddr,msg)
+    mail.sendmail(VB.SrcAddr,VB.DestAddr,msg)
     mail.quit()
     print('Mail sent to ' + VB.DestAddr + 'with content: ' + body)

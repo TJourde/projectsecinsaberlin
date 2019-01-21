@@ -410,7 +410,7 @@ def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
         print(self.getName(),'Trying to rehook')
         VB.Approach.is_set()
     else:
-        mail_subject = 'Towing process'
+        mail_subject = 'Towing process error'
         mail_body = 'Error while towing - code: ' + str(bin(Code_erreur))
         CT.SendMail(mail_subject, mail_body)
 
