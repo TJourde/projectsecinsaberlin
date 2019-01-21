@@ -305,6 +305,7 @@ class TowingErrorDetection(Thread):
                 # --------------------------------------
                 # PART 2 - Appel des handler
                 # --------------------------------------
+                if trameCAN_tow
                 if trameCAN_tow and (FLAG_MAG or FLAG_URC or FLAG_UFC_slave):
                     trameCAN_tow = False
                     compteur_multi += 1
@@ -405,6 +406,9 @@ def TowingErrorHandler(self,FLAG_URC,FLAG_UFC_slave,FLAG_MAG):
     if FLAG_URC and FLAG_UFC_slave and FLAG_MAG:
         print(self.getName(),'Unhooking detected')
         VB.Hooking_ON.clear()
+        time.sleep(3)
+        print(self.getName(),'Trying to rehook')
+        VB.Approach.is_set()
     else:
         mail_subject = 'Towing process'
         mail_body = 'Error while towing - code: ' + str(bin(Code_erreur))
