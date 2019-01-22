@@ -1,0 +1,10 @@
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\bin\Debug\UIGeiCar.exe.config
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\bin\Debug\UIGeiCar.exe
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\bin\Debug\UIGeiCar.pdb
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar___Berlin.Properties.Resources.resources
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar___Berlin.UIGeiCar.resources
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.csproj.GenerateResource.cache
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.csproj.CoreCompileInputs.cache
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.exe
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.pdb
+C:\INSA - Toulouse\Team Berlin\IHM\UIGeiCar - Nairobi\obj\Debug\UIGeiCar.csprojAssemblyReference.cache
