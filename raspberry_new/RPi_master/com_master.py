@@ -10,11 +10,6 @@ import socket
 #importing variables linked
 import VarBerlin as VB
 
-'''
-#importing Communications Threads
-from Platooning_thread import *
-'''
-
 MCM = 0x010
 MS = 0x100
 US1 = 0x000
@@ -66,7 +61,7 @@ HALL = 0x103
 '''
 
 # *********************************************************
-# THREAD 1 - Récupération des données du CAN ou interne à la RPi, envoi à l'application
+# THREAD - Récupération des données du CAN ou interne à la RPi, envoi à l'application
 # *********************************************************
 
 class MySend(Thread):
@@ -75,167 +70,158 @@ class MySend(Thread):
         Thread.__init__(self)
         self.conn = conn
         self.bus = bus
-        print(self.getName(), 'MySend initialized')
+        print(self.getName(), '****** MySend initialized')
 
     def run(self):
         while True :
 
             if VB.stop_all.is_set():break
-                        
-            msg = self.bus.recv()
             
-            # --------------------------------------
-            # PART 1 - Native messages
-            # --------------------------------------
-            if msg.arbitration_id == US1:
-                print('oui')
-                # ultrason avant gauche
-                distance = int.from_bytes(msg.data[0:2], byteorder='big')
-                message = "UFL:" + str(distance) + ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # ultrason avant droit
-                distance = int.from_bytes(msg.data[2:4], byteorder='big')
-                message = "UFR:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # ultrason arriere centre
-                distance = int.from_bytes(msg.data[4:6], byteorder='big')
-                message = "URC:" + str(distance)+ ";"
-                print(message)
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif msg.arbitration_id == US2:
-                # ultrason arriere gauche
-                distance = int.from_bytes(msg.data[0:2], byteorder='big')
-                message = "URL:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # ultrason arriere droit
-                distance = int.from_bytes(msg.data[2:4], byteorder='big')
-                message = "URR:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # ultrason avant centre
-                distance = int.from_bytes(msg.data[4:6], byteorder='big')
-                message = "UFC:" + str(distance)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif msg.arbitration_id == MS:
-                # position volant
-                angle = int.from_bytes(msg.data[0:2], byteorder='big')
-                message = "POS:" + str(angle)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # Niveau de la batterie
-                bat = int.from_bytes(msg.data[2:4], byteorder='big')
-                message = "BAT:" + str(bat)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # vitesse roue gauche
-                speed_left = int.from_bytes(msg.data[4:6], byteorder='big')
-                message = "SWL:" + str(speed_left)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # vitesse roue droite
-                speed_right= int.from_bytes(msg.data[6:8], byteorder='big')
-                message = "SWR:" + str(speed_right)+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif msg.arbitration_id == OM1:
-                # Yaw
-                yaw = struct.unpack('>f',msg.data[0:4])
-                message = "YAW:" + str(yaw[0])+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-                # Pitch
-                pitch = struct.unpack('>f',msg.data[4:8])
-                message = "PIT:" + str(pitch[0])+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            elif msg.arbitration_id == OM2:
-                # Roll
-                roll = struct.unpack('>f',msg.data[0:4])
-                message = "ROL:" + str(roll[0])+ ";"
-                size = self.conn.send(message.encode())
-                if size == 0: break
+            try:
+                msg = self.bus.recv(0.2)
             
+                # --------------------------------------
+                # PART 1 - Native messages
+                # --------------------------------------
+                if msg.arbitration_id == US1:
+                    # ultrason avant gauche
+                    distance = int.from_bytes(msg.data[0:2], byteorder='big')
+                    message = "UFL:" + str(distance) + ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # ultrason avant droit
+                    distance = int.from_bytes(msg.data[2:4], byteorder='big')
+                    message = "UFR:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # ultrason arriere centre
+                    distance = int.from_bytes(msg.data[4:6], byteorder='big')
+                    message = "URC:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif msg.arbitration_id == US2:
+                    # ultrason arriere gauche
+                    distance = int.from_bytes(msg.data[0:2], byteorder='big')
+                    message = "URL:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # ultrason arriere droit
+                    distance = int.from_bytes(msg.data[2:4], byteorder='big')
+                    message = "URR:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # ultrason avant centre
+                    distance = int.from_bytes(msg.data[4:6], byteorder='big')
+                    message = "UFC:" + str(distance)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif msg.arbitration_id == MS:
+                    # position volant
+                    angle = int.from_bytes(msg.data[0:2], byteorder='big')
+                    message = "POS:" + str(angle)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # Niveau de la batterie
+                    bat = int.from_bytes(msg.data[2:4], byteorder='big')
+                    message = "BAT:" + str(bat)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # vitesse roue gauche
+                    speed_left = int.from_bytes(msg.data[4:6], byteorder='big')
+                    message = "SWL:" + str(speed_left)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # vitesse roue droite
+                    speed_right= int.from_bytes(msg.data[6:8], byteorder='big')
+                    message = "SWR:" + str(speed_right)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif msg.arbitration_id == OM1:
+                    # Yaw
+                    yaw = struct.unpack('>f',msg.data[0:4])
+                    message = "YAW:" + str(yaw[0])+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                    # Pitch
+                    pitch = struct.unpack('>f',msg.data[4:8])
+                    message = "PIT:" + str(pitch[0])+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                elif msg.arbitration_id == OM2:
+                    # Roll
+                    roll = struct.unpack('>f',msg.data[0:4])
+                    message = "ROL:" + str(roll[0])+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+                
             # --------------------------------------
             # PART 2 - Towing-related messages
             # --------------------------------------
-            # capteur magnétique
-            elif msg.arbitration_id == HALL:
-                magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
-                message = "MAG:" + str(magnetic_sensor)+ ";"
+                # capteur magnétique
+                elif msg.arbitration_id == HALL:
+                    magnetic_sensor = int.from_bytes(msg.data[0:1], byteorder='big')
+                    message = "MAG:" + str(magnetic_sensor)+ ";"
+                    size = self.conn.send(message.encode())
+                    if size == 0: break
+            except: pass
+        
+            # connexion voiture rose
+            if VB.Connection_ON.is_set():
+                message = "CON_PINK:on;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            
-            # connexion voiture rose
-            if VB.ConnectedWIthPink.is_set():
-                message = "CON_PINK:on"
-                size = self.conn.send(message.encore())
-                if size == 0: break
+
+                # UFC_slave data
+                if VB.UFC_slaveDispo.is_set():
+                    if VB.UFC_slaveSem.acquire(False):
+                        message = "UFC_slave:" + str(VB.UFC_slave)
+                        VB.UFC_slaveSem.release()
+                        size = self.conn.send(message.encode())
+                        if size == 0: break
             else:
-                message = "CON_PINK:off"
-                size = self.conn.send(message.encore())
+                message = "CON_PINK:off;"
+                size = self.conn.send(message.encode())
                 if size == 0: break
 
             # etat voiture noire
-            if VB.TryApproach.is_set():
-                message = "STATE:approaching"
+            if VB.Approach.is_set():
+                message = "STATE:approaching;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            elif VB.ApproachComplete.is_set():
-                message = "STATE:approach_complete"
+            elif VB.Hooking_close.is_set():
+                message = "STATE:hooking_uneffective;"
+                size = self.conn.send(message.encode())
+                if size == 0: break                
+            elif VB.Hooking_ON.is_set():
+                message = "STATE:hooking_effective;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            elif VB.TowingActive.is_set():
-                message = "STATE:towing"
+            elif VB.Towing_ON.is_set():
+                message = "STATE:towing;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
-            elif VB.TowingError.is_set():
-                message = "STATE:towing_error"
+            elif VB.Towing_Error.is_set():
+                message = "STATE:towing_error;"
                 size = self.conn.send(message.encode())
                 if size == 0: break             
             else:
-                message = "STATE:idle"
+                message = "STATE:idle;"
                 size = self.conn.send(message.encode())
                 if size == 0: break
 
             # code d'erreur pendant remorquage
-            if VB.TowingActive.is_set() or VB.TowingError.is_set():
-                if VB.ErrorCodeSem.acquire(False)
+            if VB.Towing_Error.is_set():
+                if VB.ErrorCodeSem.acquire(False):
                     message = "ERR:" + str(VB.ErrorCode) + ";"
                     VB.ErrorCodeSem.release()
                     size = self.conn.send(message.encode())
                     if size == 0: break
-            
-'''
-            # Valeurs propres au towing
-            if not(VB.ConnectComplete.is_set() and VB.ApproachComplete.is_set() and VB.TowingActive.is_set()):
-                message = "STATE:Idle"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            if VB.ConnectComplete.is_set():
-                message = "STATE:ConnectComplete"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            if VB.ApproachComplete.is_set():
-                message = "STATE:Hooking;"
-                size = self.conn.send(message.encode())
-                if size == 0: break
-            if VB.TowingError.is_set():
-                if VB.CodeSem.acquire(false):
-                    message = "ERR:" + VB.CodeErreur
-                    size = self.conn.send(message.encode())
-                    VB.CodeSem.release()
-                if size == 0: break
-'''
 
+        print(self.getName(), '###### MySend finished')
 
 
 # *********************************************************
-# THREAD 2 - Réception des données de l'application, envoi des commandes sur le CAN + modification variables internes
+# THREAD - Réception des données de l'application, envoi des commandes sur le CAN + modification variables internes
 # *********************************************************
 
 class MyReceive(Thread):
@@ -249,7 +235,7 @@ class MyReceive(Thread):
         self.turn = 0
         self.enable = 0
         self.pos = 0
-        print(self.getName(), 'MyReceive initialized')
+        print(self.getName(), '****** MyReceive initialized')
 
     def run(self):
         self.speed_cmd = 0
@@ -259,24 +245,28 @@ class MyReceive(Thread):
         self.enable = 0
         self.pos = 0   
 
+        self.conn.settimeout(1) # timeout for self.conn.recv
+
         while True :
 
             if VB.stop_all.is_set():break
 
-            data=""
-            self.conn.setblocking(0)
             try:
-                data = self.conn.recv(1024)
+                data = self.conn.recv(VB.BUFFER_SIZE)
                 data = str(data)
                 data = data[2:len(data)-1]
-            except IOError as e:
-                pass
+            except socket.timeout:
+                continue
+
+            if not data: break
+
+            print(self.getName(),data)
             
-            #if not data: continue
+            print
             
             #split each command received if there are more of 1 
             for cmd in data.split(';'):
-                #print('val cmd : ',cmd)
+                #print(self.getName(),'val cmd : ',cmd)
                 
                 # don't try an empty command
                 if not cmd: continue 
@@ -328,67 +318,43 @@ class MyReceive(Thread):
                 # front wheels position
                 elif (header == 'POS'): 
                     self.position_cmd = int(payload)
-                    print("steering wheels position is updated to ", self.position_cmd)
+                    print(self.getName(),"steering wheels position is updated to ", self.position_cmd)
                     self.pos = 1
                     self.enable = 1
+                # pink connection related commands
+                elif (header == 'CON'):
+                    if (payload == 'start'):
+                        print(self.getName(),'Start connecting pink car')
+                        VB.Connect.set()
+                    if (payload == 'stop'):
+                        print(self.getName(),'Stop connecting pink car')
+                        VB.Disconnect.set()
                 # hooking related commands
                 elif (header == 'HOO'):
                     if (payload == 'start'):
-                        print('Start hooking manoeuver')
-                        VB.TryConnect.set()
-                        # VB.TryApproach.set()
+                        print(self.getName(),'Start hooking manoeuver')
+                        VB.Approach.set()
                         self.enable = 0
                     if (payload == 'stop'):
-                        print('Stopping hooking manoeuver')
-                        VB.TryConnect.clear()
-                        VB.ConnectedWIthPink.clear()
-                        VB.TryApproach.clear()
+                        print(self.getName(),'Stop hooking manoeuver')
+                        VB.Approach.clear()
+                        VB.Disconnect.set()
                 # towing related commands
                 elif (header == 'TOW'):
                     if (payload == 'start'):
-                        print('Starting towing mode - error detection ON')
-                        VB.TowingActive.set()
+                        print(self.getName(),'Start towing mode - error detection ON')
+                        VB.Towing_ON.set()
                     if (payload == 'stop'):
-                        print('Stopping towing mode - error detection OFF - disconnected from pink car')
-                        VB.TowingActive.clear()
+                        print(self.getName(),'Stop towing mode - error detection OFF - disconnected from pink car')
+                        VB.Towing_OFF.set()
 
+                if VB.Towing_Error.is_set():
+                	self.enable = 0
 
-
-'''
-                elif (header == 'TOW'):
-                    if (payload == 'request'):
-                        print("Starting connection & approach")
-                        VB.TryConnect.set() # initiate connection
-                        VB.TryApproach.set() # start approaching the 2nd car
-                        self.enable = 0
-                    if (payload == 'on'):
-                        print("Starting towing mode")
-                        VB.TowingActive.set() # start error detection
-                        self.enable = 1
-                    if (payload == 'off'):
-                        print("Stopping towing mode")
-                        VB.TryConnect.clear() # closing communication with 2nd car
-                        VB.ConnectComplete.clear()
-                        VB.TryApproach.clear()
-                        VB.ApproachComplete.clear()
-                        VB.TowingActive.clear() # stop error detection
-                        VB.TowingError.clear()
-                elif (header == 'HOO'):
-                    if (payload == 'request'):
-                        print("Starting connection & approach")
-                        VB.TryConnect.set() # initiate connection
-                        VB.TryApproach.set() # start approaching the 2nd car
-                        self.enable = 0
-
-
-                # In case of an error detection while towing
-                if VB.CodeSem.acquire() and VB.TowingActive.is_set() and VB.SourceProb != -1:
-                    enable = 0
-'''
-                print(self.speed_cmd)
-                print(self.move)
-                print(self.turn)
-                print(self.enable)
+                #print(self.speed_cmd)
+                #print(self.move)
+                #print(self.turn)
+                #print(self.enable)
 
                 #edition des commandes de mouvement si enabled
                 if self.enable:
@@ -424,6 +390,5 @@ class MyReceive(Thread):
                     print(msg)
                     #Send message
                     self.bus.send(msg)
-
-#        self.conn.close()
         
+        print(self.getName(), '###### MyReceive finished')

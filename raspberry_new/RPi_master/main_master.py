@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from threading import *
+import threading as _threading
 import time
 import can
 import os
@@ -19,11 +19,11 @@ from tow_process import *
 #importing variables linked
 import VarBerlin as VB
 
-global IpBlack
-global IpPink
 
 HOST = ''                # Symbolic name meaning all available interfaces
 PORT = 6666              # Arbitrary non-privileged port
+addr = -1
+count = 10
 
 
 if __name__ == "__main__":
@@ -35,27 +35,30 @@ if __name__ == "__main__":
     os.system("sudo /sbin/ip link set can0 up type can bitrate 400000")
     time.sleep(0.1)
 
+    # SendMail('Initialisation RPi_master','Tout bon')
+
     try:
         bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
+        print('Connected to bus can')
     except OSError:
         print('Cannot find PiCAN board.')
         exit()
-    alldone = False
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((HOST, PORT))
-        s.listen(1)
-        conn, addr = s.accept()
+        sIHM = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sIHM.bind((HOST, PORT))
+        sIHM.listen(1)
+        print('Ready to receive connection from IHM')
+        conn_IHM, addr = sIHM.accept()
         print('Connected with ' + repr(addr))
 
         # starting HMI Communications Threads
-        newreceive = MyReceive(conn, bus)
+        newreceive = MyReceive(conn_IHM, bus)
         newreceive.start()
-        newsend = MySend(conn, bus)
+        newsend = MySend(conn_IHM, bus)
         newsend.start()
 
         # starting communication with pink car
-        newtowcom = MyComTow()
+        newtowcom = MyComTow(conn_IHM)
         newtowcom.start()
 
         # launching approach thread (starting procedure only if VB.Approach == True)
@@ -63,25 +66,31 @@ if __name__ == "__main__":
         newapproach.start()
 
         # launching error detection thread (starting procedure only if VB.TowingActive == True)
-        newdetect = ErrorDetection(bus)
-        newdetect.start()
-        alldone = True
+        newtowingerrordetect = TowingErrorDetection(bus)
+        newtowingerrordetect.start()
 
-    except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
-        print('Shutting down all process...')
-        VB.stop_all.set()
-    except socket.error:
-        print('Socket error')
-        print(socket.error)
-
-    if alldone:
+        newtowingerrordetect.join()
+        newapproach.join()
+        newtowcom.join()
         newreceive.join()
         newsend.join()
-        newtowcom.join()
-        newapproach.join()
-        newdetect.join()
 
-        conn.close()
+    except KeyboardInterrupt: # Ctrl+C : Stop correctly all the threads
+        print('\nShutting down all process...')
+        msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+        bus.send(msg)
+        VB.stop_all.set()
+    except socket.error:
+        print('Socket error with connection to IHM')
+        print(socket.error)
+        msg = can.Message(arbitration_id=MCM,data=[NO_MOVE,NO_MOVE,0,WHEELS_CENTER,0,0,0,SOLENOID_DOWN],extended_id=False)
+        bus.send(msg)
 
-    print("All process are shut down")
-    
+    while _threading.active_count() != 1:
+    	pass
+        
+    if addr != -1:
+        sIHM.close()
+        print('Socket with IHM closed')   
+
+print("All process are shut down")

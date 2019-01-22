@@ -2,34 +2,46 @@
 from threading import *
 import os
 
+global BUFFER_SIZE
+BUFFER_SIZE = 1024 # standard buffer size
+
 
 # *********************************************************
 # VARIABLE - connexion voiture rose
 # *********************************************************
-#IP of the towed vehicle
 global IpBlack
 global IpPink
 
-# Looking for IP address to "know" which network is used
-IpBlack = os.popen('hostname -I').read() # get chain with '[@IP] \n'
-IpBlack = IpBlack[:len(IpBlack)-2] # (suppress ' \n')
+IpBlack = os.popen('hostname -I').read() #get chain with '[@IP] \n'
+IpBlack = IpBlack[:len(IpBlack)-2] #(suppress ' \n')
 
-# Only correct with the two cars black and pink
-if IpBlack == '10.105.0.55': # IOT network
+try:
+    IpBlack, MACAddr = IpBlack.split(' ') # remove MAC address appended
+except ValueError:
+    pass
+
+if '10.105.0.55' in IpBlack: # IOT network
+    IpBlack = '10.105.0.55'
     IpPink = '10.105.0.53'
-elif IpBlack == '192.168.137.27': # Berlin network
+elif '192.168.137.27' in IpBlack: # Berlin network
+    IpBlack = '192.168.137.27'
     IpPink = '192.168.137.12'
-elif IpBlack == '192.168.1.20': # Grenier network
-    IpPink = '192.168.1.21'    
+elif '192.168.1.20' in IpBlack: # Grenier network
+    IpBlack = '192.168.1.20'
+    IpPink = '192.168.1.21'
 
-#Semaphore and variable to transmit front US from 2nd car
-global US3Sem
-US3Sem = BoundedSemaphore(1)
-global US3Dispo
-US3Dispo = Event()
-US3Dispo.clear()
-global US3
-US3 = -1
+print('IpBlack - ', IpBlack)
+print('IpPink - ', IpPink)    
+
+#Semaphore and variable to receive and transmit front US from 2nd car
+global UFC_slaveSem
+UFC_slaveSem = BoundedSemaphore(1)
+global UFC_slaveDispo
+UFC_slaveDispo = Event()
+UFC_slaveDispo.clear()
+global UFC_slave
+UFC_slave = -1
+
 
 # *********************************************************
 # VARIABLE - communication par mail
@@ -47,16 +59,22 @@ DestAddr = 'teamberlingei@gmail.com'
 global ErrorCodeSem
 ErrorCodeSem = BoundedSemaphore(1)
 global ErrorCode
-ErrorCode = 0000
+ErrorCode = 0
 
-global ErrorUSFail
-ErrorUSFail = 0b0001
-global ErrorUS3Fail
-ErrorUS3Fail = 0b0010
-global ErrorMagFail
-ErrorMag = 0b0100
+global CodeErrorURC
+CodeErrorURC = 1
+global CodeErrorURFC_slave
+CodeErrorURFC_slave = 2
+global CodeErrorMAG
+CodeErrorMAG = 4
+global CodeObstacleUFC
+CodeObstacleUFC = 8
+global CodeObstacleUFL
+CodeObstacleUFL = 16
+global CodeObstacleUFR
+CodeObstacleUFR = 32
 global ErrorLostConnection
-ErrorLostConnection = 0b1000
+ErrorLostConnection = 64
 
 
 # *********************************************************
@@ -67,47 +85,59 @@ global stop_all
 stop_all = Event()
 
 #Event for connection to pink car
-global TryConnect
-TryConnect = Event()
-TryConnect.clear()
-global ConnectedWithPink
-ConnectedWithPink = Event()
-ConnectedWithPink.clear()
+global Connect
+Connect = Event()
+Connect.clear()
+global Connection_ON
+Connection_ON = Event()
+Connection_ON.clear()
+global Disconnect
+Disconnect = Event()
+Disconnect.clear()
 #Events for approaching and hooking
-global TryApproach
-TryApproach = Event()
-TryApproach.clear()
-global ApproachComplete
-ApproachComplete = Event()
-ApproachComplete.clear()
+global Approach
+Approach = Event()
+Approach.clear()
+global Hooking_close
+Hooking_close = Event()
+Hooking_close.clear()
+global Hooking_ON
+Hooking_ON = Event()
+Hooking_ON.clear()
 #Events for towing
-global TowingActive
-TowingActive = Event()
-TowingActive.clear()
-global TowingError
-TowingError = Event()
-TowingError.clear()
+global Towing_ON
+Towing_ON = Event()
+Towing_ON.clear()
+global Towing_OFF
+Towing_OFF = Event()
+Towing_OFF.clear()
+global Towing_Error
+Towing_Error = Event()
+Towing_Error.clear()
+global Obstacle_Detected
+Obstacle_Detected = Event()
+Obstacle_Detected.clear()
 
 
 
 # *********************************************************
-# FUNCTION 1 - Ecrit la valeur en argument dans la variable "US3" (définie au-dessus)
+# FUNCTION 1 - Ecrit la valeur en argument dans la variable "UFC_slave" (définie au-dessus)
 # *********************************************************
-def WriteUS3(dispo, value):
-    US3Sem.acquire(True):
-    US3 = value
-    US3Sem.release() # release the semaphore because no longer needed
-    US3Dispo.is_set()
+def WriteUFC_slave(dispo, value):
+    UFC_slaveSem.acquire(True)
+    UFC_slave = value
+    UFC_slaveSem.release() # release the semaphore because no longer needed
+    UFC_slaveDispo.is_set()
 
 
 # *********************************************************
-# FUNCTION 2 - Retourne la valeur contenue dans US3 (suppose qu'une valeur est dispo)
+# FUNCTION 2 - Retourne la valeur contenue dans UFC_slave (suppose qu'une valeur est dispo)
 # *********************************************************
-def ReadUS3():
-    if US3Sem.acquire(False):
-        USpink = US3
-        US3Sem.release()
-        US3Dispo.clear()
+def ReadUFC_slave():
+    if UFC_slaveSem.acquire(False):
+        USpink = UFC_slave
+        UFC_slaveSem.release()
+        UFC_slaveDispo.clear()
         return USpink
     return -1
 
@@ -116,6 +146,7 @@ def ReadUS3():
 # FUNCTION 3 - Ecrit la valeur en argument dans la variable "ErrorCode" (définie au-dessus) avec blocage 
 # *********************************************************
 def WriteErrorCode(value):
-    ErrorCodeSem.acquire(True):
+    global ErrorCode
+    ErrorCodeSem.acquire(True)
     ErrorCode = ErrorCode | value
     ErrorCodeSem.release()
