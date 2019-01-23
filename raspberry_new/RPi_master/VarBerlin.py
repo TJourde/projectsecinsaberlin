@@ -25,7 +25,7 @@ if '10.105.0.55' in IpBlack: # IOT network
     IpPink = '10.105.0.53'
 elif '192.168.137.27' in IpBlack: # Berlin network
     IpBlack = '192.168.137.27'
-    IpPink = '192.168.137.12'
+    IpPink = '192.168.137.135'
 elif '192.168.1.20' in IpBlack: # Grenier network
     IpBlack = '192.168.1.20'
     IpPink = '192.168.1.21'

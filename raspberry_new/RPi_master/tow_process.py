@@ -305,7 +305,6 @@ class TowingErrorDetection(Thread):
                 # --------------------------------------
                 # PART 2 - Appel des handler
                 # --------------------------------------
-                if trameCAN_tow
                 if trameCAN_tow and (FLAG_MAG or FLAG_URC or FLAG_UFC_slave):
                     trameCAN_tow = False
                     compteur_multi += 1

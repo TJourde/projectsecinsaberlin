@@ -24,8 +24,8 @@ except ValueError:
 if '10.105.0.53' in IpPink: #IOT Network
 	IpPink = '10.105.0.53'
 	IpBlack = '10.105.0.55'
-if '192.168.137.12' in IpPink:  # Berlin network
-	IpPink = '192.168.137.12'
+if '192.168.137.135' in IpPink:  # Berlin network
+	IpPink = '192.168.137.135'
 	IpBlack = '192.168.137.27'
 elif '192.168.1.21' in IpPink: # Grenier network
 	IpPink = '192.168.1.21'
