@@ -29,6 +29,9 @@ elif '192.168.137.27' in IpBlack: # Berlin network
 elif '192.168.1.20' in IpBlack: # Grenier network
     IpBlack = '192.168.1.20'
     IpPink = '192.168.1.21'
+elif '192.168.137.41' in IpBlack:
+	IpPink = '192.168.137.44'
+	IpBlack = '192.168.137.41'
 
 print('IpBlack - ', IpBlack)
 print('IpPink - ', IpPink)    

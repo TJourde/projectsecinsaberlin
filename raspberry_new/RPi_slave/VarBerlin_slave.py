@@ -30,6 +30,10 @@ if '192.168.137.135' in IpPink:  # Berlin network
 elif '192.168.1.21' in IpPink: # Grenier network
 	IpPink = '192.168.1.21'
 	IpBlack = '192.168.1.20'
+elif '192.168.137.44' in IpPink:
+	IpPink = '192.168.137.44'
+	IpBlack = '192.168.137.41'
+
 
 print('IpBlack - ' + IpBlack)
 print('IpPink - ' + IpPink)
